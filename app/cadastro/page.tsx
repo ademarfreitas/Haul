@@ -9,8 +9,8 @@ export const metadata = { title: "Criar conta · Plist" };
 const NOMES: Record<string, string> = { essencial: "Essencial", pro: "Profissional", avancado: "Avançado" };
 
 export default async function Cadastro({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  if (await contaAtual()) redirect("/canais");
-  const { plano = "" } = await searchParams;
+  if (await contaAtual()) redirect("/inventario");
+  const { plano = "", ind = "" } = await searchParams;
   const nome = NOMES[plano];
   return (
     <Moldura
@@ -18,7 +18,7 @@ export default async function Cadastro({ searchParams }: { searchParams: Promise
       sub="Venda no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook com um cadastro só."
       selo={nome ? `Plano ${nome} · 30 dias grátis, sem cartão` : "30 dias grátis, sem cartão"}
     >
-      <FormCadastro plano={nome ? plano : ""} />
+      <FormCadastro plano={nome ? plano : ""} ind={/^[0-9a-f-]{36}$/.test(ind) ? ind : ""} />
       <p className="rodape-form">Já tem conta? <a href="/entrar">Entrar</a></p>
     </Moldura>
   );

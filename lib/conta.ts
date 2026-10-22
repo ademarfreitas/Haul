@@ -27,7 +27,7 @@ export async function exigirConta(aqui: string) {
 }
 
 // Só caminhos internos: evita mandar a pessoa para outro site depois do login.
-export function destinoSeguro(volta: unknown, padrao = "/canais"): string {
+export function destinoSeguro(volta: unknown, padrao = "/inventario"): string {
   return typeof volta === "string" && /^\/(?![/\\])/.test(volta) ? volta : padrao;
 }
 

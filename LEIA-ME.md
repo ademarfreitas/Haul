@@ -41,7 +41,7 @@ Começou pela conexão com o Mercado Livre: tela `/canais`, rotas em `app/api/ca
 - `npm run build` e `npm run verificar` conferem que compila e que os tipos batem.
 - Cadastro e login reais: o site (`/`) leva **Começar 30 dias grátis** para `/cadastro` e **Entrar** para `/entrar`.
   Depois do cadastro vêm os primeiros passos (`/primeiros-passos`: PF ou PJ, CPF/CNPJ, celular), uma vez só,
-  e então o sistema (`/canais`). Senha com scrypt (`lib/senha.ts`); sessão num cookie assinado com `SEGREDO_SESSAO`
+  e então o sistema (`/inventario`). Senha com scrypt (`lib/senha.ts`); sessão num cookie assinado com `SEGREDO_SESSAO`
   (`lib/sessao.ts`); conferência de CPF, CNPJ e celular em `lib/validar.ts`.
 - Ainda falta: recuperar senha e confirmar e-mail (precisam do provedor de e-mail), limite de tentativas guardado
   no banco (hoje fica na memória do servidor), termos de uso e política de privacidade.
