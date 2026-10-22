@@ -1,6 +1,6 @@
 # Plist — protótipo
 
-Multicanal para brechós e revendedores no Brasil: um cadastro publica no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook Marketplace; vendeu num canal, sai dos outros; etiqueta, tarefas pós-venda, taxas (estimada, real e confirmada) e Command Center.
+Canal de listagem e multivenda para lojistas de todos os nichos no Brasil: um cadastro publica no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook Marketplace; vendeu num canal, sai dos outros; etiqueta, tarefas pós-venda, taxas (estimada, real e confirmada) e Command Center.
 
 **Projeto separado do Zappy Core.** Não compartilha código, banco, nuvem, Asaas nem WhatsApp com ele.
 

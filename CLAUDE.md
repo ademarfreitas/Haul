@@ -4,7 +4,8 @@ Toda sessão nesta pasta trabalha **só no Plist**. Fale com o usuário em **por
 
 ## O que é
 
-**Plist**: multicanal para brechós e revendedores no Brasil. Um cadastro publica a peça em vários
+**Plist**: canal de listagem e multivenda para lojistas de **todos os nichos** no Brasil (não só brechós;
+definido em 22/10/2026). Um cadastro publica o produto em vários
 marketplaces; quando vende num, o Plist tira o anúncio dos outros, deixa a etiqueta pronta e mostra
 o que falta fazer até o dinheiro ser liberado.
 
@@ -34,7 +35,7 @@ o que falta fazer até o dinheiro ser liberado.
 ## Decisões já tomadas (não repropor sem o usuário pedir)
 
 - **Nome:** o produto e o projeto se chamam **Plist** (antes "Haul"), site **plist.com.br** (22/10/2026).
-  Logo em `marca/`: o P é uma etiqueta de brechó (o furo vira o miolo) com camadas atrás (os canais);
+  Logo em `marca/`: o P de Plist com três pontos saindo dele (o mesmo anúncio indo para vários canais);
   laranja #FF6A2B → pink #E9216F, tinta #14111F, wordmark Inter ExtraBold minúsculo.
 
 - **Canais:** Mercado Livre, Shopee, Shein, Amazon, Magalu, Facebook Marketplace e venda direta.
