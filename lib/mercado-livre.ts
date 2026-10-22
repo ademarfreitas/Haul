@@ -40,6 +40,7 @@ export class ErroMl extends Error {
     public status: number,
     public codigo: string,
     mensagem: string,
+    public causas: string[] = [],
   ) {
     super(mensagem);
   }
@@ -125,13 +126,33 @@ function renovar(refreshToken: string) {
   });
 }
 
-export async function chamarApi<T>(caminho: string, accessToken: string): Promise<T> {
+// GET por padrão; com `envio`, POST/PUT com JSON ou multipart (FormData, ex.: upload de foto).
+export async function chamarApi<T>(
+  caminho: string,
+  accessToken: string,
+  envio?: { metodo: "POST" | "PUT"; json?: unknown; form?: FormData },
+): Promise<T> {
+  const headers: Record<string, string> = { accept: "application/json", authorization: `Bearer ${accessToken}` };
+  if (envio?.json !== undefined) headers["content-type"] = "application/json";
   const r = await buscar(`${URL_API}${caminho}`, {
-    headers: { accept: "application/json", authorization: `Bearer ${accessToken}` },
+    method: envio?.metodo ?? "GET",
+    headers,
+    body: envio?.form ?? (envio?.json !== undefined ? JSON.stringify(envio.json) : undefined),
   });
-  const json = (await r.json().catch(() => ({}))) as T & { error?: string; message?: string };
-  if (!r.ok) throw new ErroMl(r.status, json.error ?? "erro_desconhecido", json.message ?? `API ${r.status}`);
+  const json = (await r.json().catch(() => ({}))) as T & { error?: string; message?: string; cause?: unknown };
+  if (!r.ok) {
+    throw new ErroMl(r.status, json.error ?? "erro_desconhecido", json.message ?? `API ${r.status}`, causas(json.cause));
+  }
   return json;
+}
+
+// o ML explica a recusa de um anúncio em cause: [{ code, message, type }]; só os erros, sem os avisos
+function causas(cause: unknown): string[] {
+  if (!Array.isArray(cause)) return [];
+  return cause
+    .filter((c) => c && typeof c === "object" && (c as { type?: string }).type !== "warning")
+    .map((c) => String((c as { message?: unknown }).message ?? (c as { code?: unknown }).code ?? ""))
+    .filter(Boolean);
 }
 
 function camposToken(t: RespostaToken) {
