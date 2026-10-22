@@ -21,7 +21,7 @@ const ERROS: Record<string, string> = {
 const SITUACAO = { ativa: "Conectada", expirada: "Reconectar", revogada: "Revogada" } as const;
 
 export default async function Canais({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const { ml, ml_erro } = await searchParams;
+  const { ml, ml_erro, faltando } = await searchParams;
   const { conta, usuario } = await exigirConta("/canais");
 
   const conexoes = await obterDb()
@@ -37,7 +37,14 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
         <p className="suave">Conecte suas contas de marketplace. O Plist guarda só a autorização, cifrada.</p>
 
         {ml === "conectado" && <div className="aviso ok">Mercado Livre conectado.</div>}
-        {ml_erro && <div className="aviso erro">{ERROS[ml_erro] ?? `Não deu para conectar (${ml_erro}).`}</div>}
+        {ml_erro === "config_incompleta" ? (
+          <div className="aviso erro">
+            Falta configurar no servidor: {(faltando ?? "").split(",").filter((n) => /^ML_[A-Z_]+$/.test(n)).join(", ") || "?"}. Confira o nome exato (tudo maiúsculo) nas variáveis de
+            ambiente de Production e faça Redeploy.
+          </div>
+        ) : (
+          ml_erro && <div className="aviso erro">{ERROS[ml_erro] ?? `Não deu para conectar (${ml_erro}).`}</div>
+        )}
 
         <div className="cartao">
           <div className="linha">
