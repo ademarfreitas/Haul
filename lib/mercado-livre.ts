@@ -24,7 +24,14 @@ type RespostaToken = {
 
 // cookie assinado que guarda state e code_verifier entre /conectar e /callback
 export const COOKIE_OAUTH = "plist_ml_oauth";
-export type EstadoOauth = { state: string; verifier: string; contaId: string };
+export type EstadoOauth = { state: string; verifier: string; contaId: string; voltar: string };
+
+// Para onde o lojista volta depois do ML (ex.: primeiros passos). Só caminhos internos conhecidos,
+// para o link não virar redirecionamento aberto.
+const DESTINOS = ["/canais", "/primeiros-passos"];
+export function destinoSeguro(voltar: string | null): string {
+  return voltar && DESTINOS.includes(voltar) ? voltar : "/canais";
+}
 
 export type UsuarioMl = { id: number; nickname: string; site_id: string; email?: string };
 
@@ -36,6 +43,11 @@ export class ErroMl extends Error {
   ) {
     super(mensagem);
   }
+}
+
+// nomes (nunca valores) das variáveis do ML que faltam no ambiente
+export function variaveisFaltando(): string[] {
+  return ["ML_CLIENT_ID", "ML_CLIENT_SECRET", "ML_REDIRECT_URI"].filter((n) => !process.env[n]?.trim());
 }
 
 function credenciais() {
