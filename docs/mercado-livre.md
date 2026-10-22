@@ -49,8 +49,9 @@ Depois do passo 2 abaixo, volte em **Settings → Environment Variables**, cadas
      refresh token e a conexão cai em poucas horas.
    - **Permissões/funcionalidades**: Usuários (leitura); Publicação e sincronização (leitura e
      escrita); Vendas e envios (leitura e escrita); Comunicações pós-venda (leitura e escrita).
-   - **Notificações**: pode deixar em branco agora. Quando a rota existir, a URL será
-     `<APP_URL>/api/canais/mercado-livre/notificacoes`, com os tópicos Orders, Items, Shipments e Questions.
+   - **Notificações** (obrigatório se algum tópico estiver marcado): URL
+     `<APP_URL>/api/canais/mercado-livre/notificacoes`. Tópicos: Orders, Items, Shipments,
+     Questions/Messages e Post Purchase. A rota guarda cada aviso em `eventos_canal`; o processamento vem depois.
 3. Salve. A tela mostra o **ID do aplicativo** (Client ID) e a **Chave secreta** (Client Secret).
 
 ## 3. Preencher as variáveis
