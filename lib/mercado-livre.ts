@@ -130,9 +130,9 @@ function renovar(refreshToken: string) {
 export async function chamarApi<T>(
   caminho: string,
   accessToken: string,
-  envio?: { metodo: "POST" | "PUT"; json?: unknown; form?: FormData },
+  envio?: { metodo?: "GET" | "POST" | "PUT"; json?: unknown; form?: FormData; cabecalhos?: Record<string, string> },
 ): Promise<T> {
-  const headers: Record<string, string> = { accept: "application/json", authorization: `Bearer ${accessToken}` };
+  const headers: Record<string, string> = { accept: "application/json", authorization: `Bearer ${accessToken}`, ...envio?.cabecalhos };
   if (envio?.json !== undefined) headers["content-type"] = "application/json";
   const r = await buscar(`${URL_API}${caminho}`, {
     method: envio?.metodo ?? "GET",
@@ -144,6 +144,16 @@ export async function chamarApi<T>(
     throw new ErroMl(r.status, json.error ?? "erro_desconhecido", json.message ?? `API ${r.status}`, causas(json.cause));
   }
   return json;
+}
+
+// Resposta crua (ex.: PDF da etiqueta). Erro do ML vira ErroMl como em chamarApi.
+export async function baixarApi(caminho: string, accessToken: string): Promise<Response> {
+  const r = await buscar(`${URL_API}${caminho}`, { headers: { authorization: `Bearer ${accessToken}` } });
+  if (!r.ok) {
+    const json = (await r.json().catch(() => ({}))) as { error?: string; message?: string };
+    throw new ErroMl(r.status, json.error ?? "erro_desconhecido", json.message ?? `API ${r.status}`);
+  }
+  return r;
 }
 
 // o ML explica a recusa de um anúncio em cause: [{ code, message, type }]; só os erros, sem os avisos

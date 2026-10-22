@@ -37,7 +37,8 @@ o que falta fazer até o dinheiro ser liberado.
   O site em "/" leva Entrar e Começar grátis para essas telas (script injetado por montar-site.mjs).
 - **Sistema real** (`app/(sistema)/`, 22/10/2026): menu igual ao do protótipo; Inventário traz os anúncios do
   Mercado Livre (`lib/ml-importar.ts`), Estoque lista as peças, Novo anúncio publica no ML (`lib/ml-anuncio.ts`;
-  fotos guardadas no próprio ML), Canais conecta. As outras telas do menu dizem
+  fotos guardadas no próprio ML), Pedidos e Tarefas trazem as vendas do ML (`lib/ml-pedidos.ts`: etiqueta
+  oficial em PDF, taxa real × estimada, baixa de estoque), Canais conecta. As outras telas do menu dizem
   "em construção" até serem trazidas. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
   `app/(sistema)/sistema.css` a partir do `<style>` dele.
 - Ainda não há repositório no GitHub, nuvem, banco, domínio nem CNPJ do Plist.
