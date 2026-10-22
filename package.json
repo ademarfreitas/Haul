@@ -1,0 +1,32 @@
+{
+  "name": "haul",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "verificar": "tsc --noEmit",
+    "db:gerar": "drizzle-kit generate",
+    "db:migrar": "drizzle-kit migrate",
+    "db:estudio": "drizzle-kit studio",
+    "db:verificar": "tsc --noEmit",
+    "db:conferir": "node --experimental-strip-types db/conferir.ts"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "drizzle-orm": "^0.45.4",
+    "next": "^16.4.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "dotenv": "^18.0.8",
+    "drizzle-kit": "^0.31.11",
+    "pg": "^8.23.1",
+    "typescript": "^7.0.2"
+  }
+}

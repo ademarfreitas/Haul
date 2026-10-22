@@ -22,3 +22,20 @@ O arquivo é um trecho de página (sem `<html>`/`<head>`), feito para o visualiz
 ## Próximos passos combinados
 
 Validar com brechós → decisões de negócio (nome/INPI, CNPJ, preços, Facebook Marketplace) → MVP com Mercado Livre e Shopee → aprovações nos marketplaces e parte legal → beta fechado → lançamento.
+
+## Banco de dados (Neon Postgres)
+
+TypeScript + Drizzle ORM + driver serverless do Neon. O modelo fica em `db/schema.ts` e as migrations SQL em `db/migrations/`.
+
+1. `npm install`
+2. Copiar `.env.example` para `.env.local` e colar a connection string do branch **dev** do Neon (projeto Lister). O `.env.local` não vai para o Git.
+3. Mudou o `db/schema.ts`? `npm run db:gerar` cria a migration; revisar o SQL e versionar.
+4. `npm run db:migrar` aplica no banco do `DATABASE_URL`. Produção só com migration revisada.
+
+## App (Next.js)
+
+Começou pela conexão com o Mercado Livre: tela `/canais`, rotas em `app/api/canais/mercado-livre/` e a lógica em `lib/` (OAuth, cifra dos tokens, sessão). Passo a passo para criar o app no DevCenter e testar: [docs/mercado-livre.md](docs/mercado-livre.md).
+
+- `npm run dev` sobe em http://localhost:3000 (lê o `.env.local`).
+- `npm run build` e `npm run verificar` conferem que compila e que os tipos batem.
+- Ainda não há cadastro/login: enquanto isso, `/api/dev/entrar?codigo=<CODIGO_CONTA_DEV>` entra numa conta de desenvolvimento.
