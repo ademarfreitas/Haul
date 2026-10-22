@@ -2,7 +2,7 @@
 import { randomBytes } from "node:crypto";
 import { NextResponse } from "next/server";
 import { assinar, contaDaSessao, cookieSeguro } from "@/lib/sessao";
-import { COOKIE_OAUTH, novoPkce, urlAutorizacao, type EstadoOauth } from "@/lib/mercado-livre";
+import { COOKIE_OAUTH, novoPkce, urlAutorizacao, variaveisFaltando, type EstadoOauth } from "@/lib/mercado-livre";
 import { irPara } from "@/lib/rotas";
 
 const DEZ_MINUTOS = 10 * 60;
@@ -10,6 +10,8 @@ const DEZ_MINUTOS = 10 * 60;
 export async function GET(req: Request) {
   const contaId = await contaDaSessao();
   if (!contaId) return irPara("/canais?ml_erro=sem_sessao", req);
+  const faltando = variaveisFaltando();
+  if (faltando.length) return irPara(`/canais?ml_erro=config_incompleta&faltando=${faltando.join(",")}`, req);
 
   const state = randomBytes(24).toString("base64url");
   const { verifier, challenge } = novoPkce();

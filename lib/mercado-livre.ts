@@ -38,6 +38,11 @@ export class ErroMl extends Error {
   }
 }
 
+// nomes (nunca valores) das variáveis do ML que faltam no ambiente
+export function variaveisFaltando(): string[] {
+  return ["ML_CLIENT_ID", "ML_CLIENT_SECRET", "ML_REDIRECT_URI"].filter((n) => !process.env[n]?.trim());
+}
+
 function credenciais() {
   const clientId = process.env.ML_CLIENT_ID;
   const clientSecret = process.env.ML_CLIENT_SECRET;
