@@ -32,9 +32,13 @@ o que falta fazer até o dinheiro ser liberado.
 - O arquivo é um trecho de página para o visualizador de artefatos (sem `<html>`/`<head>`).
 - **Site público na Vercel:** `node scripts/montar-site.mjs` gera `public/site.html` a partir do protótipo;
   `next.config.ts` abre esse site na raiz de todo endereço, menos em app.plist.com.br (raiz = sistema).
-  O sistema fica em /canais. Depois de mudar o protótipo, rodar o script de novo e copiar para haul-site.
-- **Cadastro e login reais** no app (22/10/2026): /cadastro → /primeiros-passos (uma vez) → /canais; /entrar e Sair.
+  O sistema começa em /inventario. Depois de mudar o protótipo, rodar o script de novo e copiar para haul-site.
+- **Cadastro e login reais** no app (22/10/2026): /cadastro → /primeiros-passos (uma vez) → /inventario; /entrar e Sair.
   O site em "/" leva Entrar e Começar grátis para essas telas (script injetado por montar-site.mjs).
+- **Sistema real** (`app/(sistema)/`, 22/10/2026): menu igual ao do protótipo; Inventário traz os anúncios do
+  Mercado Livre (`lib/ml-importar.ts`), Estoque lista as peças, Canais conecta. As outras telas do menu dizem
+  "em construção" até serem trazidas. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
+  `app/(sistema)/sistema.css` a partir do `<style>` dele.
 - Ainda não há repositório no GitHub, nuvem, banco, domínio nem CNPJ do Plist.
 
 ## Decisões já tomadas (não repropor sem o usuário pedir)

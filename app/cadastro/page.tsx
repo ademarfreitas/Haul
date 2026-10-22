@@ -9,7 +9,7 @@ export const metadata = { title: "Criar conta · Plist" };
 const NOMES: Record<string, string> = { essencial: "Essencial", pro: "Profissional", avancado: "Avançado" };
 
 export default async function Cadastro({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  if (await contaAtual()) redirect("/canais");
+  if (await contaAtual()) redirect("/inventario");
   const { plano = "" } = await searchParams;
   const nome = NOMES[plano];
   return (

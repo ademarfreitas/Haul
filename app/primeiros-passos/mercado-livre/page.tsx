@@ -18,7 +18,7 @@ export default async function ConectarMercadoLivre() {
     .from(conexoesCanal)
     .where(and(eq(conexoesCanal.contaId, atual.conta.id), eq(conexoesCanal.canal, "mercado_livre")))
     .limit(1);
-  if (conectada) redirect("/canais");
+  if (conectada) redirect("/inventario");
 
   return (
     <Moldura
@@ -26,8 +26,8 @@ export default async function ConectarMercadoLivre() {
       sub="Passo 2 de 2. O Plist traz seus anúncios e pedidos e passa a publicar por você. Você entra no Mercado Livre e autoriza; a gente guarda só a autorização, cifrada."
     >
       <div className="formulario">
-        <a className="botao largo centro" href="/api/canais/mercado-livre/conectar">Conectar Mercado Livre</a>
-        <a className="botao secundario centro" href="/canais">Pular por agora</a>
+        <a className="botao largo centro" href="/api/canais/mercado-livre/conectar?voltar=/inventario">Conectar Mercado Livre</a>
+        <a className="botao secundario centro" href="/inventario">Pular por agora</a>
       </div>
       <p className="rodape-form suave">Os outros canais você conecta depois, em Canais.</p>
     </Moldura>

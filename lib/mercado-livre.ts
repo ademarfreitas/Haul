@@ -26,9 +26,9 @@ type RespostaToken = {
 export const COOKIE_OAUTH = "plist_ml_oauth";
 export type EstadoOauth = { state: string; verifier: string; contaId: string; voltar: string };
 
-// Para onde o lojista volta depois do ML (ex.: primeiros passos). Só caminhos internos conhecidos,
+// Para onde o lojista volta depois do ML (ex.: Inventário). Só caminhos internos conhecidos,
 // para o link não virar redirecionamento aberto.
-const DESTINOS = ["/canais", "/primeiros-passos"];
+const DESTINOS = ["/canais", "/inventario", "/primeiros-passos"];
 export function destinoSeguro(voltar: string | null): string {
   return voltar && DESTINOS.includes(voltar) ? voltar : "/canais";
 }
