@@ -11,7 +11,11 @@ Multicanal para brechós e revendedores no Brasil: um cadastro publica no Mercad
 
 ## Como abrir
 
-O arquivo é um trecho de página (sem `<html>`/`<head>`), feito para o visualizador de artefatos do Claude. Para abrir no navegador, publique de novo como artefato a partir deste arquivo ou envolva o conteúdo num `<!doctype html><html><body>…</body></html>`. Fora do Claude, a IA nos anúncios e o download de PDF ficam desligados (a página mostra um exemplo no lugar).
+O arquivo é um trecho de página (sem `<html>`/`<head>`), feito para o visualizador de artefatos do Claude. Para abrir direto no navegador, rode `node scripts/montar-site.mjs`: ele gera `site/index.html` (página completa, fora dos buscadores) a partir do protótipo. Fora do Claude, a IA nos anúncios e o download de PDF ficam desligados (a página mostra um exemplo no lugar).
+
+## Publicação
+
+`.github/workflows/publicar-site.yml` monta `site/` e publica no GitHub Pages a cada mudança do protótipo na `main` (ou à mão, em Actions). Só funciona com o Pages ligado no repositório (Settings → Pages → Source: GitHub Actions); em repositório privado isso exige plano pago do GitHub.
 
 ## Valores que são exemplo
 
