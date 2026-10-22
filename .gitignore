@@ -1,0 +1,8 @@
+# segredos e dependências
+.env
+.env.*
+!.env.example
+node_modules/
+# sistema
+.DS_Store
+Thumbs.db
