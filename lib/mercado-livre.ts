@@ -23,7 +23,7 @@ type RespostaToken = {
 };
 
 // cookie assinado que guarda state e code_verifier entre /conectar e /callback
-export const COOKIE_OAUTH = "haul_ml_oauth";
+export const COOKIE_OAUTH = "plist_ml_oauth";
 export type EstadoOauth = { state: string; verifier: string; contaId: string };
 
 export type UsuarioMl = { id: number; nickname: string; site_id: string; email?: string };
@@ -132,7 +132,7 @@ function camposToken(t: RespostaToken) {
   };
 }
 
-// Grava (ou reconecta) a conta do ML na conta do Haul. Uma conta do ML pertence a uma só conta do Haul.
+// Grava (ou reconecta) a conta do ML na conta do Plist. Uma conta do ML pertence a uma só conta do Plist.
 export async function salvarConexao(contaId: string, t: RespostaToken, usuario: UsuarioMl) {
   const db = obterDb();
   const usuarioExterno = String(t.user_id);
@@ -142,7 +142,7 @@ export async function salvarConexao(contaId: string, t: RespostaToken, usuario: 
     .where(and(eq(conexoesCanal.canal, "mercado_livre"), eq(conexoesCanal.usuarioExterno, usuarioExterno)));
 
   if (existente && existente.contaId !== contaId) {
-    throw new ErroMl(409, "conta_ja_conectada", "Esta conta do Mercado Livre já está ligada a outra conta do Haul.");
+    throw new ErroMl(409, "conta_ja_conectada", "Esta conta do Mercado Livre já está ligada a outra conta do Plist.");
   }
 
   const campos = { ...camposToken(t), apelido: usuario.nickname };

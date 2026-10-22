@@ -5,7 +5,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
-export const COOKIE_CONTA = "haul_conta";
+export const COOKIE_CONTA = "plist_conta";
 
 function segredo(): string {
   const s = process.env.SEGREDO_SESSAO;

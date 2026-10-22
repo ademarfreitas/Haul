@@ -7,11 +7,11 @@ export const dynamic = "force-dynamic";
 
 // textos para os códigos que o callback devolve em ?ml_erro=
 const ERROS: Record<string, string> = {
-  access_denied: "Você não autorizou o Haul no Mercado Livre.",
+  access_denied: "Você não autorizou o Plist no Mercado Livre.",
   state_invalido: "A conexão expirou ou veio de outra aba. Tente de novo.",
-  sem_sessao: "Entre na sua conta do Haul antes de conectar.",
+  sem_sessao: "Entre na sua conta do Plist antes de conectar.",
   conta_fora_do_brasil: "Essa conta do Mercado Livre não é do Brasil.",
-  conta_ja_conectada: "Essa conta do Mercado Livre já está ligada a outra conta do Haul.",
+  conta_ja_conectada: "Essa conta do Mercado Livre já está ligada a outra conta do Plist.",
   invalid_client: "Client ID ou Secret do app do Mercado Livre não conferem (ver .env.local).",
   ml_indisponivel: "O Mercado Livre não respondeu. Tente de novo em alguns minutos.",
   invalid_grant: "O Mercado Livre recusou o código. Confira se o Redirect URI do app é igual ao ML_REDIRECT_URI.",
@@ -33,7 +33,7 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
   return (
     <main>
       <h1>Canais</h1>
-      <p className="suave">Conecte suas contas de marketplace. O Haul guarda só a autorização, cifrada.</p>
+      <p className="suave">Conecte suas contas de marketplace. O Plist guarda só a autorização, cifrada.</p>
 
       {ml === "conectado" && <div className="aviso ok">Mercado Livre conectado.</div>}
       {ml_erro && <div className="aviso erro">{ERROS[ml_erro] ?? `Não deu para conectar (${ml_erro}).`}</div>}

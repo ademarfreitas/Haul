@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import "./estilo.css";
 
-export const metadata = { title: "Haul" };
+export const metadata = { title: "Plist" };
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
