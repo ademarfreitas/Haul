@@ -5,7 +5,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
-import { conexoesCanal, tarefas } from "@/db/schema";
+import { conexoesCanal, tarefas, usuarios } from "@/db/schema";
 import { cifrar, decifrar } from "@/lib/cripto";
 
 const URL_AUTORIZACAO = "https://auth.mercadolivre.com.br/authorization";
@@ -154,7 +154,11 @@ export async function salvarConexao(contaId: string, t: RespostaToken, usuario: 
     .where(and(eq(conexoesCanal.canal, "mercado_livre"), eq(conexoesCanal.usuarioExterno, usuarioExterno)));
 
   if (existente && existente.contaId !== contaId) {
-    throw new ErroMl(409, "conta_ja_conectada", "Esta conta do Mercado Livre já está ligada a outra conta do Plist.");
+    // conta sem nenhum usuário (a antiga "Conta de desenvolvimento") ninguém mais acessa: a conexão muda de dono
+    const [dono] = await db.select({ id: usuarios.id }).from(usuarios).where(eq(usuarios.contaId, existente.contaId)).limit(1);
+    if (dono) throw new ErroMl(409, "conta_ja_conectada", "Esta conta do Mercado Livre já está ligada a outra conta do Plist.");
+    await db.update(conexoesCanal).set({ contaId }).where(eq(conexoesCanal.id, existente.id));
+    await db.update(tarefas).set({ contaId }).where(eq(tarefas.conexaoId, existente.id));
   }
 
   const campos = { ...camposToken(t), apelido: usuario.nickname };

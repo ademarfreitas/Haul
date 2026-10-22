@@ -1,7 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { conexoesCanal } from "@/db/schema";
-import { contaDaSessao } from "@/lib/sessao";
+import { exigirConta } from "@/lib/conta";
+import { Topo } from "../_acesso/topo";
 
 export const dynamic = "force-dynamic";
 
@@ -21,36 +22,30 @@ const SITUACAO = { ativa: "Conectada", expirada: "Reconectar", revogada: "Revoga
 
 export default async function Canais({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { ml, ml_erro, faltando } = await searchParams;
-  const contaId = await contaDaSessao();
+  const { conta, usuario } = await exigirConta("/canais");
 
-  const conexoes = contaId
-    ? await obterDb()
-        .select()
-        .from(conexoesCanal)
-        .where(and(eq(conexoesCanal.contaId, contaId), eq(conexoesCanal.canal, "mercado_livre")))
-    : [];
+  const conexoes = await obterDb()
+    .select()
+    .from(conexoesCanal)
+    .where(and(eq(conexoesCanal.contaId, conta.id), eq(conexoesCanal.canal, "mercado_livre")));
 
   return (
-    <main>
-      <h1>Canais</h1>
-      <p className="suave">Conecte suas contas de marketplace. O Plist guarda só a autorização, cifrada.</p>
+    <>
+      <Topo nome={usuario.nome} situacao={conta.situacaoAssinatura} testeAte={conta.testeAte} />
+      <main>
+        <h1>Canais</h1>
+        <p className="suave">Conecte suas contas de marketplace. O Plist guarda só a autorização, cifrada.</p>
 
-      {ml === "conectado" && <div className="aviso ok">Mercado Livre conectado.</div>}
-      {ml_erro === "config_incompleta" ? (
-        <div className="aviso erro">
-          Falta configurar no servidor: {(faltando ?? "").split(",").filter((n) => /^ML_[A-Z_]+$/.test(n)).join(", ") || "?"}. Confira o nome exato (tudo maiúsculo) nas variáveis de
-          ambiente de Production e faça Redeploy.
-        </div>
-      ) : (
-        ml_erro && <div className="aviso erro">{ERROS[ml_erro] ?? `Não deu para conectar (${ml_erro}).`}</div>
-      )}
+        {ml === "conectado" && <div className="aviso ok">Mercado Livre conectado.</div>}
+        {ml_erro === "config_incompleta" ? (
+          <div className="aviso erro">
+            Falta configurar no servidor: {(faltando ?? "").split(",").filter((n) => /^ML_[A-Z_]+$/.test(n)).join(", ") || "?"}. Confira o nome exato (tudo maiúsculo) nas variáveis de
+            ambiente de Production e faça Redeploy.
+          </div>
+        ) : (
+          ml_erro && <div className="aviso erro">{ERROS[ml_erro] ?? `Não deu para conectar (${ml_erro}).`}</div>
+        )}
 
-      {!contaId ? (
-        <div className="cartao">
-          <p>Você não entrou numa conta. Enquanto o cadastro não existe, use o link da conta de desenvolvimento
-            (o LEIA-ME explica).</p>
-        </div>
-      ) : (
         <div className="cartao">
           <div className="linha">
             <div>
@@ -79,7 +74,7 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
             </div>
           ))}
         </div>
-      )}
-    </main>
+      </main>
+    </>
   );
 }

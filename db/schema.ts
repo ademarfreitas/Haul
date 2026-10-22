@@ -143,7 +143,7 @@ export const usuarios = pgTable(
       .references(() => contas.id, { onDelete: "cascade" }),
     nome: text().notNull(),
     email: text().notNull(),
-    senhaHash: text(), // argon2id; nulo se entrar só por link/OAuth
+    senhaHash: text(), // scrypt (lib/senha.ts); nulo se entrar só por link/OAuth
     emailVerificadoEm: timestamp({ withTimezone: true }),
     criadoEm: criadoEm(),
   },

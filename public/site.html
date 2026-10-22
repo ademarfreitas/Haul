@@ -3422,5 +3422,13 @@ go(VIEWS.includes(h0) ? h0 : !acct.session ? "site" : !acct.onbSeen ? "onboardin
 setInterval(() => { CHS.forEach(c => { if (health[c] === "ok") lastSync[c] = lastSync[c] > 60 ? 2 : lastSync[c] + 5; }); if (!$("#v-channels").hidden) renderChannels(); }, 5000);
 })();
 </script>
+<script>
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('[data-start], [data-go="login"]');
+  if (!b) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) : '/entrar';
+}, true);
+</script>
 </body>
 </html>

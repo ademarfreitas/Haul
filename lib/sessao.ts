@@ -1,7 +1,4 @@
-// Cookies assinados (HMAC-SHA256 com SEGREDO_SESSAO) e a conta da sessão.
-// Ainda não há cadastro/login: até lá, a sessão aponta para uma "conta de desenvolvimento"
-// criada por /api/dev/entrar?codigo=..., que só funciona com CODIGO_CONTA_DEV definido.
-// Esse código é uma senha provisória: o app pode estar num endereço público (callback do ML).
+// Cookies assinados (HMAC-SHA256 com SEGREDO_SESSAO) e a sessão de quem entrou (conta + usuário).
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
@@ -39,15 +36,34 @@ export function cookieSeguro(): boolean {
   return (process.env.APP_URL ?? "").startsWith("https://");
 }
 
-export async function contaDaSessao(): Promise<string | null> {
+export type Sessao = { c: string; u: string }; // conta e usuário
+
+export async function lerSessao(): Promise<Sessao | null> {
   const jar = await cookies();
-  return conferirAssinado<string>(jar.get(COOKIE_CONTA)?.value);
+  const s = conferirAssinado<Sessao>(jar.get(COOKIE_CONTA)?.value);
+  // cookie antigo (só o id da conta, do login provisório) não vale mais
+  return s && typeof s === "object" && s.c && s.u ? s : null;
 }
 
-export function codigoDevConfere(codigo: string | null): boolean {
-  const certo = process.env.CODIGO_CONTA_DEV;
-  if (!certo || certo.length < 12 || !codigo) return false;
-  const a = Buffer.from(assinatura(certo));
-  const b = Buffer.from(assinatura(codigo));
-  return timingSafeEqual(a, b);
+export async function contaDaSessao(): Promise<string | null> {
+  return (await lerSessao())?.c ?? null;
+}
+
+const TRINTA_DIAS = 30 * 24 * 60 * 60;
+const DOZE_HORAS = 12 * 60 * 60;
+
+// "Manter conectado": cookie de 30 dias; sem isso, some ao fechar o navegador (e vale no máximo 12 h).
+export async function abrirSessao(sessao: Sessao, manter: boolean): Promise<void> {
+  const jar = await cookies();
+  jar.set(COOKIE_CONTA, assinar(sessao, manter ? TRINTA_DIAS : DOZE_HORAS), {
+    httpOnly: true,
+    secure: cookieSeguro(),
+    sameSite: "lax",
+    path: "/",
+    ...(manter ? { maxAge: TRINTA_DIAS } : {}),
+  });
+}
+
+export async function fecharSessao(): Promise<void> {
+  (await cookies()).set(COOKIE_CONTA, "", { path: "/", maxAge: 0 });
 }

@@ -33,6 +33,8 @@ o que falta fazer até o dinheiro ser liberado.
 - **Site público na Vercel:** `node scripts/montar-site.mjs` gera `public/site.html` a partir do protótipo;
   `next.config.ts` abre esse site na raiz de todo endereço, menos em app.plist.com.br (raiz = sistema).
   O sistema fica em /canais. Depois de mudar o protótipo, rodar o script de novo e copiar para haul-site.
+- **Cadastro e login reais** no app (22/10/2026): /cadastro → /primeiros-passos (uma vez) → /canais; /entrar e Sair.
+  O site em "/" leva Entrar e Começar grátis para essas telas (script injetado por montar-site.mjs).
 - Ainda não há repositório no GitHub, nuvem, banco, domínio nem CNPJ do Plist.
 
 ## Decisões já tomadas (não repropor sem o usuário pedir)

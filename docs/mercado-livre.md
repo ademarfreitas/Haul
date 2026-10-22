@@ -26,8 +26,8 @@ O código precisa estar no `main` do GitHub (PRs do banco e do app aprovados e m
 2. **Add New → Project** e importe `ademarfreitas/haul`. Se o repositório não aparecer, clique em
    ajustar as permissões do GitHub e libere só esse repositório.
 3. Dê ao projeto um nome como `haul-app`. Não precisa mudar nada de build: a Vercel reconhece o Next.js.
-4. Em **Environment Variables**, cadastre `DATABASE_URL` (a do branch dev do Neon), `SEGREDO_SESSAO`,
-   `CHAVE_TOKENS` e `CODIGO_CONTA_DEV` (ver passo 3). Clique em **Deploy**.
+4. Em **Environment Variables**, cadastre `DATABASE_URL` (a do branch dev do Neon), `SEGREDO_SESSAO`
+   e `CHAVE_TOKENS` (ver passo 3). Clique em **Deploy**.
 5. Quando terminar, veja o endereço em **Settings → Domains** (ex.: `https://haul-app.vercel.app`).
    Esse é o `APP_URL`.
 6. Em **Settings → Functions → Region**, escolha a região mais perto do banco no Neon (São Paulo,
@@ -66,7 +66,6 @@ No `.env.local` (PC) e nas variáveis de ambiente da hospedagem, com os mesmos v
 | `ML_REDIRECT_URI` | `<APP_URL>/api/canais/mercado-livre/callback`, igual ao do DevCenter |
 | `SEGREDO_SESSAO` | gerar (comando abaixo) |
 | `CHAVE_TOKENS` | gerar (comando abaixo); a mesma no PC e na hospedagem |
-| `CODIGO_CONTA_DEV` | uma senha provisória sua, com 12 caracteres ou mais |
 
 Para gerar `SEGREDO_SESSAO` e `CHAVE_TOKENS` (rodar duas vezes, um valor para cada):
 
@@ -76,8 +75,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 
 ## 4. Testar
 
-1. Abra `<APP_URL>/api/dev/entrar?codigo=<CODIGO_CONTA_DEV>`. Isso entra numa "Conta de
-   desenvolvimento" (provisória, até existir cadastro e login) e abre a tela **Canais**.
+1. Abra `<APP_URL>/cadastro` (ou o botão **Começar 30 dias grátis** do site), crie sua conta e
+   preencha os primeiros passos. Você cai na tela **Canais**. Da próxima vez, use **Entrar**.
 2. Clique em **Conectar Mercado Livre**, entre no ML e autorize o Plist.
 3. Você volta para Canais com "Mercado Livre conectado" e o apelido da conta.
 4. **Testar** chama `/users/me` com o token guardado (renovando se estiver para vencer).
