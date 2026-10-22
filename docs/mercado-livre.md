@@ -17,6 +17,25 @@ Ele vira o `APP_URL`, e o callback fica em:
 <APP_URL>/api/canais/mercado-livre/callback
 ```
 
+### Hospedagem na Vercel (escolhida em 22/10/2026)
+
+O código precisa estar no `main` do GitHub (PRs do banco e do app aprovados e mesclados).
+
+1. Entre em https://vercel.com/signup e escolha **Continue with GitHub** (plano Hobby, grátis, serve
+   para teste; para uso comercial, depois, precisa do plano Pro).
+2. **Add New → Project** e importe `ademarfreitas/haul`. Se o repositório não aparecer, clique em
+   ajustar as permissões do GitHub e libere só esse repositório.
+3. Dê ao projeto um nome como `haul-app`. Não precisa mudar nada de build: a Vercel reconhece o Next.js.
+4. Em **Environment Variables**, cadastre `DATABASE_URL` (a do branch dev do Neon), `SEGREDO_SESSAO`,
+   `CHAVE_TOKENS` e `CODIGO_CONTA_DEV` (ver passo 3). Clique em **Deploy**.
+5. Quando terminar, veja o endereço em **Settings → Domains** (ex.: `https://haul-app.vercel.app`).
+   Esse é o `APP_URL`.
+6. Em **Settings → Functions → Region**, escolha a região mais perto do banco no Neon (São Paulo,
+   `gru1`, se o Neon estiver em São Paulo; senão, a mesma região dos EUA).
+
+Depois do passo 2 abaixo, volte em **Settings → Environment Variables**, cadastre `APP_URL`,
+`ML_CLIENT_ID`, `ML_CLIENT_SECRET` e `ML_REDIRECT_URI`, e faça **Redeploy** (aba Deployments).
+
 ## 2. Criar o app no DevCenter
 
 1. Entre em https://developers.mercadolivre.com.br/devcenter com a conta do Mercado Livre
