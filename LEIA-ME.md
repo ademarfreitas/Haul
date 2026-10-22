@@ -22,3 +22,12 @@ O arquivo é um trecho de página (sem `<html>`/`<head>`), feito para o visualiz
 ## Próximos passos combinados
 
 Validar com brechós → decisões de negócio (nome/INPI, CNPJ, preços, Facebook Marketplace) → MVP com Mercado Livre e Shopee → aprovações nos marketplaces e parte legal → beta fechado → lançamento.
+
+## Banco de dados (Neon Postgres)
+
+TypeScript + Drizzle ORM + driver serverless do Neon. O modelo fica em `db/schema.ts` e as migrations SQL em `db/migrations/`.
+
+1. `npm install`
+2. Copiar `.env.example` para `.env.local` e colar a connection string do branch **dev** do Neon (projeto Lister). O `.env.local` não vai para o Git.
+3. Mudou o `db/schema.ts`? `npm run db:gerar` cria a migration; revisar o SQL e versionar.
+4. `npm run db:migrar` aplica no banco do `DATABASE_URL`. Produção só com migration revisada.

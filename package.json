@@ -1,0 +1,21 @@
+{
+  "name": "haul",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "db:gerar": "drizzle-kit generate",
+    "db:migrar": "drizzle-kit migrate",
+    "db:estudio": "drizzle-kit studio",
+    "db:verificar": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0",
+    "drizzle-orm": "^0.45.4"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "dotenv": "^18.0.8",
+    "drizzle-kit": "^0.31.11",
+    "typescript": "^7.0.2"
+  }
+}
