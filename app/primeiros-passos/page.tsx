@@ -16,7 +16,7 @@ export default async function PrimeirosPassos() {
   return (
     <Moldura
       titulo={`Boas-vindas, ${primeiroNome}`}
-      sub="Antes de conectar os canais, só mais três dados da sua loja."
+      sub="Passo 1 de 2: três dados da sua loja. Depois, conectar o Mercado Livre."
       selo={`Teste grátis até ${fim} · ${diasDeTeste(atual.conta.testeAte)} dias`}
     >
       <FormPrimeirosPassos />

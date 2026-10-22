@@ -9,7 +9,7 @@ const DEZ_MINUTOS = 10 * 60;
 
 export async function GET(req: Request) {
   const contaId = await contaDaSessao();
-  if (!contaId) return irPara("/entrar?volta=/canais", req);
+  if (!contaId) return irPara("/canais?ml_erro=sem_sessao", req);
 
   const state = randomBytes(24).toString("base64url");
   const { verifier, challenge } = novoPkce();

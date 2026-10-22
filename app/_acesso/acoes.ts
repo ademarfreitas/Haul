@@ -119,5 +119,5 @@ export async function salvarPrimeirosPassos(_: Estado, f: FormData): Promise<Est
       primeirosPassosEm: new Date(),
     })
     .where(eq(contas.id, atual.conta.id));
-  redirect("/canais");
+  redirect("/primeiros-passos/mercado-livre");
 }
