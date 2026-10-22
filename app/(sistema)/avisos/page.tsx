@@ -9,7 +9,7 @@ export default async function Pagina() {
   return (
     <EmBreve
       titulo="Avisos"
-      sub="Escolha o que chega no seu WhatsApp e no e-mail."
+      sub="Escolha o que chega no seu WhatsApp e no e-mail. Esta tela depende do número de WhatsApp Business do Plist, que ainda está para ser aprovado; até lá, acompanhe as vendas em Tarefas e Pedidos."
       oQueVem={["Aviso de venda com o que sobra depois das taxas", "Alerta quando um anúncio não sai de outro canal", "Resumo do dia"]}
     />
   );

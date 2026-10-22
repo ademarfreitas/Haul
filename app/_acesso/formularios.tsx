@@ -18,12 +18,13 @@ const Erro = ({ estado }: { estado: Estado }) => (
   <p className="msg-erro" aria-live="polite">{estado.erro ?? ""}</p>
 );
 
-export function FormCadastro({ plano }: { plano: string }) {
+export function FormCadastro({ plano, ind = "" }: { plano: string; ind?: string }) {
   const [estado, acao] = useActionState(cadastrar, {});
   const v = estado.valores ?? {};
   return (
     <form action={acao} className="formulario">
       <input type="hidden" name="plano" value={v.plano ?? plano} />
+      <input type="hidden" name="ind" value={v.ind ?? ind} />
       <label>Nome completo<input name="nome" autoComplete="name" required defaultValue={v.nome} /></label>
       <label>E-mail<input name="email" type="email" autoComplete="email" required defaultValue={v.email} /></label>
       <label>

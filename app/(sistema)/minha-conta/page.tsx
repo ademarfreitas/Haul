@@ -1,16 +1,216 @@
-import { exigirConta } from "@/lib/conta";
-import { EmBreve } from "../_partes/em-breve";
+import Link from "next/link";
+import { desc, eq } from "drizzle-orm";
+import { obterDb } from "@/db/cliente";
+import { contas, indicacoes } from "@/db/schema";
+import { reais } from "@/lib/canais";
+import { diasDeTeste, exigirConta } from "@/lib/conta";
+import { DIAS_DE_TOLERANCIA, PLANOS } from "@/lib/planos";
+import { SENHA_MINIMA } from "@/lib/senha";
+import { escolherPlano } from "./acoes";
+import { Copiar, FormGeral, FormSenha } from "./formularios";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Minha conta · Plist" };
 
-export default async function Pagina() {
-  await exigirConta("/minha-conta");
+const ABAS = [
+  ["geral", "Geral"],
+  ["plano", "Plano e cobrança"],
+  ["indicacao", "Programa de indicação"],
+  ["senha", "Senha e segurança"],
+] as const;
+type Aba = (typeof ABAS)[number][0];
+
+const data = (d: Date) => d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo", day: "2-digit", month: "long", year: "numeric" });
+const somarDias = (d: Date, n: number) => new Date(d.getTime() + n * 86_400_000);
+
+function celular(e164: string | null): string {
+  const d = (e164 ?? "").replace(/^\+55/, "");
+  return d.length === 11 ? `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}` : d;
+}
+// só o meio do documento aparece
+function documento(tipo: string | null, doc: string | null): string {
+  if (!doc) return "";
+  return tipo === "pj"
+    ? `${doc.slice(0, 2)}.${doc.slice(2, 5)}.${doc.slice(5, 8)}/${doc.slice(8, 12)}-${doc.slice(12)}`
+    : `***.${doc.slice(3, 6)}.${doc.slice(6, 9)}-**`;
+}
+
+export default async function MinhaConta({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+  const { conta, usuario } = await exigirConta("/minha-conta");
+  const pedida = (await searchParams).aba;
+  const aba: Aba = ABAS.some(([k]) => k === pedida) ? (pedida as Aba) : "geral";
+
   return (
-    <EmBreve
-      titulo="Minha conta"
-      sub="Dados da loja, plano, cobrança e indicações."
-      oQueVem={["Dados da loja e de quem entra", "Plano e cobrança depois do teste grátis", "Link de indicação"]}
-    />
+    <>
+      <header className="vhead">
+        <div>
+          <h1>Minha conta</h1>
+        </div>
+      </header>
+      <div className="tabs" role="tablist">
+        {ABAS.map(([k, nome]) => (
+          <Link
+            key={k}
+            href={k === "geral" ? "/minha-conta" : `/minha-conta?aba=${k}`}
+            role="tab"
+            aria-selected={aba === k}
+            style={{ padding: "10px 2px", fontWeight: 600, textDecoration: "none", color: aba === k ? "var(--ink)" : "var(--muted)", borderBottom: `2px solid ${aba === k ? "var(--accent)" : "transparent"}`, marginBottom: -1 }}
+          >
+            {nome}
+          </Link>
+        ))}
+      </div>
+      <div className="acct">
+        {aba === "geral" && (
+          <>
+            <FormGeral
+              g={{
+                nome: usuario.nome,
+                email: usuario.email,
+                celular: celular(conta.celular),
+                tipo: conta.tipoPessoa === "pj" ? `Pessoa jurídica · ${conta.nome}` : conta.tipoPessoa === "pf" ? "Pessoa física" : "Ainda não informado",
+                documento: documento(conta.tipoPessoa, conta.documento),
+              }}
+            />
+            <p className="muted" style={{ fontSize: ".8rem", marginTop: 10 }}>
+              Para trocar CPF/CNPJ ou desativar a conta, fale com o suporte.
+            </p>
+          </>
+        )}
+        {aba === "plano" && <Plano conta={conta} />}
+        {aba === "indicacao" && <Indicacao contaId={conta.id} />}
+        {aba === "senha" && <FormSenha minimo={SENHA_MINIMA} />}
+      </div>
+    </>
+  );
+}
+
+function Plano({ conta }: { conta: Awaited<ReturnType<typeof exigirConta>>["conta"] }) {
+  const fim = conta.testeAte;
+  const dias = diasDeTeste(fim);
+  const escolhido = PLANOS.find((p) => p.id === conta.plano);
+  const emTeste = conta.situacaoAssinatura === "teste";
+  return (
+    <>
+      <div className="panel">
+        <div className="ph">
+          <div>
+            <p className="eyebrow">Situação</p>
+            <h2 style={{ marginTop: 4 }}>
+              {emTeste ? (dias > 0 ? `Teste grátis · ${dias} ${dias === 1 ? "dia restante" : "dias restantes"}` : "Teste encerrado") : `Plano ${escolhido?.nome ?? ""}`}
+            </h2>
+          </div>
+          <span className={`pill ${conta.situacaoAssinatura === "somente_leitura" ? "p-bad" : emTeste ? "p-accent" : "p-good"}`}>
+            {conta.situacaoAssinatura === "somente_leitura" ? "Só leitura" : emTeste ? "Teste" : "Em dia"}
+          </span>
+        </div>
+        <ol className="tl">
+          <li className={dias > 0 ? "now" : ""}>
+            <b>{data(conta.criadoEm)}</b>
+            <span>Conta criada. Tudo liberado por 30 dias, sem cartão.</span>
+          </li>
+          <li>
+            <b>{data(somarDias(fim, -5))}</b>
+            <span>Lembrete por e-mail, se ainda não houver forma de pagamento.</span>
+          </li>
+          <li className={dias === 0 ? "now" : ""}>
+            <b>{data(fim)}</b>
+            <span>Fim do teste. {escolhido ? `Primeira cobrança do plano ${escolhido.nome}: ${reais(escolhido.precoCentavos)}.` : "Primeira cobrança do plano escolhido."}</span>
+          </li>
+          <li>
+            <b>{data(somarDias(fim, DIAS_DE_TOLERANCIA))}</b>
+            <span>Sem pagamento em {DIAS_DE_TOLERANCIA} dias, a conta fica só leitura: as vendas continuam chegando, mas não dá para publicar.</span>
+          </li>
+        </ol>
+      </div>
+      <div className="panel">
+        <h2>Planos</h2>
+        <p className="muted" style={{ fontSize: ".84rem" }}>Troque de plano quando quiser. Nada é cobrado durante o teste.</p>
+        <div className="plans">
+          {PLANOS.map((p) => (
+            <div key={p.id} className={`plan${conta.plano === p.id ? " cur" : ""}`}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 6, alignItems: "center" }}>
+                <h3>{p.nome}</h3>
+                {"selo" in p && <span className="pill p-accent">{p.selo}</span>}
+              </div>
+              <div className="pr">
+                {reais(p.precoCentavos)}
+                <span className="muted" style={{ fontSize: ".8rem", fontWeight: 500 }}> /mês</span>
+              </div>
+              <ul>
+                {p.itens.map((i) => (
+                  <li key={i}>{i}</li>
+                ))}
+              </ul>
+              <form action={escolherPlano}>
+                <input type="hidden" name="plano" value={p.id} />
+                <button className={`btn${conta.plano === p.id ? "" : " primary"}`} type="submit" disabled={conta.plano === p.id} style={{ width: "100%", justifyContent: "center" }}>
+                  {conta.plano === p.id ? "Plano escolhido" : conta.plano ? "Trocar para este" : "Escolher"}
+                </button>
+              </form>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="panel">
+        <h2>Forma de pagamento</h2>
+        <p className="muted" style={{ fontSize: ".84rem", marginTop: 4 }}>
+          A cobrança mensal (Pix, boleto ou cartão) entra antes do fim do seu teste. Os dados do cartão serão digitados na página segura do provedor de
+          cobrança, nunca no Plist.
+        </p>
+        <p style={{ marginTop: 10 }}>
+          <span className="pill p-muted">Em breve</span>
+        </p>
+      </div>
+    </>
+  );
+}
+
+async function Indicacao({ contaId }: { contaId: string }) {
+  const base = (process.env.APP_URL ?? "").replace(/\/$/, "");
+  const link = `${base}/cadastro?ind=${contaId}`;
+  const lista = await obterDb()
+    .select({ nome: contas.nome, entrou: indicacoes.criadoEm, situacao: contas.situacaoAssinatura, premio: indicacoes.recompensaConcedidaEm })
+    .from(indicacoes)
+    .innerJoin(contas, eq(contas.id, indicacoes.indicadaId))
+    .where(eq(indicacoes.indicadoraId, contaId))
+    .orderBy(desc(indicacoes.criadoEm));
+  return (
+    <>
+      <div className="panel">
+        <h2>Indique e ganhe 30 dias</h2>
+        <p className="muted" style={{ fontSize: ".86rem", marginTop: 4 }}>
+          Quem entrar pelo seu link ganha o teste de 30 dias normalmente. Quando essa pessoa pagar a primeira mensalidade, você ganha 30 dias de plano.
+        </p>
+        <Copiar texto={link} />
+      </div>
+      <div className="panel">
+        <h2>Suas indicações</h2>
+        {lista.length === 0 ? (
+          <p className="muted" style={{ fontSize: ".86rem", marginTop: 4 }}>Ninguém entrou pelo seu link ainda.</p>
+        ) : (
+          <div className="tw">
+            <table className="wide" style={{ minWidth: 480 }}>
+              <tbody>
+                <tr>
+                  <th>Loja</th>
+                  <th>Entrou em</th>
+                  <th>Situação</th>
+                  <th>Seu prêmio</th>
+                </tr>
+                {lista.map((i, n) => (
+                  <tr key={n}>
+                    <td>{i.nome}</td>
+                    <td>{i.entrou.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</td>
+                    <td>{i.situacao === "teste" ? <span className="pill p-accent">Em teste</span> : i.situacao === "ativa" ? <span className="pill p-good">Pagou</span> : <span className="pill p-muted">Sem plano</span>}</td>
+                    <td>{i.premio ? "30 dias de plano" : "Quando pagar"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

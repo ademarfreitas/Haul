@@ -38,8 +38,9 @@ o que falta fazer até o dinheiro ser liberado.
 - **Sistema real** (`app/(sistema)/`, 22/10/2026): menu igual ao do protótipo; Inventário traz os anúncios do
   Mercado Livre (`lib/ml-importar.ts`), Estoque lista as peças, Novo anúncio publica no ML (`lib/ml-anuncio.ts`;
   fotos guardadas no próprio ML), Pedidos e Tarefas trazem as vendas do ML (`lib/ml-pedidos.ts`: etiqueta
-  oficial em PDF, taxa real × estimada, baixa de estoque), Canais conecta. As outras telas do menu dizem
-  "em construção" até serem trazidas. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
+  oficial em PDF, taxa real × estimada, baixa de estoque), Resultados (Command Center com os números reais),
+  Minha conta (dados, plano escolhido, senha, link de indicação `/cadastro?ind=<conta>`), Canais conecta.
+  Avisos segue "em construção" (depende do WhatsApp Business); cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
   `app/(sistema)/sistema.css` a partir do `<style>` dele.
 - Ainda não há repositório no GitHub, nuvem, banco, domínio nem CNPJ do Plist.
 

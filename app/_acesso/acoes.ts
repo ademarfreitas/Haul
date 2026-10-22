@@ -4,7 +4,7 @@
 import { eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { obterDb } from "@/db/cliente";
-import { contas, usuarios } from "@/db/schema";
+import { contas, indicacoes, usuarios } from "@/db/schema";
 import { contaAtual, destinoSeguro } from "@/lib/conta";
 import { bloqueado, limparFalhas, registrarFalha } from "@/lib/limite";
 import { conferirSenha, gerarHash, SENHA_MINIMA } from "@/lib/senha";
@@ -28,7 +28,8 @@ export async function cadastrar(_: Estado, f: FormData): Promise<Estado> {
   const email = texto(f, "email").toLowerCase();
   const senha = String(f.get("senha") ?? "");
   const plano = PLANOS[texto(f, "plano") as keyof typeof PLANOS] ?? null;
-  const valores = { nome, email, plano: texto(f, "plano") };
+  const ind = texto(f, "ind");
+  const valores = { nome, email, plano: texto(f, "plano"), ind };
 
   if (nome.split(" ").length < 2 || nome.length > 120) return { erro: "Escreva nome e sobrenome.", valores };
   if (!emailValido(email)) return { erro: "Esse e-mail não parece certo. Confira e tente de novo.", valores };
@@ -56,6 +57,12 @@ export async function cadastrar(_: Estado, f: FormData): Promise<Estado> {
     throw e;
   }
   if (!ids) return { erro: "Não deu para criar a conta agora. Tente de novo.", valores };
+
+  // veio pelo link de indicação de outra conta: registra (o prêmio sai quando a nova conta pagar)
+  if (/^[0-9a-f-]{36}$/.test(ind) && ind !== ids.conta_id) {
+    const [indicadora] = await db.select({ id: contas.id }).from(contas).where(eq(contas.id, ind)).limit(1);
+    if (indicadora) await db.insert(indicacoes).values({ indicadoraId: indicadora.id, indicadaId: ids.conta_id }).onConflictDoNothing();
+  }
 
   await abrirSessao({ c: ids.conta_id, u: ids.usuario_id }, true);
   redirect("/primeiros-passos");
