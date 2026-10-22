@@ -1,12 +1,13 @@
-# Haul — protótipo
+# Plist — protótipo
 
-Multicanal para brechós e revendedores no Brasil: um cadastro publica no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook Marketplace; vendeu num canal, sai dos outros; etiqueta, tarefas pós-venda, taxas (estimada, real e confirmada) e Command Center.
+Canal de listagem e multivenda para lojistas de todos os nichos no Brasil: um cadastro publica no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook Marketplace; vendeu num canal, sai dos outros; etiqueta, tarefas pós-venda, taxas (estimada, real e confirmada) e Command Center.
 
 **Projeto separado do Zappy Core.** Não compartilha código, banco, nuvem, Asaas nem WhatsApp com ele.
 
 ## O que tem aqui
 
-- `haul-prototipo.html` — protótipo navegável (só tela, com dados de exemplo). Sem servidor, sem banco; integrações, pagamentos e impressão são simulados.
+- `plist-prototipo.html` — protótipo navegável (só tela, com dados de exemplo). Sem servidor, sem banco; integrações, pagamentos e impressão são simulados.
+- `marca/` — logo (SVG e PNG): ícone, ícone escuro, favicon, logo horizontal claro e branco, e a prancha de apresentação.
 - Versão publicada: https://claude.ai/artifact/7SU5tHQxUKgTYefe4hrn3A (privada; título "E-Commerce Listing").
 
 ## Como abrir

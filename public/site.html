@@ -1,4 +1,14 @@
-<title>E-Commerce Listing</title>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDEyMCAxMjAiIHJvbGU9ImltZyIgYXJpYS1sYWJlbD0iUGxpc3QiIHhtbG5zOmMycGE9Imh0dHA6Ly9jMnBhLm9yZy9tYW5pZmVzdCI+PHRpdGxlPlBsaXN0PC90aXRsZT48ZGVmcz48bGluZWFyR3JhZGllbnQgaWQ9ImciIHgxPSIwIiB5MT0iMCIgeDI9IjEiIHkyPSIxIj48c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM0QzZCRkYiLz48c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiMyQjQ3RDAiLz48L2xpbmVhckdyYWRpZW50PjwvZGVmcz48cmVjdCB3aWR0aD0iMTIwIiBoZWlnaHQ9IjEyMCIgcng9IjMwIiBmaWxsPSJ1cmwoI2cpIi8+PGcgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoLTEyIDApIiBmaWxsPSIjZmZmIj48cGF0aCBkPSJNNDUgMjRINjJBMjUgMjUgMCAwIDEgNjIgNzRINTRWODdBOSA5IDAgMCAxIDM2IDg3VjMzQTkgOSAwIDAgMSA0NSAyNFpNNTQgNDBWNThINjJBOSA5IDAgMCAwIDYyIDQwWiIgZmlsbC1ydWxlPSJldmVub2RkIi8+PGNpcmNsZSBjeD0iOTEiIGN5PSIyNSIgcj0iOCIvPjxjaXJjbGUgY3g9IjEwMSIgY3k9IjQ5IiByPSI4Ii8+PGNpcmNsZSBjeD0iOTEiIGN5PSI3MyIgcj0iOCIvPjwvZz48L3N2Zz4K">
+<style>[hidden]{display:none!important}body{margin:0}</style>
+</head>
+<body>
+<title>Plist</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,6 +63,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .brand{display:flex;align-items:center;gap:10px;padding:0 8px 18px}
 .brand-mark{width:30px;height:30px;border-radius:8px 8px 8px 2px;background:var(--tag);color:var(--tag-ink);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;position:relative;flex:none}
 .brand-mark::after{content:"";position:absolute;top:5px;right:5px;width:5px;height:5px;border-radius:50%;background:var(--surface)}
+/* Marca Plist: o P com três pontos (o mesmo anúncio indo para vários canais). Arquivos-fonte em marca/. */
+.brand-mark,.x-logo .mk,.x-side .lg i{background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234C6BFF'/%3E%3Cstop offset='1' stop-color='%232B47D0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='120' height='120' rx='30' fill='url(%23g)'/%3E%3Cg transform='translate(-12 0)' fill='%23fff'%3E%3Cpath fill-rule='evenodd' d='M45 24H62A25 25 0 0 1 62 74H54V87A9 9 0 0 1 36 87V33A9 9 0 0 1 45 24ZM54 40V58H62A9 9 0 0 0 62 40Z'/%3E%3Ccircle cx='91' cy='25' r='7'/%3E%3Ccircle cx='101' cy='49' r='7'/%3E%3Ccircle cx='91' cy='73' r='7'/%3E%3C/g%3E%3C/svg%3E") center/100% no-repeat !important;border-radius:0 !important;color:transparent !important}
+.brand-mark::after{display:none !important}
 .brand b{font-family:var(--f-display);font-size:1.2rem}
 .nav{all:unset;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;border-radius:8px;color:var(--muted);font-weight:500;position:relative}
 .nav:hover{background:var(--sunk);color:var(--ink)}
@@ -442,6 +455,9 @@ body.siteview.firstrun .main{max-width:none;padding:0;margin:0}
 .x-app{display:grid;grid-template-columns:190px minmax(0,1fr)}
 .x-side{border-right:1px solid var(--line);padding:14px 10px;display:flex;flex-direction:column;gap:2px;font-size:.84rem}
 .x-side .lg{display:flex;align-items:center;gap:8px;font-weight:700;padding:4px 8px 14px}
+/* Wordmark da logo: "plist" minúsculo, Inter ExtraBold, bem justo. */
+.brand b,.x-logo,.x-side .lg{font-weight:800;letter-spacing:-.055em;text-transform:lowercase}
+.brand b,.x-logo{font-size:1.4rem}
 .x-side .lg i{width:20px;height:20px;border-radius:6px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-style:normal;font-size:.7rem;font-weight:800}
 .x-side .it{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-radius:7px;color:var(--muted);font-weight:500}
 .x-side .it.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
@@ -760,7 +776,7 @@ table.cmp{min-width:720px}
 
 <div class="app">
   <nav class="rail" aria-label="Principal">
-    <div class="brand"><span class="brand-mark">H</span><b>Haul</b></div>
+    <div class="brand"><span class="brand-mark" aria-hidden="true"></span><b>Plist</b></div>
     <button class="nav" data-view="sync" type="button"><span>Inventário</span></button>
     <button class="nav" data-view="tasks" type="button"><span>Tarefas</span><span class="count" id="navTasks"></span></button>
     <button class="nav" data-view="inventory" type="button"><span>Estoque</span><span class="count" id="navAttn"></span></button>
@@ -781,7 +797,7 @@ table.cmp{min-width:720px}
     <!-- SITE PÚBLICO -->
     <section class="view" id="v-site" hidden>
       <header class="x-head" id="xHead"><div class="x-w">
-        <button class="x-logo" type="button" data-scroll="s-top" aria-label="Haul, início"><span class="mk">H</span>Haul</button>
+        <button class="x-logo" type="button" data-scroll="s-top" aria-label="Plist, início"><span class="mk" aria-hidden="true"></span>Plist</button>
         <nav class="x-nav" aria-label="Site"><button type="button" data-scroll="s-recursos">Recursos</button><button type="button" data-scroll="s-como">Como funciona</button><button type="button" data-scroll="s-planos">Planos</button><button type="button" data-scroll="s-faq">Dúvidas</button></nav>
         <div class="x-act"><button class="x-btn ghost" type="button" data-scroll="s-planos">Planos</button><button class="x-btn dark" type="button" data-go="login">Entrar</button></div>
       </div></header>
@@ -789,14 +805,14 @@ table.cmp{min-width:720px}
       <section class="x-hero" id="s-top"><div class="x-w">
         <span class="x-badge"><b>Novo</b> Etiqueta direto na impressora térmica</span>
         <h1>Venda em todos os marketplaces com <span>um só cadastro</span></h1>
-        <p class="x-lead">O Haul publica suas peças no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook Marketplace. Quando uma vende, ele tira o anúncio dos outros canais na hora e deixa a etiqueta pronta para imprimir.</p>
+        <p class="x-lead">O Plist publica suas peças no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook Marketplace. Quando uma vende, ele tira o anúncio dos outros canais na hora e deixa a etiqueta pronta para imprimir.</p>
         <div class="x-ctas"><button class="x-btn pri lg" type="button" data-start="pro">Começar 30 dias grátis</button><button class="x-btn ghost lg" type="button" data-scroll="s-como">Ver como funciona</button></div>
         <div class="x-trust" id="xTrust"></div>
         <div class="x-shot">
-          <div class="x-frame" aria-label="Tela do Haul: uma bolsa é vendida no Mercado Livre e sai dos outros canais">
-            <div class="x-chrome"><i></i><i></i><i></i><span>app.haul.com.br/estoque</span></div>
+          <div class="x-frame" aria-label="Tela do Plist: uma bolsa é vendida no Mercado Livre e sai dos outros canais">
+            <div class="x-chrome"><i></i><i></i><i></i><span>app.plist.com.br/estoque</span></div>
             <div class="x-app">
-              <div class="x-side"><div class="lg"><i>H</i>Haul</div><div class="it">Inventário</div><div class="it">Tarefas <em id="xTasks">2</em></div><div class="it on">Estoque</div><div class="it">Pedidos</div><div class="it">Resultados</div><div class="it">Canais</div></div>
+              <div class="x-side"><div class="lg"><i aria-hidden="true"></i>Plist</div><div class="it">Inventário</div><div class="it">Tarefas <em id="xTasks">2</em></div><div class="it on">Estoque</div><div class="it">Pedidos</div><div class="it">Resultados</div><div class="it">Canais</div></div>
               <div class="x-main">
                 <h4>Estoque</h4>
                 <div class="x-kpis"><div><small>Vendas hoje</small><b id="xSales">R$ 2.340</b></div><div><small>Anúncios no ar</small><b id="xLive">47</b></div><div><small>A enviar</small><b id="xShip">2</b></div></div>
@@ -819,7 +835,7 @@ table.cmp{min-width:720px}
       </div></div>
 
       <section class="x-sec" id="s-recursos"><div class="x-w">
-        <div class="x-hd c"><p class="x-eyb">Recursos</p><h2>Tudo o que acontece antes e depois da venda</h2><p>Do anúncio à etiqueta, o Haul cuida do trabalho repetido para você cuidar das peças.</p></div>
+        <div class="x-hd c"><p class="x-eyb">Recursos</p><h2>Tudo o que acontece antes e depois da venda</h2><p>Do anúncio à etiqueta, o Plist cuida do trabalho repetido para você cuidar das peças.</p></div>
         <div class="x-bento">
           <div class="x-card w4"><h3>Inventário sincronizado</h3><p>Conecte as contas e os anúncios entram num estoque só. Preço e quantidade ficam iguais em todos os canais, e anúncios da mesma peça viram um item.</p>
             <div class="x-vis x-chips" id="xChips"></div></div>
@@ -833,7 +849,7 @@ table.cmp{min-width:720px}
             <div class="x-vis x-bars"><i style="height:34%"></i><i style="height:52%"></i><i style="height:41%"></i><i style="height:66%"></i><i style="height:58%"></i><i style="height:80%"></i><i class="hi" style="height:96%"></i></div></div>
           <div class="x-card w3"><h3>Aviso no WhatsApp na hora da venda</h3><p>Com o que sobra depois das taxas, o prazo de despacho e a caixa onde a peça está. Horário de silêncio à noite.</p>
             <div class="x-vis"><div class="x-bub"><b>Vendido no Mercado Livre:</b> Jaqueta Carhartt Detroit, R$ 690,00 (sobram R$ 607,20)<br>Retirada de Shopee, Shein ✓<br>Despachar até amanhã · Caixa A-07<small>14:32 ✓✓</small></div></div></div>
-          <div class="x-card w3"><h3>Seguro desde o primeiro dia</h3><p>A conexão com cada marketplace é feita na página dele: o Haul nunca vê a sua senha. Dados de compradores seguem a LGPD e cada impressão de etiqueta fica registrada.</p>
+          <div class="x-card w3"><h3>Seguro desde o primeiro dia</h3><p>A conexão com cada marketplace é feita na página dele: o Plist nunca vê a sua senha. Dados de compradores seguem a LGPD e cada impressão de etiqueta fica registrada.</p>
             <div class="x-vis x-chips"><span class="x-stock">🔒 Autorização oficial</span><span class="x-stock">LGPD</span><span class="x-stock">Duas etapas no login</span></div></div>
         </div>
       </div></section>
@@ -841,7 +857,7 @@ table.cmp{min-width:720px}
       <section class="x-sec alt" id="s-como"><div class="x-w">
         <div class="x-hd"><p class="x-eyb">Como funciona</p><h2>Do cadastro da peça ao dinheiro na conta</h2><p>Quatro etapas, sempre na mesma ordem.</p></div>
         <div class="x-steps">
-          <div class="x-step"><div class="n">1</div><h3>Conecte suas contas</h3><p>Autorize o Haul em cada marketplace. Os anúncios que você já tem entram no inventário.</p></div>
+          <div class="x-step"><div class="n">1</div><h3>Conecte suas contas</h3><p>Autorize o Plist em cada marketplace. Os anúncios que você já tem entram no inventário.</p></div>
           <div class="x-step"><div class="n">2</div><h3>Cadastre uma vez</h3><p>A IA escreve o anúncio a partir das fotos e cada canal confere as próprias regras antes de publicar.</p></div>
           <div class="x-step"><div class="n">3</div><h3>Vendeu, saiu dos outros</h3><p>A peça é travada no instante da venda e sai dos outros canais em segundos. O aviso chega no seu WhatsApp.</p></div>
           <div class="x-step"><div class="n">4</div><h3>Imprima e despache</h3><p>A etiqueta sai direto na térmica. As Tarefas mostram o que falta até o dinheiro ser liberado.</p></div>
@@ -859,10 +875,10 @@ table.cmp{min-width:720px}
         <div class="x-hd"><p class="x-eyb">Dúvidas</p><h2>Perguntas frequentes</h2><p>Não achou o que procurava? Fale com a gente pelo WhatsApp depois de criar a conta.</p></div>
         <div>
           <details><summary>Preciso ter CNPJ?</summary><p>Não. Com CPF você vende no Mercado Livre, na Shopee, na Amazon e no Facebook Marketplace, e as etiquetas saem com declaração de conteúdo. Shein e Magalu exigem CNPJ; MEI serve.</p></details>
-          <details><summary>E se a mesma peça vender em dois lugares?</summary><p>O Haul trava a peça no instante da primeira venda e tira os outros anúncios ao mesmo tempo. Se algum canal não responder, você recebe um alerta urgente para tirar à mão.</p></details>
-          <details><summary>Preciso de impressora térmica?</summary><p>Não. Dá para imprimir em A4 numa impressora comum. Com térmica (Zebra, Elgin, Argox), a etiqueta sai direto pelo Haul Agente, sem abrir janela.</p></details>
+          <details><summary>E se a mesma peça vender em dois lugares?</summary><p>O Plist trava a peça no instante da primeira venda e tira os outros anúncios ao mesmo tempo. Se algum canal não responder, você recebe um alerta urgente para tirar à mão.</p></details>
+          <details><summary>Preciso de impressora térmica?</summary><p>Não. Dá para imprimir em A4 numa impressora comum. Com térmica (Zebra, Elgin, Argox), a etiqueta sai direto pelo Plist Agente, sem abrir janela.</p></details>
           <details><summary>Como funciona o teste grátis?</summary><p>São 30 dias com tudo liberado, sem cartão. Cinco dias antes do fim avisamos por e-mail e WhatsApp. Sem pagamento, a conta fica só leitura até você escolher um plano.</p></details>
-          <details><summary>O Haul vê a minha senha dos marketplaces?</summary><p>Não. A conexão é feita na página de cada marketplace, que dá ao Haul uma autorização que você pode cancelar quando quiser.</p></details>
+          <details><summary>O Plist vê a minha senha dos marketplaces?</summary><p>Não. A conexão é feita na página de cada marketplace, que dá ao Plist uma autorização que você pode cancelar quando quiser.</p></details>
           <details><summary>Posso cancelar quando quiser?</summary><p>Pode. Não há fidelidade. Seus anúncios continuam nos marketplaces; só param de sincronizar.</p></details>
         </div>
       </div></section>
@@ -875,18 +891,18 @@ table.cmp{min-width:720px}
 
       <footer class="x-foot"><div class="x-w">
         <div class="cols">
-          <div><button class="x-logo" type="button" data-scroll="s-top" aria-label="Voltar ao topo"><span class="mk">H</span>Haul</button><p class="muted" style="font-size:.92rem;margin-top:12px;max-width:32ch">Multicanal para brechós e revendedores no Brasil.</p></div>
+          <div><button class="x-logo" type="button" data-scroll="s-top" aria-label="Voltar ao topo"><span class="mk" aria-hidden="true"></span>Plist</button><p class="muted" style="font-size:.92rem;margin-top:12px;max-width:32ch">Multicanal para brechós e revendedores no Brasil.</p></div>
           <div><h5>Produto</h5><button type="button" data-scroll="s-recursos">Recursos</button><button type="button" data-scroll="s-como">Como funciona</button><button type="button" data-scroll="s-planos">Planos</button></div>
           <div><h5>Conta</h5><button type="button" data-go="login">Entrar</button><button type="button" data-start="pro">Criar conta grátis</button></div>
           <div><h5>Ajuda</h5><button type="button" data-scroll="s-faq">Perguntas frequentes</button></div>
         </div>
-        <div class="bot"><span>© 2026 Haul · protótipo</span><span>Telas, compradores e endereços são exemplos.</span></div>
+        <div class="bot"><span>© 2026 Plist · protótipo</span><span>Telas, compradores e endereços são exemplos.</span></div>
       </div></footer>
     </section>
     <!-- ENTRAR -->
     <section class="view" id="v-login" hidden>
       <div class="signup">
-        <div class="frtop"><div class="brand"><span class="brand-mark">H</span><b>Haul</b></div><button class="backsite" type="button" data-go="site">← Voltar ao site</button></div>
+        <div class="frtop"><div class="brand"><span class="brand-mark" aria-hidden="true"></span><b>Plist</b></div><button class="backsite" type="button" data-go="site">← Voltar ao site</button></div>
         <form class="panel" id="liForm" novalidate>
           <h1>Entrar</h1>
           <p class="muted" style="margin:4px 0 16px">Acesse seu inventário, pedidos e tarefas.</p>
@@ -906,7 +922,7 @@ table.cmp{min-width:720px}
     <!-- CADASTRO (primeira entrada) -->
     <section class="view" id="v-signup" hidden>
       <div class="signup">
-        <div class="frtop"><div class="brand"><span class="brand-mark">H</span><b>Haul</b></div><button class="backsite" type="button" data-go="site">← Voltar ao site</button></div>
+        <div class="frtop"><div class="brand"><span class="brand-mark" aria-hidden="true"></span><b>Plist</b></div><button class="backsite" type="button" data-go="site">← Voltar ao site</button></div>
         <p class="pill p-accent" id="suPlan" style="margin-bottom:10px">30 dias grátis, sem cartão</p>
         <form class="panel" id="suForm" novalidate>
           <h1>Crie sua conta</h1>
@@ -926,11 +942,11 @@ table.cmp{min-width:720px}
 
     <!-- PRIMEIROS PASSOS (uma vez, depois do cadastro) -->
     <section class="view" id="v-onboarding" hidden>
-      <div class="frtop"><div class="brand"><span class="brand-mark">H</span><b>Haul</b></div><button class="btn" type="button" id="onbExit">Ir para o sistema</button></div>
+      <div class="frtop"><div class="brand"><span class="brand-mark" aria-hidden="true"></span><b>Plist</b></div><button class="btn" type="button" id="onbExit">Ir para o sistema</button></div>
       <div class="onb-head">
         <div>
           <p class="eyebrow">Conta criada</p>
-          <h1 id="onbHello">Boas-vindas ao Haul</h1>
+          <h1 id="onbHello">Boas-vindas ao Plist</h1>
           <p class="sub muted" style="margin-top:4px;max-width:62ch">Sete passos para sair vendendo em todos os canais. Dá para fazer em qualquer ordem e voltar aqui quando quiser.</p>
           <div style="margin-top:14px;max-width:420px"><div style="display:flex;justify-content:space-between;font-size:.84rem"><b id="onbCount"></b><span class="muted" id="onbPct"></span></div><div class="prog"><i id="onbBar"></i></div></div>
         </div>
@@ -973,7 +989,7 @@ table.cmp{min-width:720px}
           <rect x="96" y="158" width="128" height="6" rx="3" fill="var(--sunk)"/>
         </svg>
         <h1>Seu inventário num lugar só</h1>
-        <p>O Haul traz os anúncios das contas conectadas, junta os que são da mesma peça e mantém preço e quantidade iguais em todos os canais.</p>
+        <p>O Plist traz os anúncios das contas conectadas, junta os que são da mesma peça e mantém preço e quantidade iguais em todos os canais.</p>
         <button class="btn primary" type="button" id="syncAll"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 4v5h-5"/></svg> Sincronizar anúncios</button>
         <p class="muted" id="syncStatus" style="font-size:.84rem;margin-top:10px" aria-live="polite"></p>
       </div>
@@ -1148,8 +1164,8 @@ table.cmp{min-width:720px}
           <tr><td>Shein</td><td>A Shein, pela Central do Vendedor</td><td>Etiqueta da logística Shein</td><td>Exige CNPJ e NF-e. Coleta, ponto de entrega ou centro logístico.</td></tr>
           <tr><td>Amazon</td><td>A Amazon no DBA; você no envio próprio</td><td>Etiqueta Amazon ou a sua</td><td>No FBA a Amazon despacha. O endereço do comprador pela API exige aprovação de acesso a dados pessoais.</td></tr>
           <tr><td>Magalu</td><td>Magalu Entregas</td><td>Etiqueta Magalu</td><td>A confirmar na central do Magalu antes do produto real.</td></tr>
-          <tr><td>Facebook Marketplace</td><td>Você, pelo Haul (classificado)</td><td>PDF 10×15, A4 ou ZPL</td><td>Sem checkout nem logística no Brasil (a confirmar). Retirada em mãos não precisa de etiqueta.</td></tr>
-          <tr><td>Venda direta</td><td>Você, pelo Haul</td><td>PDF 10×15, A4 ou ZPL</td><td>Para ter rastreio, a postagem vem do contrato com os Correios ou de uma plataforma de frete.</td></tr>
+          <tr><td>Facebook Marketplace</td><td>Você, pelo Plist (classificado)</td><td>PDF 10×15, A4 ou ZPL</td><td>Sem checkout nem logística no Brasil (a confirmar). Retirada em mãos não precisa de etiqueta.</td></tr>
+          <tr><td>Venda direta</td><td>Você, pelo Plist</td><td>PDF 10×15, A4 ou ZPL</td><td>Para ter rastreio, a postagem vem do contrato com os Correios ou de uma plataforma de frete.</td></tr>
         </table></div>
       </div>
       <div class="panel" style="margin-top:18px">
@@ -1158,7 +1174,7 @@ table.cmp{min-width:720px}
           <div class="step"><h3>Detectar</h3><p>Os avisos das APIs chegam em segundos. Canais sem aviso são conferidos a cada 60 segundos.</p></div>
           <div class="step"><h3>Travar</h3><p>A peça é travada assim que uma venda chega, para um segundo comprador não fechar enquanto os anúncios saem.</p></div>
           <div class="step"><h3>Tirar</h3><p>Os outros anúncios saem ao mesmo tempo. Falhas tentam de novo e depois viram alerta.</p></div>
-          <div class="step"><h3>Conferir</h3><p>O Haul relê cada canal para confirmar que o anúncio sumiu e anota o resultado.</p></div>
+          <div class="step"><h3>Conferir</h3><p>O Plist relê cada canal para confirmar que o anúncio sumiu e anota o resultado.</p></div>
         </div>
       </div>
     </section>
@@ -1176,14 +1192,14 @@ table.cmp{min-width:720px}
             <div class="opts">
               <label class="opt"><input type="checkbox" id="n-wa"><span><b>WhatsApp</b><small>Pela API oficial do WhatsApp Business, com confirmação de leitura.</small></span></label>
               <label class="opt"><input type="checkbox" id="n-sms"><span><b>SMS</b><small>Funciona em qualquer celular. Responda SAIR para parar.</small></span></label>
-              <label class="opt"><input type="checkbox" id="n-push"><span><b>Notificação no celular</b><small>Pelo app do Haul. Grátis e sem número de telefone.</small></span></label>
+              <label class="opt"><input type="checkbox" id="n-push"><span><b>Notificação no celular</b><small>Pelo app do Plist. Grátis e sem número de telefone.</small></span></label>
               <label class="opt"><input type="checkbox" id="n-email"><span><b>E-mail</b><small id="n-email-l"></small></span></label>
             </div>
             <div class="form" style="margin-top:14px">
               <div class="f s3"><label for="n-phone">Celular</label><input id="n-phone" type="tel" autocomplete="off"><span class="hint" id="n-phone-h"></span></div>
               <div class="f s3"><label for="n-mail">E-mail</label><input id="n-mail" type="email" autocomplete="off"></div>
             </div>
-            <label class="check"><input type="checkbox" id="n-waok"> Aceito receber mensagens do Haul no WhatsApp sobre minhas vendas e minha conta.</label>
+            <label class="check"><input type="checkbox" id="n-waok"> Aceito receber mensagens do Plist no WhatsApp sobre minhas vendas e minha conta.</label>
             <label class="check"><input type="checkbox" id="n-fb"> Se o WhatsApp não entregar em 30 segundos, mandar por SMS.</label>
           </div>
           <div class="panel">
@@ -1524,7 +1540,7 @@ document.addEventListener("click", e => {
 
 // ---------- estoque ----------
 let filter = "all", query = "", mode = "grid";
-try { if (localStorage.getItem("haul-mode") === "list") mode = "list"; } catch (e) {}
+try { if (localStorage.getItem("plist-mode") === "list") mode = "list"; } catch (e) {}
 const selected = new Set();
 const FILTERS = [["all", "Todos"], ["active", "No ar"], ["attention", "Precisa de atenção"], ["draft", "Rascunhos"], ["sold", "Vendidos"]];
 function renderFilters() {
@@ -1604,7 +1620,7 @@ $("#list").addEventListener("click", e => {
 function setMode(m) {
   mode = m;
   $$(".seg [data-mode]").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === m));
-  try { localStorage.setItem("haul-mode", m); } catch (e) {}
+  try { localStorage.setItem("plist-mode", m); } catch (e) {}
   renderList();
 }
 $(".seg").addEventListener("click", e => { const b = e.target.closest("[data-mode]"); if (b) setMode(b.dataset.mode); });
@@ -1673,7 +1689,7 @@ function renderDrawer() {
   if (o) $("#dLabel").onclick = () => openLabel([o]);
   $$("#drawer [data-act]").forEach(b => b.onclick = () => b.dataset.act === "sold" ? simulateSale(it, b.dataset.ch) : runJobs([{ it, ch: b.dataset.ch }]));
 }
-// Galeria: anúncios feitos no Haul guardam todas as fotos enviadas; a primeira é a capa.
+// Galeria: anúncios feitos no Plist guardam todas as fotos enviadas; a primeira é a capa.
 let galIdx = 0, galFor = null;
 const photosOf = it => it.photos && it.photos.length ? it.photos : it.img ? [it.img] : [];
 function galleryHTML(it) {
@@ -1984,17 +2000,17 @@ $("#printAll").onclick = () => {
 
 // ---------- etiquetas ----------
 const lblOpts = { fmt: "pdf10", fiscal: "danfe", pick: true, dest: "agent", printer: "zebra" };
-// Haul Agente: programa local (127.0.0.1:17891) que recebe o ZPL e manda direto para a impressora,
+// Plist Agente: programa local (127.0.0.1:17891) que recebe o ZPL e manda direto para a impressora,
 // como o Zappy Agente faz com o cupom do PDV. Aqui ele é simulado: a página do protótipo não alcança o computador.
 const PRINTERS = [
   { id: "zebra", name: "Zebra ZD220 · USB", conn: "windows:ZDesigner ZD220" },
   { id: "elgin", name: "Elgin L42 Pro · rede 192.168.0.50", conn: "rede:192.168.0.50:9100" },
   { id: "off", name: "Simular agente desligado", conn: "" },
 ];
-try { const s = JSON.parse(localStorage.getItem("haul-label") || "null"); if (s && s.fmt) Object.assign(lblOpts, s); } catch (e) {}
-const saveOpts = () => { try { localStorage.setItem("haul-label", JSON.stringify(lblOpts)); } catch (e) {} };
+try { const s = JSON.parse(localStorage.getItem("plist-label") || "null"); if (s && s.fmt) Object.assign(lblOpts, s); } catch (e) {}
+const saveOpts = () => { try { localStorage.setItem("plist-label", JSON.stringify(lblOpts)); } catch (e) {} };
 const service = o => o.ch === "direta" ? (o.mode === "Motoboy" ? "Entrega por motoboy" : "Correios · PAC") : o.mode === "Envio próprio" ? "Envio próprio · Correios" : `${CH[o.ch].name} · ${o.mode}`;
-const barValue = o => o.track || "HAUL" + o.no;
+const barValue = o => o.track || "PLIST" + o.no;
 const deadline = o => { const d = new Date(o.at); d.setDate(d.getDate() + (o.mode === "Coleta" ? 1 : 2)); return ddmm(d); };
 const keyFmt = k => k.replace(/(\d{4})(?=\d)/g, "$1 ");
 const addr1 = b => `${b.street}, ${b.number}${b.compl ? " · " + b.compl : ""}`;
@@ -2003,7 +2019,7 @@ function labelHTML(o) {
   const b = o.buyer, k = labelKind(o);
   return `<div class="label">${k === "official" ? `<span class="sim">SIMULAÇÃO</span>` : ""}
     <div class="sec"><div class="hd"><span>${esc(service(o))}</span><span>Ped. ${o.no}</span></div>
-      <svg class="bc" data-v="${esc(barValue(o))}"></svg><div class="trk">${esc(o.track || "Pedido HAUL" + o.no)}</div></div>
+      <svg class="bc" data-v="${esc(barValue(o))}"></svg><div class="trk">${esc(o.track || "Pedido PLIST" + o.no)}</div></div>
     <div class="sec"><div class="cap">Destinatário</div><div class="nm">${esc(b.name)}</div><div>${esc(addr1(b))}</div><div>${esc(b.bairro)}</div>
       <div style="display:flex;align-items:baseline;gap:10px;margin-top:3px;flex-wrap:wrap"><span class="cep">${esc(b.cep)}</span><span class="city">${esc(b.city)} / ${esc(b.uf)}</span></div><div class="cap" style="margin-top:2px">${esc(b.country)}</div></div>
     <div class="sec"><div class="cap">Remetente</div><div>${esc(SENDER.name)} · ${esc(SENDER.street)}</div><div>${esc(SENDER.bairro)} · ${esc(SENDER.cep)} ${esc(SENDER.city)}/${esc(SENDER.uf)}</div></div>
@@ -2036,7 +2052,7 @@ function zplFor(o) {
   return [
     "^XA", "^CI28", "^PW812", "^LL1218",
     `^FO40,40^A0N,32,32^FD${zf(service(o).toUpperCase())}^FS`, `^FO560,40^A0N,30,30^FDPED ${o.no}^FS`,
-    `^FO40,96^BY3^BCN,150,N,N,N^FD${zf(barValue(o))}^FS`, `^FO40,262^A0N,30,30^FD${zf(o.track || "PEDIDO HAUL" + o.no)}^FS`,
+    `^FO40,96^BY3^BCN,150,N,N,N^FD${zf(barValue(o))}^FS`, `^FO40,262^A0N,30,30^FD${zf(o.track || "PEDIDO PLIST" + o.no)}^FS`,
     "^FO30,310^GB752,3,3^FS",
     "^FO40,330^A0N,24,24^FDDESTINATARIO^FS", `^FO40,366^A0N,46,46^FD${zf(b.name.toUpperCase())}^FS`,
     `^FO40,426^A0N,32,32^FD${zf(addr1(b))}^FS`, `^FO40,466^A0N,32,32^FD${zf(b.bairro)}^FS`,
@@ -2057,8 +2073,8 @@ function drawBarcodes(root) {
 function kindNote(list) {
   const own = list.filter(o => labelKind(o) === "own").length, off = list.length - own;
   const parts = [];
-  if (off) parts.push(`<b>${plural(off, "etiqueta oficial", "etiquetas oficiais")} do marketplace.</b> No produto real o Haul baixa o arquivo pela API (no Mercado Livre, PDF ou ZPL assim que o envio fica pronto para despachar). O código de barras é o do marketplace: etiqueta feita por você não passa na coleta. Aqui você vê uma prévia simulada.`);
-  if (own) parts.push(`<b>${plural(own, "etiqueta própria", "etiquetas próprias")}</b> (venda direta ou envio próprio), gerada pelo Haul. Para ter rastreio, compre a postagem no contrato com os Correios ou numa plataforma de frete e cole as duas.`);
+  if (off) parts.push(`<b>${plural(off, "etiqueta oficial", "etiquetas oficiais")} do marketplace.</b> No produto real o Plist baixa o arquivo pela API (no Mercado Livre, PDF ou ZPL assim que o envio fica pronto para despachar). O código de barras é o do marketplace: etiqueta feita por você não passa na coleta. Aqui você vê uma prévia simulada.`);
+  if (own) parts.push(`<b>${plural(own, "etiqueta própria", "etiquetas próprias")}</b> (venda direta ou envio próprio), gerada pelo Plist. Para ter rastreio, compre a postagem no contrato com os Correios ou numa plataforma de frete e cole as duas.`);
   return parts.join("<br><br>");
 }
 let lblList = [], lblTab = "label";
@@ -2076,7 +2092,7 @@ function openLabel(list) {
       <div><div class="ptab seg" role="group" aria-label="Documento" id="lblTabs"></div><div class="paper" id="lblPaper"></div>${one ? "" : `<p class="muted" style="font-size:.78rem;margin-top:6px">Prévia do primeiro pedido.</p>`}</div>
       <div class="lbl-opts">
         <fieldset><legend>Imprimir em</legend>
-          <label class="radio"><input type="radio" name="dest" value="agent"><span style="flex:1;min-width:0"><b>Impressora térmica, direto</b><small>Pelo Haul Agente, sem janela de impressão (o mesmo jeito do Zappy Agente no PDV)</small>
+          <label class="radio"><input type="radio" name="dest" value="agent"><span style="flex:1;min-width:0"><b>Impressora térmica, direto</b><small>Pelo Plist Agente, sem janela de impressão (o mesmo jeito do Zappy Agente no PDV)</small>
             <select id="lblPrinter" aria-label="Impressora">${PRINTERS.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join("")}</select>
             <span class="agent" id="agentState"></span></span></label>
           <label class="radio"><input type="radio" name="dest" value="browser"><span><b>Janela de impressão do navegador</b><small>Qualquer impressora instalada no computador</small></span></label>
@@ -2151,7 +2167,7 @@ async function printLabels() {
   const st = $("#lblStatus"), list = lblList, pages = pagesFor(list), btn = $("#lblPrint");
   if (lblOpts.dest === "agent") {
     const p = printerOf();
-    if (p.id === "off") { st.textContent = "O Haul Agente não respondeu. Abra o agente no computador da expedição, ou use a janela do navegador ou o PDF."; return; }
+    if (p.id === "off") { st.textContent = "O Plist Agente não respondeu. Abra o agente no computador da expedição, ou use a janela do navegador ou o PDF."; return; }
     btn.disabled = true;
     st.textContent = `Enviando ${plural(pages.length, "página")} em ZPL para ${p.name}…`;
     await sleep(700 + pages.length * 220);
@@ -2167,7 +2183,7 @@ async function printLabels() {
   drawBarcodes(area);
   $("#pageSize").textContent = `@media print{@page{size:${a4 ? "A4" : "100mm 150mm"};margin:${a4 ? "5mm" : "0"}}}`;
   try { window.print(); } catch (e) {}
-  st.textContent = "Se a janela de impressão não abriu (dentro do Claude ela é bloqueada), use o Haul Agente ou baixe o PDF.";
+  st.textContent = "Se a janela de impressão não abriu (dentro do Claude ela é bloqueada), use o Plist Agente ou baixe o PDF.";
   markPrinted(list, "janela do navegador");
 }
 window.addEventListener("afterprint", () => { $("#printArea").innerHTML = ""; });
@@ -2188,7 +2204,7 @@ function pdfLabel(doc, o, x, y, s) {
   doc.setLineWidth(0.4 * s); doc.rect(x, y, W, 150 * s);
   T(service(o).toUpperCase(), 4, 7, 9, true); T("PED. " + o.no, 74, 7, 9, true);
   doc.addImage(bcImage(barValue(o)), "PNG", x + P, y + 10 * s, W - 2 * P, 22 * s);
-  T(o.track || "Pedido HAUL" + o.no, 4, 37, 9, false);
+  T(o.track || "Pedido PLIST" + o.no, 4, 37, 9, false);
   line(41);
   T("DESTINATÁRIO", 4, 46, 7, true);
   T(b.name.toUpperCase(), 4, 53, 13, true, W - 2 * P);
@@ -2496,7 +2512,7 @@ Regras:
   } finally {
     $("#askGo").disabled = false; $("#askStop").hidden = true; askCtl = null;
     const src = document.createElement("span"); src.className = "src";
-    src.textContent = "Resposta do Claude com base no conhecimento dele e nos números da sua loja, sem dados ao vivo dos marketplaces. No produto real, o Haul juntaria as tendências de busca do Mercado Livre (API de tendências, atualizada toda semana) antes de perguntar.";
+    src.textContent = "Resposta do Claude com base no conhecimento dele e nos números da sua loja, sem dados ao vivo dos marketplaces. No produto real, o Plist juntaria as tendências de busca do Mercado Livre (API de tendências, atualizada toda semana) antes de perguntar.";
     out.appendChild(src);
   }
 };
@@ -2533,7 +2549,7 @@ $("#stale").addEventListener("click", e => {
 const ago = s => s < 60 ? `há ${s} s` : s < 3600 ? `há ${Math.round(s / 60)} min` : s < 86400 ? `há ${Math.round(s / 3600)} h` : `há ${Math.round(s / 86400)} dias`;
 function renderFeeTable() {
   const EX = [[59.9, "Moda feminina"], [150, "Moda masculina"], [600, "Bolsas e acessórios"]];
-  $("#feeIntro").textContent = `Taxas usadas no Haul (pesquisa de ${FEE_UPDATED}, fontes públicas). Os valores mudam com frequência: confira na central de cada canal antes de precificar.`;
+  $("#feeIntro").textContent = `Taxas usadas no Plist (pesquisa de ${FEE_UPDATED}, fontes públicas). Os valores mudam com frequência: confira na central de cada canal antes de precificar.`;
   const realBy = Object.fromEntries(feeByChannel(orders.filter(o => o.daysAgo < 90)).map(x => [x.c, x]));
   $("#feeTable").innerHTML = `<tr><th>Canal</th><th>Como cobra</th>${EX.map(([p, c]) => `<th class="num">${money(p)}<span class="sub2" style="text-transform:none;letter-spacing:0">${c}</span></th>`).join("")}<th class="num">Real nas suas vendas<span class="sub2" style="text-transform:none;letter-spacing:0">90 dias</span></th></tr>` +
     CHS.map(c => `<tr><td>${badge(c, "live")} ${CH[c].name}</td><td style="min-width:280px">${esc(FEE_RULES[c])}</td>${EX.map(([p, cat]) => `<td class="num">−${money(fee(c, p, cat)).slice(3)}<span class="sub2">recebe ${money(receive(c, p, cat))}</span></td>`).join("")}<td class="num">${realBy[c] ? `${pctTxt(realBy[c].eff)}<span class="sub2">${Math.abs(realBy[c].diff) < 1 ? "igual à tabela" : `${realBy[c].diff > 0 ? "+" : "−"}${money0(Math.abs(realBy[c].diff))} vs tabela`}</span>` : "<span class='muted'>—</span>"}</td></tr>`).join("");
@@ -2596,19 +2612,19 @@ function compose(ev, d) {
       const o = d.order, k = o ? labelKind(o) : "own";
       const l3 = !o ? "" : k === "none" ? `Envio ${o.mode}: o ${CH[o.ch].name} despacha.` : `Envio ${o.mode} · despachar até ${deadline(o)} · Caixa ${d.it.bin || "—"}`;
       const lines = [`*Vendido no ${CH[d.ch].name}:* ${short(d.it)}, ${money(d.it.price)} (sobram ${money(after)} depois das taxas)`, l2, l3];
-      if (o && k !== "none") lines.push("Etiqueta pronta no Haul.");
+      if (o && k !== "none") lines.push("Etiqueta pronta no Plist.");
       return { title: `Vendido no ${CH[d.ch].name} · ${money(d.it.price)}`, lines: lines.filter(Boolean) };
     }
-    case "delistFail": return { title: "Atenção: pode vender duas vezes", lines: [`*Atenção:* ${short(d.it)} foi vendida no ${CH[d.sold].name} mas continua no ar no ${CH[d.still].name}.`, "O Haul tenta de novo a cada minuto. Se puder, tire o anúncio à mão."] };
-    case "listFail": return { title: `${plural(d.n, "anúncio")} não ${d.n === 1 ? "publicou" : "publicaram"}`, lines: [`*${plural(d.n, "anúncio")} não ${d.n === 1 ? "publicou" : "publicaram"}.*`, d.reason.replace(/\.$/, "") + ".", "Abra o Haul para tentar de novo."] };
-    case "signin": return { title: `Acesso ao ${CH[d.ch].name} expirou`, lines: [`*O acesso ao ${CH[d.ch].name} expirou.*`, "Os anúncios novos ali ficam parados até você reconectar no Haul."] };
+    case "delistFail": return { title: "Atenção: pode vender duas vezes", lines: [`*Atenção:* ${short(d.it)} foi vendida no ${CH[d.sold].name} mas continua no ar no ${CH[d.still].name}.`, "O Plist tenta de novo a cada minuto. Se puder, tire o anúncio à mão."] };
+    case "listFail": return { title: `${plural(d.n, "anúncio")} não ${d.n === 1 ? "publicou" : "publicaram"}`, lines: [`*${plural(d.n, "anúncio")} não ${d.n === 1 ? "publicou" : "publicaram"}.*`, d.reason.replace(/\.$/, "") + ".", "Abra o Plist para tentar de novo."] };
+    case "signin": return { title: `Acesso ao ${CH[d.ch].name} expirou`, lines: [`*O acesso ao ${CH[d.ch].name} expirou.*`, "Os anúncios novos ali ficam parados até você reconectar no Plist."] };
     case "offer": return { title: `Oferta no ${CH[d.ch].name} · ${money(d.amt)}`, lines: [`*Nova oferta no ${CH[d.ch].name}:* ${money(d.amt)} por ${short(d.it)}`, `Anunciada por ${money(d.it.price)}. Sobrariam ${money(d.amt - fee(d.ch, d.amt, d.it.cat))}.`, "Responda no app do marketplace em até 24 horas."] };
     case "summary": {
       const t = orders.filter(o => o.daysAgo === 0);
-      const lines = ["*Seu resumo do Haul*", `${plural(t.length, "venda")} hoje · ${money(t.reduce((n, o) => n + o.price, 0))} (${money(t.reduce((n, o) => n + o.profit, 0))} de lucro)`, `${plural(toShipN(), "pedido")} a enviar, etiquetas no Haul`];
+      const lines = ["*Seu resumo do Plist*", `${plural(t.length, "venda")} hoje · ${money(t.reduce((n, o) => n + o.price, 0))} (${money(t.reduce((n, o) => n + o.profit, 0))} de lucro)`, `${plural(toShipN(), "pedido")} a enviar, etiquetas no Plist`];
       if (held.length) lines.push(`Enquanto estava em silêncio: ${held.map(h => h.title).join("; ")}`);
       held.length = 0;
-      return { title: "Seu resumo do Haul", lines };
+      return { title: "Seu resumo do Plist", lines };
     }
   }
 }
@@ -2672,14 +2688,14 @@ function phoneHTML(k) {
   const tab = ptab[k], list = inbox.filter(x => x.via === tab), newest = inbox[inbox.length - 1], tm = hhmm(new Date());
   let body;
   if (tab === "push") {
-    body = `<div class="lock"><div class="lclock">${tm}</div>${list.length ? list.slice().reverse().map(x => `<div class="ncard${x.fresh ? " fresh" : ""}"><div class="nh"><span>HAUL</span><span>${hhmm(x.t)}</span></div><b>${esc(x.m.title)}</b><div>${esc(plain(x.m.lines[1] || x.m.lines[0]))}</div></div>`).join("") : `<p class="pempty">As notificações do app do Haul aparecem aqui.</p>`}</div>`;
+    body = `<div class="lock"><div class="lclock">${tm}</div>${list.length ? list.slice().reverse().map(x => `<div class="ncard${x.fresh ? " fresh" : ""}"><div class="nh"><span>PLIST</span><span>${hhmm(x.t)}</span></div><b>${esc(x.m.title)}</b><div>${esc(plain(x.m.lines[1] || x.m.lines[0]))}</div></div>`).join("") : `<p class="pempty">As notificações do app do Plist aparecem aqui.</p>`}</div>`;
   } else {
     const head = tab === "wa"
-      ? `<div class="pchat-h"><span class="brand-mark sm">H</span><div><b>Haul Avisos</b><small>Conta comercial</small></div></div>`
-      : `<div class="pchat-h"><span class="pav">#</span><div><b>Haul</b><small>SMS</small></div></div>`;
+      ? `<div class="pchat-h"><span class="brand-mark sm" aria-hidden="true"></span><div><b>Plist Avisos</b><small>Conta comercial</small></div></div>`
+      : `<div class="pchat-h"><span class="pav">#</span><div><b>Plist</b><small>SMS</small></div></div>`;
     body = head + `<div class="pthread">${list.length ? list.map(x => bubble(x, tab)).join("") : `<p class="pempty">${tab === "wa" ? "As mensagens de WhatsApp" : "Os SMS"} aparecem aqui. Simule uma venda para ver.</p>`}</div>`;
   }
-  const banner = newest && newest.fresh ? `<div class="pbanner"><div class="nh"><span>${newest.via === "wa" ? "WHATSAPP" : newest.via === "sms" ? "MENSAGENS" : "HAUL"}</span><span>agora</span></div><b>${esc(newest.m.title)}</b><div>${esc(plain(newest.m.lines[1] || newest.m.lines[0]))}</div></div>` : "";
+  const banner = newest && newest.fresh ? `<div class="pbanner"><div class="nh"><span>${newest.via === "wa" ? "WHATSAPP" : newest.via === "sms" ? "MENSAGENS" : "PLIST"}</span><span>agora</span></div><b>${esc(newest.m.title)}</b><div>${esc(plain(newest.m.lines[1] || newest.m.lines[0]))}</div></div>` : "";
   const cnt = t => { const n = inbox.filter(x => x.via === t).length; return n ? ` (${n})` : ""; };
   return `<div class="phone"><div class="pnotch"></div><div class="pscreen"><div class="pstat"><span>${tm}</span><span>5G</span></div><div class="ptabs">${[["wa", "WhatsApp"], ["sms", "SMS"], ["push", "Tela de bloqueio"]].map(([t, l]) => `<button type="button" data-pt="${k}:${t}" aria-pressed="${tab === t}">${l}${cnt(t)}</button>`).join("")}</div>${body}${banner}</div></div>`;
 }
@@ -2703,7 +2719,7 @@ function renderAlerts() {
   now.className = "pill " + (q ? "p-warn" : "p-good");
   now.textContent = (q ? "Silêncio" : "Enviando") + " · " + fmtHM(nowHM());
   $("#q-held").textContent = held.length ? `${plural(held.length, "mensagem guardada", "mensagens guardadas")} para o resumo da manhã` : "Nada guardado agora";
-  $("#n-phone-h").textContent = phoneOk() ? "Mensagens chegam como \"Haul\"" : "Digite o celular com DDD";
+  $("#n-phone-h").textContent = phoneOk() ? "Mensagens chegam como \"Plist\"" : "Digite o celular com DDD";
   $("#n-email-l").textContent = notif.email || "Coloque um endereço abaixo";
 }
 $("#evs").innerHTML = Object.entries(EV).map(([k, e]) => `<li><input type="checkbox" id="ev-${k}" data-ev="${k}" ${notif.ev[k] ? "checked" : ""}><label for="ev-${k}"><b>${e.label}</b>${e.urgent ? ` <span class="pill p-bad">Urgente</span>` : ""}<small>${e.desc}</small></label><button class="btn small" type="button" data-test="${k}">Testar</button></li>`).join("");
@@ -2718,8 +2734,8 @@ $("#q-from").value = notif.quiet.from; $("#q-from").onchange = e => { notif.quie
 $("#q-to").value = notif.quiet.to; $("#q-to").onchange = e => { notif.quiet.to = e.target.value || "07:00"; renderAlerts(); };
 $("#q-send").onclick = () => notify("summary", {}, "now");
 $("#nSim").onclick = () => simulateSale();
-try { const a = localStorage.getItem("haul-autolabel"); if (a !== null) $("#autoLabel").checked = a === "1"; } catch (e) {}
-$("#autoLabel").onchange = e => { try { localStorage.setItem("haul-autolabel", e.target.checked ? "1" : "0"); } catch (x) {} };
+try { const a = localStorage.getItem("plist-autolabel"); if (a !== null) $("#autoLabel").checked = a === "1"; } catch (e) {}
+$("#autoLabel").onchange = e => { try { localStorage.setItem("plist-autolabel", e.target.checked ? "1" : "0"); } catch (x) {} };
 
 // ---------- tarefas ----------
 // Triagem no padrão das ferramentas de expedição: o que está atrasado e o que vence hoje primeiro,
@@ -2835,7 +2851,7 @@ function tkDo(kind, ts) {
   const os = ts.filter(t => t.o).map(t => t.o);
   if (kind === "label") { if (os.length) openLabel(os); return; }
   if (kind === "ship") { os.forEach(o => { o.state = "transit"; o.printed = true; addLog("ok", `Pedido #${o.no} despachado (${esc(o.mode)}).`, o.ch); }); toast(`${plural(os.length, "pedido marcado", "pedidos marcados")} como enviado${os.length === 1 ? "" : "s"}.`); }
-  if (kind === "track") { const o = os[0]; toast(`Rastreio ${o.track || "HAUL" + o.no}: em trânsito, entrega prevista ${ddmm(etaAt(o))}.`); return; }
+  if (kind === "track") { const o = os[0]; toast(`Rastreio ${o.track || "PLIST" + o.no}: em trânsito, entrega prevista ${ddmm(etaAt(o))}.`); return; }
   if (kind === "close") { os.forEach(o => { confirmPayout(o); addLog(o.adj ? "err" : "ok", `Venda #${o.no} fechada: ${money(o.payout)} liberados pelo ${CH[o.ch].name}. Taxa confirmada ${money(o.feeConf)} (estimada ${money(o.feeEst)})${o.adj ? `; ajuste de ${money(o.adj)}: ${o.adjWhy}` : ""}.`, o.ch); }); const adj = os.filter(o => o.adj); toast(adj.length ? `${plural(os.length, "venda fechada", "vendas fechadas")}. ${plural(adj.length, "teve", "tiveram")} ajuste no repasse: veja em Finalizadas.` : `${plural(os.length, "venda fechada", "vendas fechadas")}. Repasse confere com a taxa do pedido.`); }
   if (kind === "item") { const t = ts[0]; openItem(t.it.id); return; }
   tkSt.sel.clear(); refresh(); renderTasks();
@@ -2873,15 +2889,15 @@ const daysLeft = () => trial.expired ? 0 : Math.max(0, Math.min(TRIAL_DAYS, Math
 const fullDate = d => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 const PLANS = [
   { id: "essencial", name: "Essencial", price: 49.9, feats: ["Até 2 canais conectados", "Até 300 anúncios", "Etiquetas em PDF e ZPL", "Avisos por e-mail"] },
-  { id: "pro", name: "Profissional", price: 99.9, tag: "Mais escolhido", feats: ["Os 7 canais", "Anúncios ilimitados", "Impressão direta pelo Haul Agente", "Avisos por WhatsApp e SMS", "IA nos anúncios: 200 por mês"] },
+  { id: "pro", name: "Profissional", price: 99.9, tag: "Mais escolhido", feats: ["Os 7 canais", "Anúncios ilimitados", "Impressão direta pelo Plist Agente", "Avisos por WhatsApp e SMS", "IA nos anúncios: 200 por mês"] },
   { id: "avancado", name: "Avançado", price: 179.9, feats: ["Tudo do Profissional", "Command Center com comparação de preços", "Perguntas ao mercado sem limite", "3 usuários com permissões", "Suporte por WhatsApp"] },
 ];
 const acct = { name: "Ana Souza", email: "ana@exemplo.com.br", phone: "", kind: "", doc: "", razao: "", tz: "America/Sao_Paulo", home: "sync", beta: true, plan: null, pay: null, twofa: false, signed: false };
 const ACCT_KEYS = ["name", "email", "phone", "kind", "doc", "razao", "tz", "home", "beta", "signed", "session", "onbSeen", "trialStart"];
-try { const s = JSON.parse(localStorage.getItem("haul-acct") || "null"); if (s) ACCT_KEYS.forEach(k => { if (s[k] !== undefined) acct[k] = s[k]; }); } catch (e) {}
+try { const s = JSON.parse(localStorage.getItem("plist-acct") || "null"); if (s) ACCT_KEYS.forEach(k => { if (s[k] !== undefined) acct[k] = s[k]; }); } catch (e) {}
 if (!HOMES0.includes(acct.home)) acct.home = "sync";
 if (acct.trialStart) trial.start = new Date(acct.trialStart);
-const saveAcct = () => { try { localStorage.setItem("haul-acct", JSON.stringify(Object.fromEntries(ACCT_KEYS.map(k => [k, k === "trialStart" ? trial.start.toISOString() : acct[k]])))); } catch (e) {} };
+const saveAcct = () => { try { localStorage.setItem("plist-acct", JSON.stringify(Object.fromEntries(ACCT_KEYS.map(k => [k, k === "trialStart" ? trial.start.toISOString() : acct[k]])))); } catch (e) {} };
 const isPF = () => acct.kind === "pf";
 const needsCNPJ = c => ["shein", "magalu"].includes(c);
 const planOf = () => PLANS.find(p => p.id === acct.plan);
@@ -2903,15 +2919,15 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-acct
 const ONB = [
   { k: "dados", t: "Seus dados", d: "Pessoa física ou jurídica, documento e celular." },
   { k: "loja", t: "Endereço de envio", d: "Nome da loja e de onde as peças saem. Vão como remetente nas etiquetas." },
-  { k: "canais", t: "Conectar os marketplaces", d: "Ligue suas contas de marketplace ao Haul: Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook." },
+  { k: "canais", t: "Conectar os marketplaces", d: "Ligue suas contas de marketplace ao Plist: Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook." },
   { k: "importar", t: "Importar seus anúncios", d: "Traz os anúncios que já estão no ar para um estoque só." },
-  { k: "etiquetas", t: "Configurar as etiquetas", d: "Instale o Haul Agente e escolha a impressora térmica." },
+  { k: "etiquetas", t: "Configurar as etiquetas", d: "Instale o Plist Agente e escolha a impressora térmica." },
   { k: "anuncio", t: "Criar o primeiro anúncio em vários canais", d: "Cadastre uma peça e publique em todos os canais de uma vez." },
   { k: "avisos", t: "Ligar os avisos de venda", d: "Receba no WhatsApp quando vender, com a etiqueta pronta." },
 ];
 const onb = { done: {}, open: "dados", conn: {}, imported: null };
-try { const s = JSON.parse(localStorage.getItem("haul-onb") || "null"); if (s) { onb.done = s.done || {}; onb.conn = s.conn || {}; onb.imported = s.imported || null; } } catch (e) {}
-const saveOnb = () => { try { localStorage.setItem("haul-onb", JSON.stringify({ done: onb.done, conn: onb.conn, imported: onb.imported })); } catch (e) {} };
+try { const s = JSON.parse(localStorage.getItem("plist-onb") || "null"); if (s) { onb.done = s.done || {}; onb.conn = s.conn || {}; onb.imported = s.imported || null; } } catch (e) {}
+const saveOnb = () => { try { localStorage.setItem("plist-onb", JSON.stringify({ done: onb.done, conn: onb.conn, imported: onb.imported })); } catch (e) {} };
 function completeOnb(k) {
   if (onb.done[k]) return;
   onb.done[k] = true; saveOnb();
@@ -2941,24 +2957,24 @@ function onbBody(k) {
     <div class="f s2"><label for="ob-cep">CEP</label><input id="ob-cep" value="${esc(SENDER.cep)}" inputmode="numeric"></div><div class="f s4"><label for="ob-street">Endereço e número</label><input id="ob-street" value="${esc(SENDER.street)}"></div>
     <div class="f s2"><label for="ob-bairro">Bairro</label><input id="ob-bairro" value="${esc(SENDER.bairro)}"></div><div class="f s3"><label for="ob-city">Cidade</label><input id="ob-city" value="${esc(SENDER.city)}"></div><div class="f s1" style="grid-column:span 1"><label for="ob-uf">UF</label><input id="ob-uf" value="${esc(SENDER.uf)}" maxlength="2"></div></div>`
     + acts(`<button class="btn primary" type="button" data-onb-act="loja">Salvar dados da loja</button>`);
-  if (k === "canais") return `<ol><li>Clique em <b>Conectar</b> no marketplace.</li><li>Entre com a sua conta de vendedor e autorize o Haul.</li><li>Volte para cá: a conta aparece como conectada.</li></ol>
+  if (k === "canais") return `<ol><li>Clique em <b>Conectar</b> no marketplace.</li><li>Entre com a sua conta de vendedor e autorize o Plist.</li><li>Volte para cá: a conta aparece como conectada.</li></ol>
     <div class="conn">${MKT.map(c => `<div><span>${badge(c, onb.conn[c] ? "live" : "none")} ${CH[c].name}</span>${onb.conn[c] ? `<span class="pill p-good">Conectada</span>` : isPF() && needsCNPJ(c) ? `<span class="pill p-muted">Exige CNPJ</span>` : `<button class="btn small" type="button" data-onb-conn="${c}">Conectar</button>`}</div>`).join("")}</div>` + acts("");
   if (k === "importar") {
     const nConn = MKT.filter(c => onb.conn[c]).length;
-    return `<ol><li>O Haul lê os anúncios ativos de cada canal conectado.</li><li>Anúncios da mesma peça viram um item só no estoque (por SKU, código de barras ou título parecido).</li><li>Os que ficarem em dúvida aparecem para você confirmar.</li></ol>
+    return `<ol><li>O Plist lê os anúncios ativos de cada canal conectado.</li><li>Anúncios da mesma peça viram um item só no estoque (por SKU, código de barras ou título parecido).</li><li>Os que ficarem em dúvida aparecem para você confirmar.</li></ol>
     ${onb.imported ? `<p class="note"><b>${plural(onb.imported.items, "peça importada", "peças importadas")}</b> de ${plural(onb.imported.ads, "anúncio")}. ${plural(onb.imported.merged, "anúncio juntado", "anúncios juntados")} como a mesma peça; ${plural(onb.imported.doubt, "para conferir", "para conferir")}.</p>` : ""}`
       + acts(`<button class="btn primary" type="button" data-onb-act="importar" ${nConn ? "" : "disabled"}>${onb.imported ? "Importar de novo" : "Importar agora"}</button><button class="btn" type="button" data-go="sync">Abrir o Inventário</button>`, nConn ? "" : `<span class="muted" style="font-size:.82rem">Conecte pelo menos um marketplace antes.</span>`);
   }
-  if (k === "etiquetas") return `<ol><li>Baixe o Haul Agente para Windows e abra o instalador.</li><li>Ele liga junto com o computador e só aceita pedidos do Haul.</li><li>Escolha a impressora e imprima uma etiqueta de teste.</li></ol>
+  if (k === "etiquetas") return `<ol><li>Baixe o Plist Agente para Windows e abra o instalador.</li><li>Ele liga junto com o computador e só aceita pedidos do Plist.</li><li>Escolha a impressora e imprima uma etiqueta de teste.</li></ol>
     <div class="f" style="max-width:340px"><label for="ob-printer">Impressora</label><select id="ob-printer">${PRINTERS.filter(p => p.id !== "off").map(p => `<option value="${p.id}" ${lblOpts.printer === p.id ? "selected" : ""}>${esc(p.name)}</option>`).join("")}</select></div>`
-    + acts(`<button class="btn" type="button" data-onb-act="agente">Baixar o Haul Agente</button><button class="btn primary" type="button" data-onb-act="teste">Imprimir etiqueta de teste</button>`);
+    + acts(`<button class="btn" type="button" data-onb-act="agente">Baixar o Plist Agente</button><button class="btn primary" type="button" data-onb-act="teste">Imprimir etiqueta de teste</button>`);
   if (k === "anuncio") return `<ol><li>Coloque as fotos e deixe a IA preencher título, detalhes e preço.</li><li>Escolha os canais: cada um confere as próprias regras.</li><li>Clique em <b>Publicar</b>.</li></ol>` + acts(`<button class="btn primary" type="button" data-go="new">Criar anúncio</button>`);
-  if (k === "avisos") return `<ol><li>Informe o celular e aceite receber mensagens do Haul no WhatsApp.</li><li>Escolha quando avisar: venda, falha, oferta, resumo do dia.</li><li>Mande um aviso de teste para ver como chega.</li></ol>` + acts(`<button class="btn primary" type="button" data-onb-act="avisos">Mandar aviso de teste</button><button class="btn" type="button" data-go="notifications">Abrir Avisos</button>`);
+  if (k === "avisos") return `<ol><li>Informe o celular e aceite receber mensagens do Plist no WhatsApp.</li><li>Escolha quando avisar: venda, falha, oferta, resumo do dia.</li><li>Mande um aviso de teste para ver como chega.</li></ol>` + acts(`<button class="btn primary" type="button" data-onb-act="avisos">Mandar aviso de teste</button><button class="btn" type="button" data-go="notifications">Abrir Avisos</button>`);
   return "";
 }
 function renderOnb() {
   const n = ONB.filter(s => onb.done[s.k]).length;
-  $("#onbHello").textContent = `Boas-vindas ao Haul, ${acct.name.split(" ")[0]}`;
+  $("#onbHello").textContent = `Boas-vindas ao Plist, ${acct.name.split(" ")[0]}`;
   $("#onbCount").textContent = n === ONB.length ? "Tudo pronto!" : `${n} de ${ONB.length} passos concluídos`;
   $("#onbPct").textContent = `${Math.round(n / ONB.length * 100)}%`;
   $("#onbBar").style.width = `${n / ONB.length * 100}%`;
@@ -3013,7 +3029,7 @@ $("#onbSteps").addEventListener("click", async e => {
     addLog("ok", `Importação: ${plural(onb.imported.ads, "anúncio")} viraram ${plural(items.length, "peça")} no estoque.`);
     completeOnb("importar");
   } else if (k === "agente") {
-    toast("No produto real, aqui baixa o instalador do Haul Agente para Windows.");
+    toast("No produto real, aqui baixa o instalador do Plist Agente para Windows.");
   } else if (k === "teste") {
     lblOpts.printer = $("#ob-printer").value; saveOpts();
     a.disabled = true; a.textContent = "Imprimindo…"; await sleep(1100);
@@ -3029,12 +3045,12 @@ $("#onbSteps").addEventListener("click", async e => {
 // As contas conectadas são as mesmas do passo "Conectar os marketplaces" (onb.conn).
 const SYNC_CH = ["ml", "shopee", "shein", "amazon", "magalu", "fb"];
 const PLAT = {
-  ml: { desc: "Mercado Envios, Full e Flex", nick: "BRECHOEXEMPLO", ads: 23, auth: "Você vai para o Mercado Livre, entra com a sua conta de vendedor e autoriza o Haul." },
-  shopee: { desc: "Logística integrada da Shopee", nick: "brechoexemplo", ads: 18, auth: "Você vai para a Central do Vendedor da Shopee e autoriza o Haul na sua loja." },
-  shein: { desc: "Moda, calçados e casa · exige CNPJ", nick: "Brechó Exemplo", ads: 11, auth: "Você entra na Central do Vendedor da Shein e libera o acesso do Haul." },
-  amazon: { desc: "Seller Central Brasil · DBA e FBA", nick: "Brechó Exemplo · Seller Central", ads: 7, auth: "Você entra no Seller Central da Amazon Brasil e autoriza o Haul (acesso aos endereços dos pedidos exige aprovação da Amazon)." },
-  magalu: { desc: "Magalu Entregas · exige CNPJ", nick: "brechoexemplo", ads: 9, auth: "Você entra no Portal do Seller do Magalu e autoriza o Haul." },
-  fb: { desc: "Classificados com retirada ou envio combinado", nick: "Brechó Exemplo", ads: 12, auth: "O Marketplace não tem API aberta para vendedores no Brasil: a publicação é feita pela extensão do Haul no seu navegador, já logado no Facebook. Quando vender, você marca como vendido e o Haul tira dos outros canais." },
+  ml: { desc: "Mercado Envios, Full e Flex", nick: "BRECHOEXEMPLO", ads: 23, auth: "Você vai para o Mercado Livre, entra com a sua conta de vendedor e autoriza o Plist." },
+  shopee: { desc: "Logística integrada da Shopee", nick: "brechoexemplo", ads: 18, auth: "Você vai para a Central do Vendedor da Shopee e autoriza o Plist na sua loja." },
+  shein: { desc: "Moda, calçados e casa · exige CNPJ", nick: "Brechó Exemplo", ads: 11, auth: "Você entra na Central do Vendedor da Shein e libera o acesso do Plist." },
+  amazon: { desc: "Seller Central Brasil · DBA e FBA", nick: "Brechó Exemplo · Seller Central", ads: 7, auth: "Você entra no Seller Central da Amazon Brasil e autoriza o Plist (acesso aos endereços dos pedidos exige aprovação da Amazon)." },
+  magalu: { desc: "Magalu Entregas · exige CNPJ", nick: "brechoexemplo", ads: 9, auth: "Você entra no Portal do Seller do Magalu e autoriza o Plist." },
+  fb: { desc: "Classificados com retirada ou envio combinado", nick: "Brechó Exemplo", ads: 12, auth: "O Marketplace não tem API aberta para vendedores no Brasil: a publicação é feita pela extensão do Plist no seu navegador, já logado no Facebook. Quando vender, você marca como vendido e o Plist tira dos outros canais." },
 };
 const syncSt = { running: false, last: {}, result: null, doubts: [], confirm: "" };
 const plogo = c => `<span class="plogo" style="--c:var(--c-${c})" aria-hidden="true">${CH[c].code}</span>`;
@@ -3053,7 +3069,7 @@ function renderSync() {
         : `<button class="btn small" type="button" data-sync-one="${c}" ${syncSt.running ? "disabled" : ""}>Sincronizar</button><button class="btn small ghost" type="button" data-disc="${c}">Desconectar</button>`}</div></div>`;
   }).join("") : `<div class="emptybox"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 16.5h.01M11 16.5h.01M8.5 9.5a5 5 0 0 1 7 0M6 7a8.5 8.5 0 0 1 12 0"/></svg><b style="color:var(--ink)">Nenhuma conta conectada</b><br><span style="font-size:.82rem">Conecte uma plataforma ao lado para começar.</span></div>`;
   $("#syncAvail").innerHTML = avail.length ? avail.map(c => `<div class="plat">${plogo(c)}<div class="nm"><b>${CH[c].name}</b><small>${PLAT[c].desc}</small></div>${isPF() && needsCNPJ(c) ? `<span class="pill p-muted" title="Sua conta é de pessoa física">Exige CNPJ</span>` : `<button class="btn small primary" type="button" data-sync-conn="${c}">Conectar</button>`}</div>`).join("")
-    : `<p class="muted" style="margin-top:12px">Todas as plataformas que o Haul atende já estão conectadas.</p>`;
+    : `<p class="muted" style="margin-top:12px">Todas as plataformas que o Plist atende já estão conectadas.</p>`;
   renderSyncResult();
 }
 function renderSyncResult() {
@@ -3062,14 +3078,14 @@ function renderSyncResult() {
   box.hidden = false;
   box.innerHTML = `<div class="ph"><div><h2>Última sincronização</h2><p class="muted" style="font-size:.84rem">${r.at.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })} · ${r.chs.map(c => CH[c].name).join(", ")}</p></div><button class="btn small" type="button" data-go="inventory">Ver estoque</button></div>
     <div class="syncsum"><div><span class="eyebrow">Anúncios lidos</span><b>${r.ads}</b></div><div><span class="eyebrow">Peças no estoque</span><b>${r.items}</b></div><div><span class="eyebrow">Juntados</span><b>${r.merged}</b></div><div><span class="eyebrow">Para conferir</span><b>${syncSt.doubts.length}</b></div></div>
-    ${syncSt.doubts.length ? `<h3 style="margin-top:16px">É a mesma peça?</h3><p class="muted" style="font-size:.84rem">Títulos parecidos em canais diferentes, sem SKU nem código de barras igual. Confirme para o Haul sincronizar preço e quantidade entre eles.</p>
+    ${syncSt.doubts.length ? `<h3 style="margin-top:16px">É a mesma peça?</h3><p class="muted" style="font-size:.84rem">Títulos parecidos em canais diferentes, sem SKU nem código de barras igual. Confirme para o Plist sincronizar preço e quantidade entre eles.</p>
       <div style="margin-top:6px">${syncSt.doubts.map((d, i) => `<div class="doubt"><span>${badge(d.a, "live")} ${esc(d.ta)}</span><span class="vs">e</span><span>${badge(d.b, "live")} ${esc(d.tb)}</span><span class="actions"><button class="btn small primary" type="button" data-doubt="${i}:same">É a mesma</button><button class="btn small" type="button" data-doubt="${i}:diff">São diferentes</button></span></div>`).join("")}</div>`
       : `<p class="muted" style="font-size:.86rem;margin-top:12px">Nada para conferir. Preço e quantidade passam a ser sincronizados entre os canais.</p>`}`;
 }
 function openConnect(c) {
   modal(`<div class="mh"><h2>Conectar ${CH[c].name}</h2><p>${esc(PLAT[c].auth)}</p></div>
-    <div class="mb"><p style="font-size:.88rem">O Haul vai poder:</p><ul style="font-size:.88rem;margin:6px 0 0;padding-left:18px;display:grid;gap:4px"><li>ler e publicar anúncios, preços e quantidades;</li><li>ler os pedidos para tirar a peça dos outros canais;</li><li>baixar as etiquetas de envio.</li></ul>
-      <p class="note" style="margin-top:12px">O Haul nunca vê a sua senha do marketplace: a autorização acontece na página dele, e você pode desconectar quando quiser.</p></div>
+    <div class="mb"><p style="font-size:.88rem">O Plist vai poder:</p><ul style="font-size:.88rem;margin:6px 0 0;padding-left:18px;display:grid;gap:4px"><li>ler e publicar anúncios, preços e quantidades;</li><li>ler os pedidos para tirar a peça dos outros canais;</li><li>baixar as etiquetas de envio.</li></ul>
+      <p class="note" style="margin-top:12px">O Plist nunca vê a sua senha do marketplace: a autorização acontece na página dele, e você pode desconectar quando quiser.</p></div>
     <div class="mf"><button class="btn ghost" type="button" id="cxNo">Cancelar</button><button class="btn primary" type="button" id="cxGo">Ir para ${CH[c].name}</button></div>`);
   $("#cxNo").onclick = closeModal;
   $("#cxGo").onclick = async () => {
@@ -3205,7 +3221,7 @@ function renderAccount() {
     });
     $("#a-onb").onclick = () => go("onboarding");
     $("#a-new").onclick = () => {
-      try { localStorage.removeItem("haul-acct"); localStorage.removeItem("haul-onb"); } catch (x) {}
+      try { localStorage.removeItem("plist-acct"); localStorage.removeItem("plist-onb"); } catch (x) {}
       Object.assign(acct, { name: "", email: "", phone: "", kind: "", doc: "", razao: "", signed: false, onbSeen: false, plan: null, pay: null });
       onb.done = {}; onb.conn = {}; onb.imported = null; trial.expired = false;
       $("#suForm").reset(); go("signup");
@@ -3250,8 +3266,8 @@ function renderAccount() {
     $("#trialEnd").onclick = () => { trial.expired = true; addLog("err", "Teste grátis encerrado."); notifyTrialEnd(); afterBilling(); };
     $("#trialReset").onclick = () => { trial.expired = false; trial.start = new Date(); afterBilling(); };
   } else if (acctTab === "referral") {
-    const code = (acct.name.split(" ")[0] || "haul").normalize("NFD").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 6) + "30";
-    const link = `https://haul.app/c/${code}`;
+    const code = (acct.name.split(" ")[0] || "plist").normalize("NFD").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 6) + "30";
+    const link = `https://plist.com.br/c/${code}`;
     body.innerHTML = `<div class="panel"><h2>Indique e ganhe 30 dias</h2><p class="muted" style="font-size:.86rem;margin-top:4px">Quem entrar pelo seu link ganha o teste de 30 dias normalmente. Quando essa pessoa pagar a primeira mensalidade, você ganha 30 dias de plano.</p>
       <div class="copyrow"><input id="refLink" value="${link}" readonly aria-label="Seu link de indicação"><button class="btn primary" type="button" id="refCopy">Copiar link</button></div>
       <p class="muted" style="font-size:.8rem;margin-top:6px">Link de exemplo; no produto real cada conta tem o seu.</p></div>
@@ -3293,7 +3309,7 @@ function renderAccount() {
 }
 function afterBilling() { renderTrial(); renderAccount(); renderOnbCount(); if (!$("#v-onboarding").hidden) renderOnb(); }
 function notifyTrialEnd() {
-  const m = { title: "Seu teste grátis acabou", lines: ["*Seu teste grátis do Haul acabou.*", acct.plan && acct.pay ? `Plano ${planOf().name} ativo. Obrigado!` : "Escolha um plano e a forma de pagamento para voltar a publicar.", "As vendas continuam chegando normalmente."] };
+  const m = { title: "Seu teste grátis acabou", lines: ["*Seu teste grátis do Plist acabou.*", acct.plan && acct.pay ? `Plano ${planOf().name} ativo. Obrigado!` : "Escolha um plano e a forma de pagamento para voltar a publicar.", "As vendas continuam chegando normalmente."] };
   if (notif.ch.wa && phoneOk() && notif.waOk) toPhone("wa", m); else toPhone("push", m);
   renderPhones();
 }
@@ -3307,7 +3323,7 @@ const CMP_ROWS = [
   ["Anúncios", "300", "Sem limite", "Sem limite"],
   ["Tirar dos outros canais ao vender", true, true, true],
   ["Etiquetas em PDF e ZPL", true, true, true],
-  ["Impressão direta pelo Haul Agente", false, true, true],
+  ["Impressão direta pelo Plist Agente", false, true, true],
   ["Avisos por WhatsApp e SMS", false, true, true],
   ["IA nos anúncios", false, "200 por mês", "Sem limite"],
   ["Command Center e comparação de preços", false, false, true],
@@ -3406,3 +3422,5 @@ go(VIEWS.includes(h0) ? h0 : !acct.session ? "site" : !acct.onbSeen ? "onboardin
 setInterval(() => { CHS.forEach(c => { if (health[c] === "ok") lastSync[c] = lastSync[c] > 60 ? 2 : lastSync[c] + 5; }); if (!$("#v-channels").hidden) renderChannels(); }, 5000);
 })();
 </script>
+</body>
+</html>

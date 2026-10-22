@@ -1,11 +1,12 @@
-# Haul — instruções para o Claude
+# Plist — instruções para o Claude
 
-Toda sessão nesta pasta trabalha **só no Haul**. Fale com o usuário em **português do Brasil**.
+Toda sessão nesta pasta trabalha **só no Plist**. Fale com o usuário em **português do Brasil**.
 
 ## O que é
 
-**Haul**: multicanal para brechós e revendedores no Brasil. Um cadastro publica a peça em vários
-marketplaces; quando vende num, o Haul tira o anúncio dos outros, deixa a etiqueta pronta e mostra
+**Plist**: canal de listagem e multivenda para lojistas de **todos os nichos** no Brasil (não só brechós;
+definido em 22/10/2026). Um cadastro publica o produto em vários
+marketplaces; quando vende num, o Plist tira o anúncio dos outros, deixa a etiqueta pronta e mostra
 o que falta fazer até o dinheiro ser liberado.
 
 ## Regras que não se quebram
@@ -25,13 +26,20 @@ o que falta fazer até o dinheiro ser liberado.
 
 ## Situação atual (21/10/2026)
 
-- Só existe o **protótipo de tela**: `haul-prototipo.html` (sem servidor, sem banco; integrações,
+- Só existe o **protótipo de tela**: `plist-prototipo.html` (sem servidor, sem banco; integrações,
   pagamentos, impressão e taxa real são simulados). Versão publicada, privada:
   https://claude.ai/artifact/7SU5tHQxUKgTYefe4hrn3A (título "E-Commerce Listing").
 - O arquivo é um trecho de página para o visualizador de artefatos (sem `<html>`/`<head>`).
-- Ainda não há repositório no GitHub, nuvem, banco, domínio nem CNPJ do Haul.
+- **Site público na Vercel:** `node scripts/montar-site.mjs` gera `public/site.html` a partir do protótipo;
+  `next.config.ts` abre esse site na raiz de todo endereço, menos em app.plist.com.br (raiz = sistema).
+  O sistema fica em /canais. Depois de mudar o protótipo, rodar o script de novo e copiar para haul-site.
+- Ainda não há repositório no GitHub, nuvem, banco, domínio nem CNPJ do Plist.
 
 ## Decisões já tomadas (não repropor sem o usuário pedir)
+
+- **Nome:** o produto e o projeto se chamam **Plist** (antes "Haul"), site **plist.com.br** (22/10/2026).
+  Logo em `marca/`: o P de Plist com três pontos saindo dele (o mesmo anúncio indo para vários canais);
+  azul #4C6BFF → #2B47D0 (o mesmo azul do site), tinta #14111F, branco; wordmark Inter ExtraBold minúsculo.
 
 - **Canais:** Mercado Livre, Shopee, Shein, Amazon, Magalu, Facebook Marketplace e venda direta.
   **Temu e TikTok Shop foram removidos** (21/10/2026).
@@ -52,7 +60,7 @@ o que falta fazer até o dinheiro ser liberado.
   todos exemplo).
 - Facebook Marketplace: sem API oficial; automatizar por extensão pode violar as regras da Meta.
   Lançar sem ele ou só com publicação assistida?
-- Nome/marca (busca no INPI, domínio), CNPJ próprio.
+- Marca **Plist**: busca no INPI e registro de plist.com.br ainda por fazer; CNPJ próprio.
 - Taxas de cada canal vieram de fontes não oficiais (out/2026): conferir nas centrais antes de usar.
 - Quem gera a etiqueta e o formato no Magalu e na Shein; prazo real de repasse de cada canal.
 
@@ -64,5 +72,5 @@ o que falta fazer até o dinheiro ser liberado.
    com IA, tirar dos outros canais ao vender, etiqueta oficial, Tarefas, avisos no WhatsApp,
    teste de 30 dias e cobrança.
 4. Em paralelo: aprovações (app no DevCenter do ML, parceiro na Shopee Open Platform, WhatsApp
-   Business), termos de uso, privacidade/LGPD, certificado de assinatura do Haul Agente.
+   Business), termos de uso, privacidade/LGPD, certificado de assinatura do Plist Agente.
 5. Beta fechado com 10 a 20 lojistas → lançamento.
