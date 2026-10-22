@@ -1,4 +1,4 @@
-// Monta site/index.html a partir do protótipo (que é um trecho de página para o visualizador de
+// Monta public/site.html (servido pela Vercel em "/", ver next.config.ts) a partir do protótipo (que é um trecho de página para o visualizador de
 // artefatos) envolvendo-o num documento HTML completo. Rodar: node scripts/montar-site.mjs
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
@@ -29,6 +29,6 @@ const pagina = [
   "",
 ].join("\n");
 
-mkdirSync(new URL("../site/", import.meta.url), { recursive: true });
-writeFileSync(new URL("../site/index.html", import.meta.url), pagina);
-console.log("site/index.html gerado (" + pagina.length + " bytes)");
+mkdirSync(new URL("../public/", import.meta.url), { recursive: true });
+writeFileSync(new URL("../public/site.html", import.meta.url), pagina);
+console.log("public/site.html gerado (" + pagina.length + " bytes)");

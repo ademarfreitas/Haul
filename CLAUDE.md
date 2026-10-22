@@ -30,6 +30,9 @@ o que falta fazer até o dinheiro ser liberado.
   pagamentos, impressão e taxa real são simulados). Versão publicada, privada:
   https://claude.ai/artifact/7SU5tHQxUKgTYefe4hrn3A (título "E-Commerce Listing").
 - O arquivo é um trecho de página para o visualizador de artefatos (sem `<html>`/`<head>`).
+- **Site público na Vercel:** `node scripts/montar-site.mjs` gera `public/site.html` a partir do protótipo;
+  `next.config.ts` abre esse site na raiz de todo endereço, menos em app.plist.com.br (raiz = sistema).
+  O sistema fica em /canais. Depois de mudar o protótipo, rodar o script de novo e copiar para haul-site.
 - Ainda não há repositório no GitHub, nuvem, banco, domínio nem CNPJ do Plist.
 
 ## Decisões já tomadas (não repropor sem o usuário pedir)
