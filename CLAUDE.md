@@ -36,7 +36,7 @@ o que falta fazer até o dinheiro ser liberado.
 
 - **Nome:** o produto e o projeto se chamam **Plist** (antes "Haul"), site **plist.com.br** (22/10/2026).
   Logo em `marca/`: o P de Plist com três pontos saindo dele (o mesmo anúncio indo para vários canais);
-  laranja #FF6A2B → pink #E9216F, tinta #14111F, wordmark Inter ExtraBold minúsculo.
+  azul #4C6BFF → #2B47D0 (o mesmo azul do site), tinta #14111F, branco; wordmark Inter ExtraBold minúsculo.
 
 - **Canais:** Mercado Livre, Shopee, Shein, Amazon, Magalu, Facebook Marketplace e venda direta.
   **Temu e TikTok Shop foram removidos** (21/10/2026).
