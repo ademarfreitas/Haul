@@ -171,6 +171,10 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
                       >
                         {o.situacao === "pago" ? "Organizar envio" : o.situacao === "pronto_para_envio" ? "Imprimir" : "Reimprimir"}
                       </a>
+                    ) : o.canal === "shein" && ["pago", "pronto_para_envio", "enviado"].includes(o.situacao) ? (
+                      <a className={`btn small${o.situacao === "enviado" ? "" : " primary"}`} href={`/api/canais/shein/etiqueta?pedido=${o.id}`} target="_blank" rel="noreferrer">
+                        {o.situacao === "enviado" ? "Reimprimir" : "Imprimir"}
+                      </a>
                     ) : (
                       <span className="muted" style={{ fontSize: ".8rem" }}>
                         {d?.logistica === "Full" ? (o.canal === "shopee" ? "Full: a Shopee envia" : "Full: o ML envia") : "—"}

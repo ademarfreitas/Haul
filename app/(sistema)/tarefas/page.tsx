@@ -90,7 +90,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
             <path d="M12 11v5M12 8h.01" />
           </svg>
           <span>
-            As tarefas nascem das vendas: <b>Atualizar pedidos</b> traz as vendas do Mercado Livre e da Shopee, abre a tarefa da etiqueta e fecha sozinha quando o envio sai.
+            As tarefas nascem das vendas: <b>Atualizar pedidos</b> traz as vendas do Mercado Livre, da Shopee e da Shein, abre a tarefa da etiqueta e fecha sozinha quando o envio sai.
           </span>
         </div>
         {lista.length === 0 ? (
@@ -135,7 +135,9 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
                               href={
                                 t.pedidoCanal === "shopee"
                                   ? `/api/canais/shopee/etiqueta?pedido=${t.pedidoId}${t.pedidoSituacao === "pago" ? "&organizar=1" : ""}`
-                                  : `/api/canais/mercado-livre/etiqueta?pedido=${t.pedidoId}`
+                                  : t.pedidoCanal === "shein"
+                                    ? `/api/canais/shein/etiqueta?pedido=${t.pedidoId}`
+                                    : `/api/canais/mercado-livre/etiqueta?pedido=${t.pedidoId}`
                               }
                               target="_blank"
                               rel="noreferrer"
