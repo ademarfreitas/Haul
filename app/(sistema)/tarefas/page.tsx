@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { pecas, pedidos, tarefas } from "@/db/schema";
 import { exigirConta } from "@/lib/conta";
+import { pedidoNoSellerCentral } from "@/lib/amazon";
 import { AtualizarPedidos } from "../_partes/atualizar-pedidos";
 import { fecharTarefa, reabrirTarefa } from "./acoes";
 
@@ -55,6 +56,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
         pedidoId: tarefas.pedidoId,
         pedidoSituacao: pedidos.situacao,
         pedidoCanal: pedidos.canal,
+        pedidoIdExterno: pedidos.idExterno,
         sku: pecas.sku,
       })
       .from(tarefas)
@@ -135,7 +137,9 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
                               href={
                                 t.pedidoCanal === "shopee"
                                   ? `/api/canais/shopee/etiqueta?pedido=${t.pedidoId}${t.pedidoSituacao === "pago" ? "&organizar=1" : ""}`
-                                  : `/api/canais/mercado-livre/etiqueta?pedido=${t.pedidoId}`
+                                  : t.pedidoCanal === "amazon"
+                                    ? pedidoNoSellerCentral(t.pedidoIdExterno ?? "")
+                                    : `/api/canais/mercado-livre/etiqueta?pedido=${t.pedidoId}`
                               }
                               target="_blank"
                               rel="noreferrer"

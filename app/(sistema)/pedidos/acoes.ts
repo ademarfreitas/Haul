@@ -8,13 +8,15 @@ import { contaAtual } from "@/lib/conta";
 import { ErroMl } from "@/lib/mercado-livre";
 import { importarPedidos, type ResultadoPedidos } from "@/lib/ml-pedidos";
 import { ErroShopee } from "@/lib/shopee";
+import { ErroAmazon } from "@/lib/amazon";
+import { importarPedidosAmazon } from "@/lib/amazon-pedidos";
 import { importarPedidosShopee } from "@/lib/shopee-pedidos";
 
-const IMPORTAR = { mercado_livre: importarPedidos, shopee: importarPedidosShopee } as const;
+const IMPORTAR = { mercado_livre: importarPedidos, shopee: importarPedidosShopee, amazon: importarPedidosAmazon } as const;
 
 export type EstadoPedidos = { em?: string; resultados?: ResultadoPedidos[]; erros?: string[] };
 
-// Busca as vendas dos últimos 60 dias em cada conta do ML e loja da Shopee; usado em Pedidos e em Tarefas.
+// Busca as vendas dos últimos 60 dias em cada conta do ML, loja da Shopee e conta da Amazon; usado em Pedidos e em Tarefas.
 export async function atualizarPedidos(_: EstadoPedidos): Promise<EstadoPedidos> {
   const atual = await contaAtual();
   if (!atual) return { erros: ["Sua sessão terminou. Entre de novo."] };
@@ -28,7 +30,7 @@ export async function atualizarPedidos(_: EstadoPedidos): Promise<EstadoPedidos>
         eq(conexoesCanal.situacao, "ativa"),
       ),
     );
-  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre ou a Shopee em Canais."] };
+  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre, a Shopee ou a Amazon em Canais."] };
 
   const resultados: ResultadoPedidos[] = [];
   const erros: string[] = [];
@@ -36,7 +38,7 @@ export async function atualizarPedidos(_: EstadoPedidos): Promise<EstadoPedidos>
     try {
       resultados.push(await IMPORTAR[c.canal as keyof typeof IMPORTAR](c.id));
     } catch (e) {
-      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee ? e : null;
+      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon ? e : null;
       console.error(`pedidos ${c.canal} falhou:`, erroCanal ? erroCanal.codigo : e);
       const quem = c.apelido ?? CANAIS[c.canal].nome;
       erros.push(erroCanal?.codigo === "reconectar" ? `${quem}: reconecte em Canais.` : `${quem}: não deu para buscar os pedidos agora.`);
