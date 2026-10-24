@@ -41,6 +41,8 @@ o que falta fazer até o dinheiro ser liberado.
   fotos guardadas no próprio ML), Pedidos e Tarefas trazem as vendas do ML (`lib/ml-pedidos.ts`: etiqueta
   oficial em PDF, taxa real × estimada, baixa de estoque), Resultados (Command Center com os números reais),
   Minha conta (dados, plano escolhido, senha, link de indicação `/cadastro?ind=<conta>`), Canais conecta.
+  CRM (`app/(sistema)/crm`, `lib/crm.ts`, `docs/crm.md`, 24/10/2026): só no Avançado (e no teste); clientes saem dos pedidos;
+  contato direto (WhatsApp, campanhas) só com cliente próprio, nunca com comprador de marketplace.
   Avisos segue "em construção" (depende do WhatsApp Business); cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
   `app/(sistema)/sistema.css` a partir do `<style>` dele.
   Por cima vem `app/(sistema)/tema.css` (escrito à mão, 24/10/2026): menu escuro com ícones e grupos, barra no topo,

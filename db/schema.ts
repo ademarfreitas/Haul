@@ -5,11 +5,13 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   char,
+  date,
   index,
   integer,
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -109,6 +111,20 @@ export const tipoTarefa = pgEnum("tipo_tarefa", [
   "reconectar_canal",
   "responder_comprador",
   "outra",
+]);
+
+// de onde veio o cliente (CRM); o comprador de marketplace vem do próprio canal
+export const origemCliente = pgEnum("origem_cliente", [
+  "marketplace",
+  "indicacao",
+  "instagram",
+  "facebook",
+  "google",
+  "whatsapp",
+  "loja_fisica",
+  "site",
+  "evento",
+  "outro",
 ]);
 
 export const situacaoTarefa = pgEnum("situacao_tarefa", ["aberta", "concluida", "ignorada"]);
@@ -287,6 +303,7 @@ export const pedidos = pgTable(
     pecaId: uuid().references(() => pecas.id),
     situacao: situacaoPedido().notNull().default("pago"),
     compradorNome: text(),
+    clienteId: uuid().references(() => clientes.id, { onDelete: "set null" }),
     cep: char({ length: 8 }),
     uf: char({ length: 2 }),
     cidade: text(),
@@ -311,6 +328,7 @@ export const pedidos = pgTable(
     uniqueIndex().on(t.canal, t.idExterno),
     index().on(t.contaId, t.situacao),
     index().on(t.contaId, t.vendidoEm),
+    index().on(t.clienteId),
   ],
 );
 
@@ -348,6 +366,74 @@ export const repassePedidos = pgTable(
     taxaConfirmadaCentavos: centavos(),
   },
   (t) => [uniqueIndex().on(t.repasseId, t.pedidoId), index().on(t.pedidoId)],
+);
+
+// ---------- CRM (plano Avançado; ver docs/crm.md) ----------
+
+// Um cliente por conta. O comprador de marketplace entra sozinho pelos pedidos (canal + apelido no canal)
+// e só serve para análise: o canal não passa o contato e não deixa usar o dado para marketing.
+// Cliente próprio (venda direta, Facebook, cadastro à mão) pode ter WhatsApp, e-mail e aceite de ofertas (LGPD).
+// O que o CRM calcula (ritmo, segmento, o que compra) sai dos pedidos na hora; aqui fica só o que é do lojista.
+export const clientes = pgTable(
+  "clientes",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    canal: canal(), // canal do comprador de marketplace; nulo no cliente cadastrado à mão
+    chaveCanal: text(), // apelido do comprador no canal, em minúsculas (ML e Shopee: o apelido é único)
+    nome: text().notNull(),
+    whatsapp: text(), // só dígitos, com DDI (55...)
+    email: text(),
+    aniversario: date(),
+    origem: origemCliente(),
+    cidade: text(),
+    uf: char({ length: 2 }),
+    ofertasAceiteEm: timestamp({ withTimezone: true }),
+    ofertasOrigem: text(), // como o aceite foi dado ("pediu no balcão", "formulário"...)
+    proximoContato: date(),
+    proximoPasso: text(),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    uniqueIndex().on(t.contaId, t.canal, t.chaveCanal),
+    index().on(t.contaId, t.proximoContato),
+  ],
+);
+
+// interesses marcados à mão (os automáticos vêm das categorias que o cliente compra e não são gravados)
+export const clienteEtiquetas = pgTable(
+  "cliente_etiquetas",
+  {
+    clienteId: uuid()
+      .notNull()
+      .references(() => clientes.id, { onDelete: "cascade" }),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    etiqueta: text().notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [primaryKey({ columns: [t.clienteId, t.etiqueta] }), index().on(t.contaId, t.etiqueta)],
+);
+
+export const clienteNotas = pgTable(
+  "cliente_notas",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    clienteId: uuid()
+      .notNull()
+      .references(() => clientes.id, { onDelete: "cascade" }),
+    texto: text().notNull(),
+    usuarioId: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index().on(t.clienteId, t.criadoEm)],
 );
 
 // ---------- tarefas ----------
