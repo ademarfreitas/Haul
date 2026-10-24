@@ -2,7 +2,9 @@
 import { sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import type { contas } from "@/db/schema";
-import { diasDeTeste } from "@/lib/conta";
+import type { Canal } from "@/lib/canais";
+import { contaAtual, diasDeTeste } from "@/lib/conta";
+import { diaSP, mede } from "@/lib/crm-medidas";
 
 type Conta = Pick<typeof contas.$inferSelect, "plano" | "situacaoAssinatura" | "testeAte">;
 
@@ -42,3 +44,59 @@ export async function ligarPedidosAClientes(contaId: string) {
   `);
 }
 
+
+// Os clientes da conta com as medidas (ritmo, segmento, próxima compra): a base de tudo do CRM.
+export async function clientesComMedidas(contaId: string) {
+  const { rows } = await obterDb().execute(sql`
+    with a as (
+      select cliente_id, count(*)::int as compras, sum(valor_venda_centavos)::int as total,
+             min((vendido_em at time zone 'America/Sao_Paulo')::date)::text as primeira,
+             max((vendido_em at time zone 'America/Sao_Paulo')::date)::text as ultima,
+             count(distinct (vendido_em at time zone 'America/Sao_Paulo')::date)::int as dias
+        from pedidos
+       where conta_id = ${contaId} and cliente_id is not null and situacao not in (${sql.join(NAO_CONTA.map((s) => sql`${s}`), sql`, `)})
+       group by cliente_id),
+    e as (select cliente_id, array_agg(etiqueta order by etiqueta) as etiquetas from cliente_etiquetas where conta_id = ${contaId} group by cliente_id)
+    select c.id, c.nome, c.canal, c.whatsapp, c.email, c.cidade, c.uf, c.origem, c.aniversario::text as aniversario,
+           c.ofertas_aceite_em, c.proximo_contato::text as proximo_contato, c.proximo_passo,
+           coalesce(a.compras, 0) as compras, coalesce(a.total, 0) as total, a.primeira, a.ultima, coalesce(a.dias, 0) as dias,
+           coalesce(e.etiquetas, '{}') as etiquetas
+      from clientes c left join a on a.cliente_id = c.id left join e on e.cliente_id = c.id
+     where c.conta_id = ${contaId}
+  `);
+  const linhas = (rows as Record<string, unknown>[]).map((r) => ({
+    id: r.id as string,
+    nome: r.nome as string,
+    canal: r.canal as Canal | null,
+    whatsapp: r.whatsapp as string | null,
+    email: r.email as string | null,
+    cidade: r.cidade as string | null,
+    uf: r.uf as string | null,
+    origem: r.origem as string | null,
+    aniversario: r.aniversario as string | null,
+    ofertas: r.ofertas_aceite_em != null,
+    proximoContato: r.proximo_contato as string | null,
+    proximoPasso: r.proximo_passo as string | null,
+    etiquetas: r.etiquetas as string[],
+    compras: Number(r.compras),
+    totalCentavos: Number(r.total),
+    primeira: r.primeira as string | null,
+    ultima: r.ultima as string | null,
+    dias: Number(r.dias),
+  }));
+  return mede(linhas, diaSP(new Date()));
+}
+
+// Pedidos que não contam como compra (para o CRM)
+export const NAO_CONTA = ["cancelado", "devolvido", "aguardando_pagamento"] as const;
+
+// O CRM só para quem tem acesso: usar no começo das ações (as páginas mostram a vitrine).
+export async function contaComCrm() {
+  const atual = await contaAtual();
+  return atual && temCrm(atual.conta) ? atual : null;
+}
+
+// Cliente próprio é o que o lojista pode chamar direto (WhatsApp, campanhas): não veio de marketplace.
+export function clienteProprio(c: { canal: Canal | null }) {
+  return c.canal === null || c.canal === "venda_direta" || c.canal === "facebook";
+}

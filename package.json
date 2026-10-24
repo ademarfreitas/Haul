@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "verificar": "tsc --noEmit",
+    "testar": "node --experimental-strip-types testes/crm-medidas.test.mjs",
     "db:gerar": "drizzle-kit generate",
     "db:migrar": "drizzle-kit migrate",
     "db:estudio": "drizzle-kit studio",
