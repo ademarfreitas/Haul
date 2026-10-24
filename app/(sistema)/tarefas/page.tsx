@@ -2,7 +2,9 @@ import Link from "next/link";
 import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { pecas, pedidos, tarefas } from "@/db/schema";
+import { PORTAL_SELLER_MAGALU } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
+import { pedidoNoSellerCentral } from "@/lib/amazon";
 import { AtualizarPedidos } from "../_partes/atualizar-pedidos";
 import { fecharTarefa, reabrirTarefa } from "./acoes";
 
@@ -55,6 +57,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
         pedidoId: tarefas.pedidoId,
         pedidoSituacao: pedidos.situacao,
         pedidoCanal: pedidos.canal,
+        pedidoIdExterno: pedidos.idExterno,
         sku: pecas.sku,
       })
       .from(tarefas)
@@ -90,7 +93,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
             <path d="M12 11v5M12 8h.01" />
           </svg>
           <span>
-            As tarefas nascem das vendas: <b>Atualizar pedidos</b> traz as vendas do Mercado Livre, da Shopee e da Shein, abre a tarefa da etiqueta e fecha sozinha quando o envio sai.
+            As tarefas nascem das vendas: <b>Atualizar pedidos</b> traz as vendas do Mercado Livre, da Shopee, da Shein, da Amazon e da Magalu, abre a tarefa da etiqueta e fecha sozinha quando o envio sai.
           </span>
         </div>
         {lista.length === 0 ? (
@@ -129,7 +132,12 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
                       <td>{t.situacao === "aberta" ? <Prazo d={t.prazo} /> : <span className="muted">{t.situacao === "ignorada" ? "Ignorada" : "Feita"}</span>}</td>
                       <td>
                         <div className="actions" style={{ justifyContent: "flex-end" }}>
-                          {t.situacao === "aberta" && t.tipo === "imprimir_etiqueta" && t.pedidoId && (
+                          {t.situacao === "aberta" && t.pedidoCanal === "magalu" && ["imprimir_etiqueta", "emitir_documento_fiscal"].includes(t.tipo) && (
+                            <a className="btn small primary" href={PORTAL_SELLER_MAGALU} target="_blank" rel="noreferrer">
+                              Portal Magalu
+                            </a>
+                          )}
+                          {t.situacao === "aberta" && t.tipo === "imprimir_etiqueta" && t.pedidoId && t.pedidoCanal !== "magalu" && (
                             <a
                               className="btn small primary"
                               href={
@@ -137,6 +145,8 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
                                   ? `/api/canais/shopee/etiqueta?pedido=${t.pedidoId}${t.pedidoSituacao === "pago" ? "&organizar=1" : ""}`
                                   : t.pedidoCanal === "shein"
                                     ? `/api/canais/shein/etiqueta?pedido=${t.pedidoId}`
+                                  : t.pedidoCanal === "amazon"
+                                    ? pedidoNoSellerCentral(t.pedidoIdExterno ?? "")
                                     : `/api/canais/mercado-livre/etiqueta?pedido=${t.pedidoId}`
                               }
                               target="_blank"

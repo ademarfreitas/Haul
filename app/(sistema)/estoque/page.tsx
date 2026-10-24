@@ -52,23 +52,23 @@ const SITUACAO_ANUNCIO: Record<string, string> = {
 
 type AnuncioLinha = { pecaId: string; canal: Canal; situacao: string; url: string | null };
 
-// canais em que dá para publicar uma peça do estoque pelo selo, e a página de cada um
-const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", shein: "/novo-anuncio/shein" };
+// canais com tela de publicar uma peça do estoque pelo selo
+const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", shein: "/novo-anuncio/shein", amazon: "/novo-anuncio/amazon", magalu: "/novo-anuncio/magalu" };
 
-// publicar: id da peça e os canais conectados em que ela pode ser publicada pelo selo
-function Selos({ lista, publicar }: { lista: AnuncioLinha[]; publicar?: { peca: string; canais: Canal[] } }) {
+// publicar: id da peça e os canais conectados onde dá para publicá-la pelo selo
+function Selos({ lista, publicar }: { lista: AnuncioLinha[]; publicar?: { pecaId: string; canais: Canal[] } }) {
   return (
     <div className="chans">
       {CANAIS_ESTOQUE.map((c) => {
         const a = lista.find((x) => x.canal === c);
-        const pagina = !a && publicar?.canais.includes(c) ? PUBLICAR[c] : undefined;
-        const titulo = `${CANAIS[c].nome}: ${a ? SITUACAO_ANUNCIO[a.situacao] : pagina ? "publicar" : "não anunciado"}`;
+        const podePublicar = !a && PUBLICAR[c] && publicar?.canais.includes(c);
+        const titulo = `${CANAIS[c].nome}: ${a ? SITUACAO_ANUNCIO[a.situacao] : podePublicar ? "publicar" : "não anunciado"}`;
         const selo = (
           <span className={`chb ${a ? SELO[a.situacao] : "st-none"}`} style={{ ["--c" as string]: `var(--c-${CANAIS[c].cor})` }} title={titulo} aria-label={titulo}>
             {CANAIS[c].sigla}
           </span>
         );
-        const destino = a?.url ?? (pagina ? `${pagina}?peca=${publicar!.peca}` : null);
+        const destino = a?.url ?? (podePublicar ? `${PUBLICAR[c]}?peca=${publicar!.pecaId}` : null);
         return destino ? (
           <a key={c} href={destino} target={a ? "_blank" : undefined} rel="noreferrer" style={{ textDecoration: "none" }}>
             {selo}
@@ -107,16 +107,17 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
     : undefined;
   const condicao = and(eq(pecas.contaId, conta.id), busca, filtro === "todas" ? undefined : eq(pecas.situacao, filtro));
 
-  const paraPublicar = [
+  const conectados = [
     ...new Set(
       (
         await db
           .select({ canal: conexoesCanal.canal })
           .from(conexoesCanal)
-          .where(and(eq(conexoesCanal.contaId, conta.id), inArray(conexoesCanal.canal, ["shopee", "shein"]), eq(conexoesCanal.situacao, "ativa")))
+          .where(and(eq(conexoesCanal.contaId, conta.id), eq(conexoesCanal.situacao, "ativa")))
       ).map((c) => c.canal),
     ),
   ];
+  const publicar = (it: { id: string; situacao: string }) => (it.situacao === "disponivel" ? { pecaId: it.id, canais: conectados } : undefined);
   const [porSituacao, [noAr], [{ total }], linhas] = await Promise.all([
     db
       .select({ situacao: pecas.situacao, n: count(), valor: sum(sql`${pecas.precoCentavos} * ${pecas.quantidade}`), unidades: sum(pecas.quantidade) })
@@ -257,7 +258,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
                 <div className="cb">
                   <div className="t">{it.titulo}</div>
                   <span className="tag" style={{ alignSelf: "flex-start" }}>{it.sku}</span>
-                  <Selos lista={anunciosDe(it.id)} publicar={paraPublicar.length && it.situacao === "disponivel" ? { peca: it.id, canais: paraPublicar } : undefined} />
+                  <Selos lista={anunciosDe(it.id)} publicar={publicar(it)} />
                   <div className="pr">
                     <b className="num">{reais(it.precoCentavos)}</b>
                     <span className="num muted" style={{ fontSize: ".78rem" }}>{dias(it.criadoEm)}d</span>
@@ -294,7 +295,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
                     <span className={`pill ${cls}`}>{txt}</span>
                   </div>
                 </div>
-                <Selos lista={anunciosDe(it.id)} publicar={paraPublicar.length && it.situacao === "disponivel" ? { peca: it.id, canais: paraPublicar } : undefined} />
+                <Selos lista={anunciosDe(it.id)} publicar={publicar(it)} />
                 <div className="r num">{reais(it.precoCentavos)}</div>
                 <div className="r num">{it.quantidade}</div>
                 <div className="r num muted">{dias(it.criadoEm)}d</div>
