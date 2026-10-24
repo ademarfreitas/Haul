@@ -29,7 +29,7 @@ autoriza e volta para o Plist. O Plist guarda só os tokens, cifrados com `CHAVE
 ## 2. Criar o client do Plist
 
 Os termos de uso e a política de privacidade precisam ter endereço público (a Magalu mostra os links
-ao lojista). Troque `SEU-ENDERECO` por `https://haul1.vercel.app` (depois `https://app.plist.com.br`).
+ao lojista). Troque `SEU-ENDERECO` por `https://app.plist.com.br`.
 Num PowerShell, tudo numa linha só:
 
 ```

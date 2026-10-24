@@ -21,6 +21,8 @@ const pagina = [
   // O visualizador de artefatos já traz essa base; sem ela, .modal{display:grid} vence o atributo hidden.
   '<link rel="icon" type="image/svg+xml" href="' + favicon + '">',
   "<style>[hidden]{display:none!important}body{margin:0}</style>",
+  // Guarda o #seção do link antes que o protótipo troque o endereço para #site.
+  "<script>window.secaoDoLink = decodeURIComponent(location.hash.slice(1));</script>",
   "</head>",
   "<body>",
   trecho.trim(),
@@ -33,6 +35,12 @@ const pagina = [
   "  e.preventDefault(); e.stopImmediatePropagation();",
   "  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) : '/entrar';",
   "}, true);",
+  // Link direto para uma seção: plist.com.br/#planos (ou #s-planos) rola até ela ao abrir.
+  "window.addEventListener('load', function () {",
+  "  var h = window.secaoDoLink;",
+  "  var s = h && (document.getElementById('s-' + h) || document.getElementById(h));",
+  "  if (s) s.scrollIntoView();",
+  "});",
   "</script>",
   "</body>",
   "</html>",
