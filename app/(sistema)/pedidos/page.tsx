@@ -4,6 +4,7 @@ import { obterDb } from "@/db/cliente";
 import { pecas, pedidos } from "@/db/schema";
 import { CANAIS, PORTAL_SELLER_MAGALU, reais } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
+import { pedidoNoSellerCentral } from "@/lib/amazon";
 import { AtualizarPedidos } from "../_partes/atualizar-pedidos";
 
 export const dynamic = "force-dynamic";
@@ -171,6 +172,11 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
                       >
                         {o.situacao === "pago" ? "Organizar envio" : o.situacao === "pronto_para_envio" ? "Imprimir" : "Reimprimir"}
                       </a>
+                    ) : o.canal === "amazon" && d?.logistica !== "FBA" && o.situacao === "pago" && o.idExterno ? (
+                      // a etiqueta do DBA (e a do envio próprio) sai no Seller Central
+                      <a className="btn small primary" href={pedidoNoSellerCentral(o.idExterno)} target="_blank" rel="noreferrer">
+                        Etiqueta no Seller Central
+                      </a>
                     ) : o.canal === "magalu" && ["pago", "pronto_para_envio"].includes(o.situacao) ? (
                       // NF-e e etiqueta da Magalu ainda pelo Portal do Seller
                       <a className="btn small primary" href={PORTAL_SELLER_MAGALU} target="_blank" rel="noreferrer">
@@ -178,7 +184,7 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
                       </a>
                     ) : (
                       <span className="muted" style={{ fontSize: ".8rem" }}>
-                        {d?.logistica === "Full" ? (o.canal === "shopee" ? "Full: a Shopee envia" : "Full: o ML envia") : "—"}
+                        {d?.logistica === "FBA" ? "FBA: a Amazon envia" : d?.logistica === "Full" ? (o.canal === "shopee" ? "Full: a Shopee envia" : "Full: o ML envia") : "—"}
                       </span>
                     )}
                   </td>

@@ -160,6 +160,11 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
               Publicar também na Shopee
             </Link>
           )}
+          {f.publicado && (
+            <Link className="btn" href={`/novo-anuncio/amazon?peca=${f.pecaId}`}>
+              Publicar também na Amazon
+            </Link>
+          )}
           <Link className="btn" href="/estoque">
             Ver estoque
           </Link>

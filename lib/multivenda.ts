@@ -1,6 +1,6 @@
 // Multivenda: vendeu num canal, os anúncios da mesma peça nos outros canais acompanham.
-// - acabou o estoque: pausa no Mercado Livre, deslista na Shopee e zera o estoque na Magalu (dá para voltar,
-//   se a venda for cancelada);
+// - acabou o estoque: pausa no Mercado Livre, deslista na Shopee e zera a quantidade na Amazon e na Magalu
+//   (dá para voltar, se a venda for cancelada);
 // - ainda sobra: ajusta a quantidade nos outros canais.
 // Se o canal recusar, o anúncio fica "erro" e nasce a tarefa "Venda dupla" para o lojista tirar à mão.
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
@@ -9,9 +9,11 @@ import { anuncios, pecas, tarefas } from "@/db/schema";
 import { CANAIS, type Canal } from "@/lib/canais";
 import { chamarApi, ErroMl, tokenValido } from "@/lib/mercado-livre";
 import { chamarShopee, ErroShopee, lojaValida } from "@/lib/shopee";
+import { ErroAmazon } from "@/lib/amazon";
+import { quantidadeNaAmazon } from "@/lib/amazon-anuncio";
 import { ErroMagalu, lojaMagaluValida, mudarEstoqueMagalu, skuDoAnuncioMagalu } from "@/lib/magalu";
 
-const erroDoCanal = (e: unknown): e is ErroMl | ErroShopee | ErroMagalu => e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroMagalu;
+const erroDeCanal = (e: unknown) => e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu;
 
 type Anuncio = { id: string; canal: Canal; idExterno: string | null; conexaoId: string | null; titulo: string | null };
 
@@ -38,8 +40,13 @@ async function aplicarNoCanal(a: Anuncio, quantidade: number): Promise<void> {
     if (falha) throw new ErroShopee(400, "recusado", falha.fail_message || falha.failed_reason || "A Shopee recusou a mudança.");
     return;
   }
+  if (a.canal === "amazon") {
+    // na Amazon não existe pausar o anúncio do vendedor: sem quantidade, ele sai da vitrine
+    await quantidadeNaAmazon(a.conexaoId, a.idExterno, Math.max(quantidade, 0));
+    return;
+  }
   if (a.canal === "magalu") {
-    // a Magalu não tem pausa: estoque zero tira do ar
+    // a Magalu também não tem pausa: estoque zero tira do ar
     await mudarEstoqueMagalu((await lojaMagaluValida(a.conexaoId)).accessToken, skuDoAnuncioMagalu(a.idExterno), quantidade);
     return;
   }
@@ -69,8 +76,8 @@ export async function acompanharVenda(pecaId: string, origem: Canal): Promise<vo
         if (zerou) await db.update(anuncios).set({ situacao: "removido", removidoEm: new Date(), ultimoErro: null }).where(eq(anuncios.id, a.id));
       } catch (e) {
         falhou = true;
-        const motivo = erroDoCanal(e) ? e.message : "o canal não respondeu";
-        console.error(`multivenda ${a.canal} falhou:`, erroDoCanal(e) ? e.codigo : e);
+        const motivo = erroDeCanal(e) ? (e as Error).message : "o canal não respondeu";
+        console.error(`multivenda ${a.canal} falhou:`, erroDeCanal(e) ? (e as ErroMl).codigo : e);
         await db.update(anuncios).set({ situacao: zerou ? "erro" : undefined, ultimoErro: motivo.slice(0, 500) }).where(eq(anuncios.id, a.id));
         await db.insert(tarefas).values({
           contaId: peca.contaId,
@@ -128,7 +135,7 @@ export async function desfazerVenda(anuncio: { id: string; pecaId: string }, qua
         await reativarNoCanal(a, peca.quantidade);
         await db.update(anuncios).set({ situacao: "ativo", removidoEm: null, ultimoErro: null }).where(eq(anuncios.id, a.id));
       } catch (e) {
-        const motivo = erroDoCanal(e) ? e.message : "o canal não respondeu";
+        const motivo = erroDeCanal(e) ? (e as Error).message : "o canal não respondeu";
         await db.insert(tarefas).values({
           contaId: peca.contaId,
           tipo: "outra",
@@ -158,6 +165,10 @@ async function reativarNoCanal(a: Anuncio, quantidade: number): Promise<void> {
     const r = await chamarShopee<Resposta>("/api/v2/product/unlist_item", loja, { json: { item_list: [{ item_id: itemId, unlist: false }] } });
     const falha = r.response?.failure_list?.[0];
     if (falha) throw new ErroShopee(400, "recusado", falha.fail_message || falha.failed_reason || "A Shopee recusou reativar.");
+    return;
+  }
+  if (a.canal === "amazon") {
+    await quantidadeNaAmazon(a.conexaoId, a.idExterno, quantidade);
     return;
   }
   if (a.canal === "magalu") {

@@ -7,16 +7,18 @@ import { CANAIS } from "@/lib/canais";
 import { contaAtual } from "@/lib/conta";
 import { ErroMl } from "@/lib/mercado-livre";
 import { importarMercadoLivre, type ResultadoImportacao } from "@/lib/ml-importar";
+import { ErroShopee } from "@/lib/shopee";
+import { ErroAmazon } from "@/lib/amazon";
 import { ErroMagalu } from "@/lib/magalu";
 import { importarMagalu } from "@/lib/magalu-importar";
-import { ErroShopee } from "@/lib/shopee";
+import { importarAmazon } from "@/lib/amazon-importar";
 import { importarShopee } from "@/lib/shopee-importar";
 
 export type EstadoSinc = { em?: string; resultados?: ResultadoImportacao[]; erros?: string[] };
 
-const IMPORTAR = { mercado_livre: importarMercadoLivre, shopee: importarShopee, magalu: importarMagalu } as const;
+const IMPORTAR = { mercado_livre: importarMercadoLivre, shopee: importarShopee, amazon: importarAmazon, magalu: importarMagalu } as const;
 
-// Sincroniza todas as contas ativas da conta (Mercado Livre e Shopee). Uma conta que falha não para as outras.
+// Sincroniza todas as contas ativas da conta (Mercado Livre, Shopee, Amazon e Magalu). Uma conta que falha não para as outras.
 export async function sincronizar(_: EstadoSinc): Promise<EstadoSinc> {
   const atual = await contaAtual();
   if (!atual) return { erros: ["Sua sessão terminou. Entre de novo."] };
@@ -31,18 +33,17 @@ export async function sincronizar(_: EstadoSinc): Promise<EstadoSinc> {
         eq(conexoesCanal.situacao, "ativa"),
       ),
     );
-  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre, a Shopee ou a Magalu em Canais."] };
+  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre, a Shopee, a Amazon ou a Magalu em Canais."] };
 
   const resultados: ResultadoImportacao[] = [];
   const erros: string[] = [];
-  // ML primeiro, depois Shopee e Magalu: assim a peça já existe quando o anúncio de mesmo SKU chega do canal seguinte
-  const vez = (c: string) => Object.keys(IMPORTAR).indexOf(c);
-  const ordem = [...conexoes].sort((a, b) => vez(a.canal) - vez(b.canal));
+  // ML primeiro: assim a peça já existe quando o anúncio de mesmo SKU chega dos outros canais
+  const ordem = [...conexoes].sort((a, b) => Number(a.canal !== "mercado_livre") - Number(b.canal !== "mercado_livre"));
   for (const c of ordem) {
     try {
       resultados.push(await IMPORTAR[c.canal as keyof typeof IMPORTAR](c.id));
     } catch (e) {
-      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroMagalu ? e : null;
+      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu ? e : null;
       // só o código: a mensagem do canal pode trazer dados da conta
       console.error(`sincronizar ${c.canal} falhou:`, erroCanal ? erroCanal.codigo : e);
       const quem = c.apelido ?? CANAIS[c.canal].nome;
