@@ -44,7 +44,7 @@ o que falta fazer até o dinheiro ser liberado.
   CRM (`app/(sistema)/crm`, `lib/crm*.ts`, `docs/crm.md`, 24/10/2026): só no Avançado (e no teste); abas Hoje, Clientes,
   Funil e Campanhas; clientes saem dos pedidos; contato direto (WhatsApp, campanhas) só com cliente próprio, nunca com
   comprador de marketplace. Testes: `npm run testar`.
-  Avisos segue "em construção" (depende do WhatsApp Business); cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
+  Avisos segue "em construção" (avisos por SMS, decidido 24/10/2026); cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
   `app/(sistema)/sistema.css` a partir do `<style>` dele.
   Por cima vem `app/(sistema)/tema.css` (escrito à mão, 24/10/2026): menu escuro com ícones e grupos, barra no topo,
   cartões e tabelas novos. Entrar/cadastro/primeiros passos em duas colunas (`app/_acesso/moldura.tsx`, `app/estilo.css`).
