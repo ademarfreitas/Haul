@@ -139,3 +139,36 @@ export async function publicarItem(token: string, n: NovoItem): Promise<ItemCria
   }
   return item;
 }
+
+// Por que a conta não pode anunciar ("seller.unable_to_list"): o /users/me traz status.list com os códigos.
+// Os códigos não têm lista oficial; o texto sai pelo pedaço reconhecido, e o código cru fica no fim.
+type StatusMl = { allow?: boolean; codes?: string[] };
+type UsuarioComStatus = {
+  status?: { list?: StatusMl; sell?: StatusMl; mercadoenvios?: string; confirmed_email?: boolean; site_status?: string };
+};
+
+const PENDENCIAS: [RegExp, string][] = [
+  [/email/, "Confirme o e-mail da conta do Mercado Livre."],
+  [/phone|telefone/, "Cadastre e confirme um telefone na conta do Mercado Livre."],
+  [/address|adress|zip|endereco/, "Complete o endereço da conta do Mercado Livre (é de onde as vendas saem)."],
+  [/identi|kyc|document|cpf|cnpj|doc_/, "Valide sua identidade no Mercado Livre (documento e selfie, em Meu perfil)."],
+  [/billing|fiscal|tax|invoice/, "Complete os dados fiscais e de faturamento no Mercado Livre."],
+  [/mercadoenvios|shipping|me2/, "Aceite o Mercado Envios na conta do Mercado Livre."],
+  [/blocked|block|restrict|suspend|penalt|fraud|inactive|deactivat/, "A conta está com restrição no Mercado Livre. Veja o aviso em Minha conta no site do ML ou fale com o atendimento deles."],
+];
+
+export function textoPendencia(codigo: string): string {
+  const c = codigo.toLowerCase();
+  return PENDENCIAS.find(([re]) => re.test(c))?.[1] ?? `Pendência na conta do Mercado Livre (${codigo}).`;
+}
+
+export async function pendenciasVendedor(token: string): Promise<{ podeAnunciar: boolean | null; codigos: string[]; textos: string[] }> {
+  const u = await chamarApi<UsuarioComStatus>("/users/me", token);
+  const st = u.status ?? {};
+  const codigos = [...new Set([...(st.list?.codes ?? []), ...(st.sell?.codes ?? [])])];
+  if (st.confirmed_email === false) codigos.push("email_not_confirmed");
+  if (st.mercadoenvios === "not_accepted") codigos.push("mercadoenvios_not_accepted");
+  if (st.site_status && st.site_status !== "active") codigos.push(`site_status_${st.site_status}`);
+  const textos = [...new Set(codigos.map(textoPendencia))];
+  return { podeAnunciar: st.list?.allow ?? null, codigos, textos };
+}

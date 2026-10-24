@@ -41,6 +41,7 @@ export class ErroMl extends Error {
     public codigo: string,
     mensagem: string,
     public causas: string[] = [],
+    public codigosCausa: string[] = [],
   ) {
     super(mensagem);
   }
@@ -141,7 +142,7 @@ export async function chamarApi<T>(
   });
   const json = (await r.json().catch(() => ({}))) as T & { error?: string; message?: string; cause?: unknown };
   if (!r.ok) {
-    throw new ErroMl(r.status, json.error ?? "erro_desconhecido", json.message ?? `API ${r.status}`, causas(json.cause));
+    throw new ErroMl(r.status, json.error ?? "erro_desconhecido", json.message ?? `API ${r.status}`, causas(json.cause), codigosCausa(json.cause));
   }
   return json;
 }
@@ -157,11 +158,18 @@ export async function baixarApi(caminho: string, accessToken: string): Promise<R
 }
 
 // o ML explica a recusa de um anúncio em cause: [{ code, message, type }]; só os erros, sem os avisos
-function causas(cause: unknown): string[] {
+function errosDaCausa(cause: unknown): { code?: unknown; message?: unknown }[] {
   if (!Array.isArray(cause)) return [];
-  return cause
-    .filter((c) => c && typeof c === "object" && (c as { type?: string }).type !== "warning")
-    .map((c) => String((c as { message?: unknown }).message ?? (c as { code?: unknown }).code ?? ""))
+  return cause.filter((c) => c && typeof c === "object" && (c as { type?: string }).type !== "warning");
+}
+function causas(cause: unknown): string[] {
+  return errosDaCausa(cause)
+    .map((c) => String(c.message ?? c.code ?? ""))
+    .filter(Boolean);
+}
+function codigosCausa(cause: unknown): string[] {
+  return errosDaCausa(cause)
+    .map((c) => String(c.code ?? ""))
     .filter(Boolean);
 }
 

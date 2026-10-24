@@ -7,6 +7,7 @@ import { contaAtual } from "@/lib/conta";
 import { ErroMl, tokenValido } from "@/lib/mercado-livre";
 import {
   atributosObrigatorios,
+  pendenciasVendedor,
   publicarItem,
   sugerirCategorias,
   taxaEstimada,
@@ -18,10 +19,41 @@ import {
 const CONDICOES = ["nova_com_etiqueta", "nova_sem_etiqueta", "seminova", "usada_bom_estado", "usada_com_detalhes"] as const;
 type Condicao = (typeof CONDICOES)[number];
 
+// recusas comuns do ML, em português; o resto mostra o texto que o próprio ML mandou
+const RECUSAS: [RegExp, string][] = [
+  [/unable_to_list|seller\.forbidden|user\.forbidden/, "Sua conta do Mercado Livre não está liberada para anunciar."],
+  [/category.*(invalid|not_leaf|restricted|forbidden)/, "Essa categoria não aceita anúncio desta conta. Escolha outra categoria."],
+  [/price.*invalid|price_minimum|price.*min/, "O preço está fora do permitido para essa categoria."],
+  [/title.*(invalid|length|long)/, "O título não foi aceito: use até 60 caracteres, sem e-mail, telefone ou link."],
+  [/pictures?.*(invalid|required|minimum)/, "O Mercado Livre não aceitou as fotos. Envie de novo, em JPG ou PNG com pelo menos 500 px."],
+  [/attributes?.*(missing|required|invalid)/, "Falta preencher ou corrigir algum dado da ficha técnica."],
+  [/listing_type/, "Esse tipo de anúncio (Clássico/Premium) não está disponível para esta conta ou categoria."],
+  [/shipping|mode\.not_allowed|me2/, "A forma de envio não foi aceita. Confira se o Mercado Envios está ativo na conta do ML."],
+];
+
 function mensagemMl(e: unknown): string {
   if (!(e instanceof ErroMl)) return "Não deu para falar com o Mercado Livre agora. Tente de novo.";
   if (e.codigo === "reconectar") return "A autorização do Mercado Livre venceu. Reconecte em Canais.";
+  const traduzidas = [...new Set([e.codigo, ...e.codigosCausa].map((c) => RECUSAS.find(([re]) => re.test(c.toLowerCase()))?.[1]).filter(Boolean))];
+  if (traduzidas.length) return traduzidas.join(" ");
   return e.causas.length ? e.causas.join(" ") : e.message;
+}
+
+function contaBloqueada(e: unknown): boolean {
+  return e instanceof ErroMl && [e.codigo, ...e.codigosCausa].some((c) => /unable_to_list|seller\.forbidden|user\.forbidden/.test(c));
+}
+
+// a conta não pode anunciar: pergunta ao ML o porquê e devolve o que o vendedor precisa fazer
+async function motivosDaConta(token: string): Promise<string[]> {
+  try {
+    const p = await pendenciasVendedor(token);
+    console.error("ML sem permissão para anunciar:", p.podeAnunciar, p.codigos.join(","));
+    if (p.textos.length) return p.textos;
+    if (p.podeAnunciar === false) return ["O Mercado Livre bloqueou anúncios nesta conta sem dizer o motivo. Veja os avisos em mercadolivre.com.br, em Minha conta."];
+    return ["A conta está liberada para vender, então o bloqueio deve ser desta categoria (ebooks e produtos digitais têm regras próprias). Teste com uma categoria de produto físico."];
+  } catch {
+    return ["Abra mercadolivre.com.br, em Minha conta, e veja se há cadastro, documento ou endereço pendente."];
+  }
 }
 
 // conexão do ML da conta de quem está usando; null se não for dela
@@ -129,13 +161,14 @@ export async function salvarAnuncio(_: EstadoAnuncio, f: FormData): Promise<Esta
   let taxa: number | null = null;
   let dono: Awaited<ReturnType<typeof conexaoDaConta>> = null;
   if (publicar) {
+    let token = "";
     dono = await conexaoDaConta(conexaoId);
     if (!dono) return { erro: "Conecte o Mercado Livre em Canais para publicar." };
     if (!categoriaId) return { erro: "Escolha a categoria do Mercado Livre." };
     if (!condicao) return { erro: "Escolha o estado da peça." };
     if (!fotos.length) return { erro: "O Mercado Livre pede pelo menos uma foto." };
     try {
-      const token = await tokenValido(dono.conexaoId);
+      token = await tokenValido(dono.conexaoId);
       taxa = await taxaEstimada(token, precoCentavos, categoriaId, tipo);
       publicado = await publicarItem(token, {
         titulo,
@@ -150,6 +183,7 @@ export async function salvarAnuncio(_: EstadoAnuncio, f: FormData): Promise<Esta
       });
     } catch (e) {
       console.error("publicar no ML falhou:", e instanceof ErroMl ? e.codigo : e);
+      if (contaBloqueada(e) && token) return { erro: mensagemMl(e), causas: await motivosDaConta(token) };
       return { erro: "O Mercado Livre recusou o anúncio.", causas: [mensagemMl(e)] };
     }
   }
