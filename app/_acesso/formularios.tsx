@@ -3,7 +3,7 @@
 // (acoes.ts); aqui só o que ajuda a digitar.
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { cadastrar, entrar, salvarPrimeirosPassos, type Estado } from "./acoes";
+import { cadastrar, definirNovaSenha, entrar, pedirNovaSenha, salvarPrimeirosPassos, type Estado } from "./acoes";
 
 function Enviar({ children }: { children: string }) {
   const { pending } = useFormStatus();
@@ -46,9 +46,41 @@ export function FormEntrar({ volta }: { volta: string }) {
       <input type="hidden" name="volta" value={v.volta ?? volta} />
       <label>E-mail<input name="email" type="email" autoComplete="email" required defaultValue={v.email} /></label>
       <label>Senha<input name="senha" type="password" autoComplete="current-password" required /></label>
-      <label className="marcar"><input type="checkbox" name="manter" defaultChecked /> Manter conectado</label>
+      <div className="linha">
+        <label className="marcar"><input type="checkbox" name="manter" defaultChecked /> Manter conectado</label>
+        <a className="link-pequeno" href="/esqueci-senha">Esqueceu a senha?</a>
+      </div>
       <Erro estado={estado} />
       <Enviar>Entrar</Enviar>
+    </form>
+  );
+}
+
+export function FormEsqueciSenha() {
+  const [estado, acao] = useActionState(pedirNovaSenha, {});
+  if (estado.ok) return <p className="msg-ok" aria-live="polite">{estado.ok}</p>;
+  return (
+    <form action={acao} className="formulario">
+      <label>E-mail da conta<input name="email" type="email" autoComplete="email" required defaultValue={estado.valores?.email} /></label>
+      <Erro estado={estado} />
+      <Enviar>Enviar link</Enviar>
+    </form>
+  );
+}
+
+export function FormNovaSenha({ token }: { token: string }) {
+  const [estado, acao] = useActionState(definirNovaSenha, {});
+  return (
+    <form action={acao} className="formulario">
+      <input type="hidden" name="t" value={estado.valores?.t ?? token} />
+      <label>
+        Senha nova
+        <input name="senha" type="password" autoComplete="new-password" required minLength={10} />
+        <span className="dica">Pelo menos 10 caracteres.</span>
+      </label>
+      <label>Repita a senha nova<input name="repetir" type="password" autoComplete="new-password" required minLength={10} /></label>
+      <Erro estado={estado} />
+      <Enviar>Salvar e entrar</Enviar>
     </form>
   );
 }

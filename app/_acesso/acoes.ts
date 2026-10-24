@@ -7,11 +7,13 @@ import { obterDb } from "@/db/cliente";
 import { contas, indicacoes, usuarios } from "@/db/schema";
 import { contaAtual, destinoSeguro } from "@/lib/conta";
 import { bloqueado, limparFalhas, registrarFalha } from "@/lib/limite";
+import { emailConfigurado, enviarEmail } from "@/lib/email";
+import { gerarTokenSenha, lerTokenSenha, valeParaSenha } from "@/lib/redefinir-senha";
 import { conferirSenha, gerarHash, SENHA_MINIMA } from "@/lib/senha";
 import { abrirSessao, fecharSessao } from "@/lib/sessao";
 import { celularE164, cnpjValido, cpfValido, emailValido, soDigitos } from "@/lib/validar";
 
-export type Estado = { erro?: string; valores?: Record<string, string> };
+export type Estado = { erro?: string; ok?: string; valores?: Record<string, string> };
 
 const texto = (f: FormData, nome: string) => String(f.get(nome) ?? "").trim();
 
@@ -92,6 +94,71 @@ export async function entrar(_: Estado, f: FormData): Promise<Estado> {
   limparFalhas(email);
   await abrirSessao({ c: u.contaId, u: u.id }, manter);
   redirect(destinoSeguro(volta));
+}
+
+// "Esqueci a senha": manda por e-mail um link de 1 hora para criar uma senha nova. A resposta é a
+// mesma exista ou não a conta, para ninguém descobrir quais e-mails têm cadastro.
+export async function pedirNovaSenha(_: Estado, f: FormData): Promise<Estado> {
+  const email = texto(f, "email").toLowerCase();
+  const valores = { email };
+  if (!emailValido(email)) return { erro: "Digite o e-mail da sua conta.", valores };
+  if (!emailConfigurado()) return { erro: "O envio de e-mail ainda não está configurado. Fale com o suporte do Plist.", valores };
+  const chave = "senha:" + email;
+  if (bloqueado(chave)) return { erro: "Muitos pedidos seguidos. Espere 15 minutos e tente de novo.", valores };
+  registrarFalha(chave);
+
+  const [u] = await obterDb()
+    .select({ id: usuarios.id, nome: usuarios.nome, email: usuarios.email, senhaHash: usuarios.senhaHash })
+    .from(usuarios)
+    .where(eq(sql`lower(${usuarios.email})`, email))
+    .limit(1);
+  if (u) {
+    const base = (process.env.APP_URL || "").replace(/\/$/, "");
+    const link = `${base}/nova-senha?t=${encodeURIComponent(gerarTokenSenha(u.id, u.senhaHash))}`;
+    const primeiro = u.nome.split(" ")[0];
+    try {
+      await enviarEmail(
+      u.email,
+      "Crie uma senha nova no Plist",
+      `Olá, ${primeiro}.\n\nPara criar uma senha nova no Plist, abra este link (vale por 1 hora):\n${link}\n\nSe não foi você que pediu, ignore este e-mail. Sua senha continua a mesma.`,
+      `<p>Olá, ${primeiro.replace(/[<>&"]/g, "")}.</p><p>Para criar uma senha nova no Plist, clique no botão abaixo. O link vale por 1 hora.</p>` +
+        `<p><a href="${link}" style="display:inline-block;background:#2B47D0;color:#fff;padding:12px 20px;border-radius:9px;text-decoration:none;font-weight:600">Criar senha nova</a></p>` +
+        `<p style="color:#666;font-size:13px">Se não foi você que pediu, ignore este e-mail. Sua senha continua a mesma.</p>`,
+      );
+    } catch (e) {
+      console.error("esqueci a senha:", e);
+      return { erro: "Não deu para enviar o e-mail agora. Tente de novo em alguns minutos.", valores };
+    }
+  }
+  return { ok: "Se esse e-mail tiver conta no Plist, enviamos um link para criar uma senha nova. Confira a caixa de entrada e o spam." };
+}
+
+export async function definirNovaSenha(_: Estado, f: FormData): Promise<Estado> {
+  const token = texto(f, "t");
+  const senha = String(f.get("senha") ?? "");
+  const repetir = String(f.get("repetir") ?? "");
+  const valores = { t: token };
+  const invalido = { erro: "Este link venceu ou já foi usado. Peça um novo em Esqueci a senha.", valores };
+
+  const dados = lerTokenSenha(token);
+  if (!dados) return invalido;
+  if (senha.length < SENHA_MINIMA) return { erro: `A senha precisa ter pelo menos ${SENHA_MINIMA} caracteres.`, valores };
+  if (senha.length > 200) return { erro: "Essa senha é longa demais.", valores };
+  if (senha !== repetir) return { erro: "As duas senhas não são iguais.", valores };
+
+  const db = obterDb();
+  const [u] = await db
+    .select({ id: usuarios.id, contaId: usuarios.contaId, email: usuarios.email, senhaHash: usuarios.senhaHash })
+    .from(usuarios)
+    .where(eq(usuarios.id, dados.u))
+    .limit(1);
+  if (!u || !valeParaSenha(dados, u.senhaHash)) return invalido;
+
+  // quem recebeu o link no e-mail provou que é dono dele
+  await db.update(usuarios).set({ senhaHash: await gerarHash(senha), emailVerificadoEm: new Date() }).where(eq(usuarios.id, u.id));
+  limparFalhas(u.email.toLowerCase());
+  await abrirSessao({ c: u.contaId, u: u.id }, false);
+  redirect("/inventario");
 }
 
 export async function sair(): Promise<void> {
