@@ -5,6 +5,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal, pedidos, tarefas } from "@/db/schema";
+import { desfazerVenda, registrarVenda } from "@/lib/multivenda";
 import { chamarShopee, ErroShopee, lojaValida } from "@/lib/shopee";
 import type { ResultadoPedidos } from "@/lib/ml-pedidos";
 
@@ -46,7 +47,7 @@ function uf(estado: string | undefined): string | null {
   if (!estado) return null;
   const t = estado.trim();
   if (/^[A-Za-z]{2}$/.test(t)) return t.toUpperCase();
-  return UF[t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()] ?? null;
+  return UF[t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()] ?? null;
 }
 
 function situacao(p: PedidoShopee) {
@@ -199,7 +200,29 @@ export async function importarPedidosShopee(conexaoId: string): Promise<Resultad
     };
 
     let pedidoId: string;
+    // conta como venda (baixa estoque) quando entra já pago ou quando sai de "aguardando pagamento";
+    // desfaz quando uma venda contada é cancelada. As trocas de situação são atômicas no banco,
+    // para duas atualizações ao mesmo tempo não contarem duas vezes.
+    let contar = false;
+    let desfazer = false;
     if (ja) {
+      const pagou = sit !== "aguardando_pagamento" && sit !== "cancelado";
+      const transicao = await db
+        .update(pedidos)
+        .set({ situacao: sit })
+        .where(
+          and(
+            eq(pedidos.id, ja.id),
+            pagou
+              ? eq(pedidos.situacao, "aguardando_pagamento")
+              : sit === "cancelado"
+                ? sql`${pedidos.situacao} not in ('cancelado', 'aguardando_pagamento', 'devolvido')`
+                : sql`false`,
+          ),
+        )
+        .returning({ id: pedidos.id });
+      contar = pagou && transicao.length > 0;
+      desfazer = sit === "cancelado" && transicao.length > 0;
       await db.update(pedidos).set(campos).where(eq(pedidos.id, ja.id));
       pedidoId = ja.id;
       atualizados++;
@@ -228,17 +251,10 @@ export async function importarPedidosShopee(conexaoId: string): Promise<Resultad
       if (!novo) continue;
       pedidoId = novo.id;
       novos++;
-      // venda nova: baixa o estoque da peça (uma vez só, no primeiro registro do pedido)
-      if (anuncio && sit !== "cancelado" && sit !== "aguardando_pagamento") {
-        await db.execute(sql`
-          update pecas set quantidade = greatest(quantidade - ${quantidade}, 0),
-            situacao = case when quantidade - ${quantidade} <= 0 then 'vendida'::situacao_peca else situacao end
-          where id = ${anuncio.pecaId}`);
-        await db.execute(sql`
-          update anuncios set situacao = 'vendido'
-          where id = ${anuncio.id} and exists (select 1 from pecas where id = ${anuncio.pecaId} and situacao = 'vendida')`);
-      }
+      contar = sit !== "cancelado" && sit !== "aguardando_pagamento";
     }
+    if (anuncio && contar) await registrarVenda(anuncio, quantidade, "shopee");
+    if (anuncio && desfazer) await desfazerVenda(anuncio, quantidade, "shopee");
 
     if (ja?.taxaReal == null && taxaReal != null && taxaEstimada != null && Math.abs(taxaReal - taxaEstimada) > TOLERANCIA_TAXA) {
       await db.insert(tarefas).values({

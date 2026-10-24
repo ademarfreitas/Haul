@@ -34,7 +34,7 @@ function Botao({ pronto }: { pronto: boolean }) {
   );
 }
 
-const normal = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase();
+const normal = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
 
 export function FormularioShopee({ loja, peca, fretes }: { loja: { id: string; nome: string }; peca: Peca; fretes: FreteShopee[] }) {
   const [estado, acao] = useActionState(publicarNaShopee, {} as EstadoShopee);
