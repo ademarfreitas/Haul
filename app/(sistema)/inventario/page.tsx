@@ -2,7 +2,7 @@ import Link from "next/link";
 import { and, count, eq, max } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal } from "@/db/schema";
-import { CANAIS, CANAIS_PRONTOS, CONECTAR, ERROS_AMAZON, ERROS_ML, ERROS_SHOPEE, type Canal } from "@/lib/canais";
+import { CANAIS, CANAIS_PRONTOS, CONECTAR, ERROS_AMAZON, ERROS_MAGALU, ERROS_ML, ERROS_SHOPEE, type Canal } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 import { Sincronizar } from "./sincronizar";
 
@@ -22,7 +22,7 @@ const quando = (d: Date | null) =>
 
 // Página inicial do sistema: traz os anúncios das contas conectadas para um inventário só.
 export default async function Inventario({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const { ml, ml_erro, shopee, shopee_erro, amazon, amazon_erro } = await searchParams;
+  const { ml, ml_erro, shopee, shopee_erro, amazon, amazon_erro, magalu, magalu_erro } = await searchParams;
   const { conta } = await exigirConta("/inventario");
 
   const conexoes = await obterDb()
@@ -52,6 +52,8 @@ export default async function Inventario({ searchParams }: { searchParams: Promi
       {shopee_erro && <div className="trialbar bad">{ERROS_SHOPEE[shopee_erro] ?? `Não deu para conectar a Shopee (${shopee_erro}).`}</div>}
       {amazon === "conectado" && <div className="trialbar" style={{ background: "var(--good-soft)", color: "var(--good)" }}>Amazon conectada. Agora traga seus anúncios.</div>}
       {amazon_erro && <div className="trialbar bad">{ERROS_AMAZON[amazon_erro] ?? `Não deu para conectar a Amazon (${amazon_erro}).`}</div>}
+      {magalu === "conectado" && <div className="trialbar" style={{ background: "var(--good-soft)", color: "var(--good)" }}>Magalu conectada. Agora traga seus anúncios.</div>}
+      {magalu_erro && <div className="trialbar bad">{ERROS_MAGALU[magalu_erro] ?? `Não deu para conectar a Magalu (${magalu_erro}).`}</div>}
 
       <div className="inv-hero">
         <svg viewBox="0 0 320 170" role="img" aria-label="Anúncios de vários canais entrando num só inventário">

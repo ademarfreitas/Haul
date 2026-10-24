@@ -53,7 +53,7 @@ const SITUACAO_ANUNCIO: Record<string, string> = {
 type AnuncioLinha = { pecaId: string; canal: Canal; situacao: string; url: string | null };
 
 // canais com tela de publicar uma peça do estoque pelo selo
-const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", amazon: "/novo-anuncio/amazon" };
+const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", amazon: "/novo-anuncio/amazon", magalu: "/novo-anuncio/magalu" };
 
 // publicar: id da peça e os canais conectados onde dá para publicá-la pelo selo
 function Selos({ lista, publicar }: { lista: AnuncioLinha[]; publicar?: { pecaId: string; canais: Canal[] } }) {

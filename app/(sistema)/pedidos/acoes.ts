@@ -9,10 +9,12 @@ import { ErroMl } from "@/lib/mercado-livre";
 import { importarPedidos, type ResultadoPedidos } from "@/lib/ml-pedidos";
 import { ErroShopee } from "@/lib/shopee";
 import { ErroAmazon } from "@/lib/amazon";
+import { ErroMagalu } from "@/lib/magalu";
+import { importarPedidosMagalu } from "@/lib/magalu-pedidos";
 import { importarPedidosAmazon } from "@/lib/amazon-pedidos";
 import { importarPedidosShopee } from "@/lib/shopee-pedidos";
 
-const IMPORTAR = { mercado_livre: importarPedidos, shopee: importarPedidosShopee, amazon: importarPedidosAmazon } as const;
+const IMPORTAR = { mercado_livre: importarPedidos, shopee: importarPedidosShopee, amazon: importarPedidosAmazon, magalu: importarPedidosMagalu } as const;
 
 export type EstadoPedidos = { em?: string; resultados?: ResultadoPedidos[]; erros?: string[] };
 
@@ -30,7 +32,7 @@ export async function atualizarPedidos(_: EstadoPedidos): Promise<EstadoPedidos>
         eq(conexoesCanal.situacao, "ativa"),
       ),
     );
-  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre, a Shopee ou a Amazon em Canais."] };
+  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre, a Shopee, a Amazon ou a Magalu em Canais."] };
 
   const resultados: ResultadoPedidos[] = [];
   const erros: string[] = [];
@@ -38,7 +40,7 @@ export async function atualizarPedidos(_: EstadoPedidos): Promise<EstadoPedidos>
     try {
       resultados.push(await IMPORTAR[c.canal as keyof typeof IMPORTAR](c.id));
     } catch (e) {
-      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon ? e : null;
+      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu ? e : null;
       console.error(`pedidos ${c.canal} falhou:`, erroCanal ? erroCanal.codigo : e);
       const quem = c.apelido ?? CANAIS[c.canal].nome;
       erros.push(erroCanal?.codigo === "reconectar" ? `${quem}: reconecte em Canais.` : `${quem}: não deu para buscar os pedidos agora.`);

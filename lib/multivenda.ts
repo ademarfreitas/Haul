@@ -1,5 +1,5 @@
 // Multivenda: vendeu num canal, os anúncios da mesma peça nos outros canais acompanham.
-// - acabou o estoque: pausa no Mercado Livre, deslista na Shopee e zera a quantidade na Amazon
+// - acabou o estoque: pausa no Mercado Livre, deslista na Shopee e zera a quantidade na Amazon e na Magalu
 //   (dá para voltar, se a venda for cancelada);
 // - ainda sobra: ajusta a quantidade nos outros canais.
 // Se o canal recusar, o anúncio fica "erro" e nasce a tarefa "Venda dupla" para o lojista tirar à mão.
@@ -11,8 +11,9 @@ import { chamarApi, ErroMl, tokenValido } from "@/lib/mercado-livre";
 import { chamarShopee, ErroShopee, lojaValida } from "@/lib/shopee";
 import { ErroAmazon } from "@/lib/amazon";
 import { quantidadeNaAmazon } from "@/lib/amazon-anuncio";
+import { ErroMagalu, lojaMagaluValida, mudarEstoqueMagalu, skuDoAnuncioMagalu } from "@/lib/magalu";
 
-const erroDeCanal = (e: unknown) => e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon;
+const erroDeCanal = (e: unknown) => e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu;
 
 type Anuncio = { id: string; canal: Canal; idExterno: string | null; conexaoId: string | null; titulo: string | null };
 
@@ -42,6 +43,11 @@ async function aplicarNoCanal(a: Anuncio, quantidade: number): Promise<void> {
   if (a.canal === "amazon") {
     // na Amazon não existe pausar o anúncio do vendedor: sem quantidade, ele sai da vitrine
     await quantidadeNaAmazon(a.conexaoId, a.idExterno, Math.max(quantidade, 0));
+    return;
+  }
+  if (a.canal === "magalu") {
+    // a Magalu também não tem pausa: estoque zero tira do ar
+    await mudarEstoqueMagalu((await lojaMagaluValida(a.conexaoId)).accessToken, skuDoAnuncioMagalu(a.idExterno), quantidade);
     return;
   }
   throw new Error(`canal ${a.canal} ainda não fala com o Plist`);
@@ -163,6 +169,10 @@ async function reativarNoCanal(a: Anuncio, quantidade: number): Promise<void> {
   }
   if (a.canal === "amazon") {
     await quantidadeNaAmazon(a.conexaoId, a.idExterno, quantidade);
+    return;
+  }
+  if (a.canal === "magalu") {
+    await mudarEstoqueMagalu((await lojaMagaluValida(a.conexaoId)).accessToken, skuDoAnuncioMagalu(a.idExterno), quantidade);
     return;
   }
   throw new Error(`canal ${a.canal} ainda não fala com o Plist`);
