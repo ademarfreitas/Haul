@@ -64,9 +64,9 @@ o que falta fazer até o dinheiro ser liberado.
   documento, celular) → sistema. Os primeiros passos não ficam no menu.
 - **30 dias grátis sem cartão**; depois cobra o plano; sem pagamento em 5 dias a conta fica só leitura.
   Indicação: 30 dias de plano para quem indica, quando o indicado paga a primeira mensalidade.
-- **Planos** (24/10/2026, `lib/planos.ts`): Essencial R$ 14,90 (1 canal, 30 anúncios, 1 usuário);
-  Profissional R$ 29,90 (2 canais, 100 anúncios, 3 usuários, 10 IA/mês, avisos no WhatsApp);
-  Avançado R$ 59,90 (todos os canais, 500 anúncios, 10 usuários, 50 IA/mês, avisos e relatório no WhatsApp).
+- **Planos** (24/10/2026, `lib/planos.ts`): Essencial R$ 14,90 (2 canais, 30 anúncios, 1 usuário);
+  Profissional R$ 39,90 (3 canais, 100 anúncios, 3 usuários, 10 IA/mês, avisos por SMS);
+  Avançado R$ 59,90 (todos os canais, 500 anúncios, 5 usuários, 30 IA/mês, avisos por SMS e relatório no WhatsApp).
 - **Site público** com Planos e Entrar no canto superior direito; fonte **Inter**.
 
 ## Em aberto (decidir com o usuário)

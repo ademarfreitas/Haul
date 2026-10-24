@@ -4,20 +4,20 @@ export const PLANOS = [
     id: "essencial",
     nome: "Essencial",
     precoCentavos: 1490,
-    itens: ["1 canal conectado", "Até 30 anúncios", "1 usuário", "Etiquetas em PDF e ZPL", "Avisos por e-mail"],
+    itens: ["Até 2 canais conectados", "Até 30 anúncios", "1 usuário", "Etiquetas em PDF e ZPL", "Avisos por e-mail"],
   },
   {
     id: "profissional",
     nome: "Profissional",
-    precoCentavos: 2990,
+    precoCentavos: 3990,
     selo: "Mais escolhido",
-    itens: ["Até 2 canais conectados", "Até 100 anúncios", "Até 3 usuários", "IA nos anúncios: 10 por mês", "Avisos por WhatsApp", "Impressão direta pelo Plist Agente"],
+    itens: ["Até 3 canais conectados", "Até 100 anúncios", "Até 3 usuários", "IA nos anúncios: 10 por mês", "Avisos por SMS", "Impressão direta pelo Plist Agente"],
   },
   {
     id: "avancado",
     nome: "Avançado",
     precoCentavos: 5990,
-    itens: ["Tudo do Profissional", "Todos os canais", "Até 500 anúncios", "Até 10 usuários", "IA nos anúncios: 50 por mês", "Avisos e relatório por WhatsApp", "Command Center com comparação de preços"],
+    itens: ["Tudo do Profissional", "Todos os canais", "Até 500 anúncios", "Até 5 usuários", "IA nos anúncios: 30 por mês", "Avisos por SMS e relatório por WhatsApp", "Command Center com comparação de preços"],
   },
 ] as const;
 
