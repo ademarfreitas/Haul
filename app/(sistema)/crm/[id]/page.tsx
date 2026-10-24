@@ -2,13 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { and, desc, eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
-import { clienteNotas, clientes, pecas, pedidos, usuarios } from "@/db/schema";
+import { clienteNotas, clientes, oportunidades, pecas, pedidos, usuarios } from "@/db/schema";
 import { CANAIS, reais } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 import { clienteProprio, clientesComMedidas, NAO_CONTA, temCrm } from "@/lib/crm";
-import { ORIGENS, SEGMENTOS } from "@/lib/crm-medidas";
+import { ETAPAS } from "@/lib/crm-funil";
+import { diaSP, ORIGENS, SEGMENTOS } from "@/lib/crm-medidas";
 import { adicionarNota, removerEtiqueta, salvarProximoPasso } from "../acoes";
-import { FormCliente, FormEtiqueta } from "../formularios";
+import { FormCliente, FormEtiqueta, FormVenda } from "../formularios";
 import { dataCurta } from "../partes";
 import { Vitrine } from "../vitrine";
 
@@ -36,7 +37,7 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
   const c = todos.find((x) => x.id === id);
   if (!cad || !c) notFound();
 
-  const [compras, notas, disponiveis] = await Promise.all([
+  const [compras, notas, disponiveis, ops] = await Promise.all([
     db
       .select({
         id: pedidos.id,
@@ -68,6 +69,12 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
       .where(and(eq(pecas.contaId, conta.id), eq(pecas.situacao, "disponivel")))
       .orderBy(desc(pecas.criadoEm))
       .limit(300),
+    db
+      .select({ id: oportunidades.id, numero: oportunidades.numero, titulo: oportunidades.titulo, etapa: oportunidades.etapa, valor: oportunidades.valorCentavos })
+      .from(oportunidades)
+      .where(and(eq(oportunidades.contaId, conta.id), eq(oportunidades.clienteId, id)))
+      .orderBy(desc(oportunidades.criadoEm))
+      .limit(10),
   ]);
 
   const valem = compras.filter((p) => !(NAO_CONTA as readonly string[]).includes(p.situacao));
@@ -87,7 +94,7 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
   const linha = [
     ...compras.map((p) => ({
       quando: p.vendidoEm,
-      texto: `${(NAO_CONTA as readonly string[]).includes(p.situacao) ? "Pedido não concluído:" : "Comprou"} ${p.titulo ?? "peça fora do estoque"} por ${reais(p.valor)} no ${CANAIS[p.canal].nome}`,
+      texto: `${(NAO_CONTA as readonly string[]).includes(p.situacao) ? "Pedido não concluído:" : "Comprou"} ${p.titulo ?? "peça fora do estoque"} por ${reais(p.valor)} ${p.canal === "venda_direta" ? "na venda direta" : `no ${CANAIS[p.canal].nome}`}`,
       chave: `p${p.id}`,
     })),
     ...notas.map((n) => ({ quando: n.criadoEm, texto: `${n.autor ? `${n.autor.split(" ")[0]}: ` : ""}${n.texto}`, chave: `n${n.id}` })),
@@ -162,6 +169,37 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
             </button>
           )}
         </form>
+      </div>
+
+      <div className="panel">
+        <div className="ph">
+          <h2>Oportunidades</h2>
+          <Link className="btn small" href={`/crm/oportunidades/nova?cliente=${id}`}>
+            + Oportunidade
+          </Link>
+        </div>
+        {ops.length === 0 ? (
+          <p className="muted" style={{ fontSize: ".86rem" }}>Nenhuma.</p>
+        ) : (
+          <ul style={{ margin: 0, paddingLeft: 18, fontSize: ".9rem" }}>
+            {ops.map((o) => (
+              <li key={o.id}>
+                <Link href={`/crm/oportunidades/${o.id}`}>
+                  #{o.numero} {o.titulo}
+                </Link>{" "}
+                · {ETAPAS[o.etapa].rotulo} · {reais(o.valor)}
+              </li>
+            ))}
+          </ul>
+        )}
+        {proprio && (
+          <>
+            <p className="eyebrow" style={{ marginTop: 14 }}>
+              Vendeu direto para este cliente?
+            </p>
+            <FormVenda id={id} hoje={diaSP(new Date())} pecas={disponiveis.slice(0, 200).map((p) => ({ id: p.id, titulo: p.titulo, preco: reais(p.preco) }))} />
+          </>
+        )}
       </div>
 
       <div className="panel">

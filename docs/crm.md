@@ -24,7 +24,22 @@ Shopee, o primeiro nome na Magalu) e proíbem usar esses dados para marketing. D
   sai dos pedidos na hora, nada fica guardado para envelhecer.
 - `cliente_etiquetas` e `cliente_notas`: interesses e anotações do lojista.
 
-## Próximos PRs
+## Telas (abas do CRM)
 
-2. Clientes e ficha (segmentos por ritmo, o que compra, notas, etiquetas, próximo passo, cadastro de
-   cliente próprio, CSV). 3. Hoje. 4. Funil de oportunidades. 5. Campanhas (só cliente próprio com aceite).
+- **Hoje** (`/crm`, `lib/crm-hoje.ts`): números (clientes que compram, sumindo, funil, conversão em 90 dias), cartões dos
+  segmentos e a lista do dia: contatos marcados, oportunidades vencidas ou paradas há 5 dias, aniversários da semana,
+  sumindo (os que mais compram primeiro), "chegou" (peça nova à venda na categoria + marca ou tamanho que o cliente
+  compra), reconquistar e pós-venda. Botão de WhatsApp com mensagem pronta só para cliente próprio com número.
+- **Clientes** (`/crm/clientes`): segmentos por ritmo (`lib/crm-medidas.ts`), busca, planilha (`/crm/clientes.csv`),
+  ficha (`/crm/[id]`) e cadastro de cliente próprio (`/crm/novo`). Na ficha do cliente próprio dá para **registrar
+  venda direta**: vira pedido `venda_direta`; com peça do estoque, baixa a quantidade e tira dos outros canais
+  (`acompanharVenda`).
+- **Funil** (`/crm/funil`, `lib/crm-funil.ts`): Contato → Qualificado → Proposta enviada → Negociando → Ganho/Perdido,
+  arrastar (computador) ou "Mover" (celular). Perder pede o motivo ("Por que perdemos"); contato sem cadastro vira cliente
+  próprio ao ganhar (acha pelo WhatsApp antes de criar). Previsão ponderada pela etapa, conversão, dias até fechar.
+- **Campanhas** (`/crm/campanhas`): grupo (segmento, categoria comprada, etiqueta, cidade, top 20%, aniversário) +
+  mensagem com {nome} e {empresa}. Só clientes próprios com WhatsApp; oferta só para quem aceitou. Envio um a um pelo
+  WhatsApp do lojista (o botão abre o wa.me e marca enviado). Retorno: quem comprou em 7 dias e quanto.
+
+Fora por enquanto: cashback (precisa de caixa no Plist) e perguntas pelo WhatsApp (precisa do WhatsApp Business).
+Testes das regras puras: `npm run testar`.

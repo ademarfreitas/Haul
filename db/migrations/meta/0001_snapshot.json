@@ -1,5 +1,5 @@
 {
-  "id": "2a7e464e-ee9f-4f3f-ae98-f0496cc3d654",
+  "id": "f4348fa5-1300-4c62-b082-94e017fdcd90",
   "prevId": "b6fa3952-298e-46f3-9e1b-bc091265275b",
   "version": "7",
   "dialect": "postgresql",
@@ -220,6 +220,194 @@
             "id"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.campanha_envios": {
+      "name": "campanha_envios",
+      "schema": "",
+      "columns": {
+        "campanha_id": {
+          "name": "campanha_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "enviado_em": {
+          "name": "enviado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "campanha_envios_campanha_id_campanhas_id_fk": {
+          "name": "campanha_envios_campanha_id_campanhas_id_fk",
+          "tableFrom": "campanha_envios",
+          "tableTo": "campanhas",
+          "columnsFrom": [
+            "campanha_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "campanha_envios_cliente_id_clientes_id_fk": {
+          "name": "campanha_envios_cliente_id_clientes_id_fk",
+          "tableFrom": "campanha_envios",
+          "tableTo": "clientes",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "campanha_envios_campanha_id_cliente_id_pk": {
+          "name": "campanha_envios_campanha_id_cliente_id_pk",
+          "columns": [
+            "campanha_id",
+            "cliente_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.campanhas": {
+      "name": "campanhas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "filtro": {
+          "name": "filtro",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "mensagem": {
+          "name": "mensagem",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "tipo_campanha",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'oferta'"
+        },
+        "criado_por": {
+          "name": "criado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "campanhas_conta_id_numero_index": {
+          "name": "campanhas_conta_id_numero_index",
+          "columns": [
+            {
+              "expression": "conta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "numero",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "campanhas_conta_id_contas_id_fk": {
+          "name": "campanhas_conta_id_contas_id_fk",
+          "tableFrom": "campanhas",
+          "tableTo": "contas",
+          "columnsFrom": [
+            "conta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "campanhas_criado_por_usuarios_id_fk": {
+          "name": "campanhas_criado_por_usuarios_id_fk",
+          "tableFrom": "campanhas",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "criado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -1139,6 +1327,360 @@
             "id"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.oportunidade_eventos": {
+      "name": "oportunidade_eventos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "oportunidade_id": {
+          "name": "oportunidade_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "de": {
+          "name": "de",
+          "type": "etapa_oportunidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "para": {
+          "name": "para",
+          "type": "etapa_oportunidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "texto": {
+          "name": "texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "usuario_id": {
+          "name": "usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "oportunidade_eventos_oportunidade_id_criado_em_index": {
+          "name": "oportunidade_eventos_oportunidade_id_criado_em_index",
+          "columns": [
+            {
+              "expression": "oportunidade_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "oportunidade_eventos_conta_id_contas_id_fk": {
+          "name": "oportunidade_eventos_conta_id_contas_id_fk",
+          "tableFrom": "oportunidade_eventos",
+          "tableTo": "contas",
+          "columnsFrom": [
+            "conta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "oportunidade_eventos_oportunidade_id_oportunidades_id_fk": {
+          "name": "oportunidade_eventos_oportunidade_id_oportunidades_id_fk",
+          "tableFrom": "oportunidade_eventos",
+          "tableTo": "oportunidades",
+          "columnsFrom": [
+            "oportunidade_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "oportunidade_eventos_usuario_id_usuarios_id_fk": {
+          "name": "oportunidade_eventos_usuario_id_usuarios_id_fk",
+          "tableFrom": "oportunidade_eventos",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "usuario_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.oportunidades": {
+      "name": "oportunidades",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "numero": {
+          "name": "numero",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cliente_id": {
+          "name": "cliente_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contato_nome": {
+          "name": "contato_nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "contato_whatsapp": {
+          "name": "contato_whatsapp",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "valor_centavos": {
+          "name": "valor_centavos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "etapa": {
+          "name": "etapa",
+          "type": "etapa_oportunidade",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'contato'"
+        },
+        "origem": {
+          "name": "origem",
+          "type": "origem_cliente",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "proxima_acao": {
+          "name": "proxima_acao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "proxima_data": {
+          "name": "proxima_data",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_perda": {
+          "name": "motivo_perda",
+          "type": "motivo_perda",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "motivo_texto": {
+          "name": "motivo_texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_por": {
+          "name": "criado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "etapa_desde": {
+          "name": "etapa_desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "fechado_em": {
+          "name": "fechado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "oportunidades_conta_id_numero_index": {
+          "name": "oportunidades_conta_id_numero_index",
+          "columns": [
+            {
+              "expression": "conta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "numero",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "oportunidades_conta_id_etapa_index": {
+          "name": "oportunidades_conta_id_etapa_index",
+          "columns": [
+            {
+              "expression": "conta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "etapa",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "oportunidades_cliente_id_index": {
+          "name": "oportunidades_cliente_id_index",
+          "columns": [
+            {
+              "expression": "cliente_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "oportunidades_conta_id_contas_id_fk": {
+          "name": "oportunidades_conta_id_contas_id_fk",
+          "tableFrom": "oportunidades",
+          "tableTo": "contas",
+          "columnsFrom": [
+            "conta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "oportunidades_cliente_id_clientes_id_fk": {
+          "name": "oportunidades_cliente_id_clientes_id_fk",
+          "tableFrom": "oportunidades",
+          "tableTo": "clientes",
+          "columnsFrom": [
+            "cliente_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "oportunidades_criado_por_usuarios_id_fk": {
+          "name": "oportunidades_criado_por_usuarios_id_fk",
+          "tableFrom": "oportunidades",
+          "tableTo": "usuarios",
+          "columnsFrom": [
+            "criado_por"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
@@ -2366,12 +2908,36 @@
         "declaracao_conteudo"
       ]
     },
+    "public.etapa_oportunidade": {
+      "name": "etapa_oportunidade",
+      "schema": "public",
+      "values": [
+        "contato",
+        "qualificado",
+        "proposta",
+        "negociacao",
+        "ganho",
+        "perdido"
+      ]
+    },
     "public.logistica": {
       "name": "logistica",
       "schema": "public",
       "values": [
         "marketplace",
         "propria"
+      ]
+    },
+    "public.motivo_perda": {
+      "name": "motivo_perda",
+      "schema": "public",
+      "values": [
+        "preco",
+        "prazo",
+        "concorrente",
+        "desistiu",
+        "sem_resposta",
+        "outro"
       ]
     },
     "public.origem_cliente": {
@@ -2473,6 +3039,14 @@
         "aberta",
         "concluida",
         "ignorada"
+      ]
+    },
+    "public.tipo_campanha": {
+      "name": "tipo_campanha",
+      "schema": "public",
+      "values": [
+        "oferta",
+        "relacionamento"
       ]
     },
     "public.tipo_pessoa": {

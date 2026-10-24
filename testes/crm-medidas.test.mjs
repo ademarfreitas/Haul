@@ -1,4 +1,4 @@
-// Medidas do CRM (puras): node --experimental-strip-types testes/crm-medidas.test.mjs
+// Medidas do CRM (puras). Rodar com: npm run testar
 import assert from "node:assert/strict";
 import { classifica, diasParaAniversario, etiquetaValida, mede, ritmoDe, ritmoDaLoja } from "../lib/crm-medidas.ts";
 const h = "2026-10-24";

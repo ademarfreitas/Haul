@@ -2,7 +2,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { ORIGENS } from "@/lib/crm-medidas";
-import { adicionarEtiqueta, salvarCliente, type Resposta } from "./acoes";
+import { adicionarEtiqueta, registrarVendaDireta, salvarCliente, type Resposta } from "./acoes";
 
 function Salvar({ children }: { children: string }) {
   const { pending } = useFormStatus();
@@ -71,7 +71,7 @@ export function FormCliente({ c = {} }: { c?: Dados }) {
           <label htmlFor="c-aceite">Como aceitou receber ofertas</label>
           <input id="c-aceite" name="ofertasOrigem" defaultValue={c.ofertasOrigem ?? ""} placeholder="Ex.: pediu no bazar, respondeu no Instagram" maxLength={80} />
         </div>
-        <label className="f s6" style={{ display: "flex", gap: 8, alignItems: "center", fontSize: ".9rem" }}>
+        <label className="f s6" style={{ display: "flex", flexDirection: "row", gap: 8, alignItems: "center", fontSize: ".9rem" }}>
           <input type="checkbox" name="ofertas" defaultChecked={c.ofertas} style={{ width: "auto" }} />
           O cliente aceitou receber ofertas por WhatsApp ou e-mail (LGPD: guarde como ele aceitou; desmarcar apaga o aceite).
         </label>
@@ -92,6 +92,29 @@ export function FormEtiqueta({ id }: { id: string }) {
       <input name="etiqueta" placeholder="Ex.: vintage, plus size, jeans" maxLength={30} style={{ maxWidth: 220 }} aria-label="Nova etiqueta" />
       <button className="btn small" type="submit">
         Adicionar
+      </button>
+      <Msg r={r} />
+    </form>
+  );
+}
+
+export function FormVenda({ id, pecas, hoje }: { id: string; pecas: { id: string; titulo: string; preco: string }[]; hoje: string }) {
+  const [r, acao] = useActionState(registrarVendaDireta, {} as Resposta);
+  return (
+    <form action={acao} style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 10 }}>
+      <input type="hidden" name="id" value={id} />
+      <select name="peca" defaultValue="" aria-label="Peça" style={{ maxWidth: 280 }}>
+        <option value="">Sem peça do estoque</option>
+        {pecas.map((p) => (
+          <option key={p.id} value={p.id}>
+            {p.titulo} · {p.preco}
+          </option>
+        ))}
+      </select>
+      <input name="valor" inputMode="decimal" placeholder="Valor (R$)" aria-label="Valor" style={{ maxWidth: 130 }} required />
+      <input name="dia" type="date" defaultValue={hoje} max={hoje} aria-label="Data" style={{ maxWidth: 170 }} />
+      <button className="btn small primary" type="submit">
+        Registrar venda
       </button>
       <Msg r={r} />
     </form>

@@ -1,152 +1,174 @@
 import Link from "next/link";
-import { CANAIS, reais } from "@/lib/canais";
+import { and, eq, gte, isNull, or } from "drizzle-orm";
+import { obterDb } from "@/db/cliente";
+import { oportunidades } from "@/db/schema";
+import { reais } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 import { clientesComMedidas, ligarPedidosAClientes, temCrm } from "@/lib/crm";
-import { ORDEM_SEGMENTOS, SEGMENTOS, type Segmento } from "@/lib/crm-medidas";
-import { dataCurta } from "./partes";
+import { ETAPAS, resumoDoFunil } from "@/lib/crm-funil";
+import { acoesDoDia, type Acao } from "@/lib/crm-hoje";
+import { diaSP, ORDEM_SEGMENTOS, SEGMENTOS, somaDias } from "@/lib/crm-medidas";
+import { BotaoZap, CabecalhoCrm, dataCurta } from "./partes";
 import { Vitrine } from "./vitrine";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "CRM · Plist" };
 
-export default async function Crm({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
+function Bloco({ titulo, sub, itens }: { titulo: string; sub: string; itens: Acao[] }) {
+  if (!itens.length) return null;
+  return (
+    <div className="panel">
+      <h2>{titulo}</h2>
+      <p className="muted" style={{ fontSize: ".84rem", marginTop: 2 }}>
+        {sub}
+      </p>
+      <Linhas itens={itens} />
+    </div>
+  );
+}
+
+function Linhas({ itens }: { itens: Acao[] }) {
+  return (
+    <ol className="tl">
+      {itens.map((a) => (
+        <li key={a.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+          <div style={{ minWidth: 0 }}>
+            <b>{a.nome}</b>
+            <span className="sub2" style={{ display: "block" }}>
+              {a.detalhe}
+            </span>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flex: "none" }}>
+            <BotaoZap zap={a.zap} semZap={a.semZap} />
+            <Link className="btn small" href={`/crm/${a.id}`}>
+              Ficha
+            </Link>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+export default async function Hoje() {
   const { conta } = await exigirConta("/crm");
   if (!temCrm(conta)) return <Vitrine />;
-  const p = await searchParams;
-  const seg = p.seg && Object.hasOwn(SEGMENTOS, p.seg) ? (p.seg as Segmento) : null;
-  const q = (p.q ?? "").trim().toLowerCase().slice(0, 60);
 
   await ligarPedidosAClientes(conta.id);
-  const { clientes } = await clientesComMedidas(conta.id);
+  const medidas = await clientesComMedidas(conta.id);
+  const hoje = diaSP(new Date());
+  const de = somaDias(hoje, -90);
+  const [acoes, linhasFunil] = await Promise.all([
+    acoesDoDia(conta.id, medidas, conta.nome),
+    obterDb()
+      .select({
+        etapa: oportunidades.etapa,
+        valorCentavos: oportunidades.valorCentavos,
+        origem: oportunidades.origem,
+        motivoPerda: oportunidades.motivoPerda,
+        criadoEm: oportunidades.criadoEm,
+        fechadoEm: oportunidades.fechadoEm,
+        proximaData: oportunidades.proximaData,
+      })
+      .from(oportunidades)
+      .where(and(eq(oportunidades.contaId, conta.id), or(isNull(oportunidades.fechadoEm), gte(oportunidades.fechadoEm, new Date(`${de}T03:00:00Z`))))),
+  ]);
+  const funil = resumoDoFunil(linhasFunil, { de, ate: hoje, hoje });
 
-  const comCompra = clientes.filter((c) => c.compras > 0);
-  const voltaram = comCompra.filter((c) => c.compras >= 2).length;
-  const vendido = comCompra.reduce((s, c) => s + c.totalCentavos, 0);
-  const nVendas = comCompra.reduce((s, c) => s + c.compras, 0);
-  const porSegmento = (s: Segmento) => clientes.filter((c) => c.segmento === s).length;
-  const lista = clientes
-    .filter((c) => (!seg || c.segmento === seg) && (!q || c.nome.toLowerCase().includes(q) || c.etiquetas.some((e) => e.includes(q))))
-    .sort((a, b) => (b.ultima ?? "").localeCompare(a.ultima ?? "") || a.nome.localeCompare(b.nome))
-    .slice(0, 300);
-  const link = (s: Segmento | null) => `/crm${s ? `?seg=${s}` : ""}`;
+  const { clientes, ritmoLoja } = medidas;
+  const compram = clientes.filter((c) => c.compras > 0).length;
+  const sumindo = clientes.filter((c) => c.segmento === "sumindo");
+  const porSegmento = (s: (typeof ORDEM_SEGMENTOS)[number]) => clientes.filter((c) => c.segmento === s).length;
 
   return (
     <>
-      <header className="vhead">
-        <div>
-          <p className="eyebrow">Plano Avançado</p>
-          <h1>CRM</h1>
-          <p className="sub">Quem compra de você, em todos os canais. Os compradores do Mercado Livre e da Shopee entram sozinhos a cada pedido.</p>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <a className="btn" href="/crm/clientes.csv">
-            Planilha
-          </a>
-          <Link className="btn primary" href="/crm/novo">
-            Novo cliente
-          </Link>
-        </div>
-      </header>
+      <CabecalhoCrm aba="hoje" contador={acoes.total} sub="Quem chamar hoje, com a mensagem pronta. Tudo calculado das suas vendas, sem digitar nada." />
       <div className="stats">
         <div className="stat">
-          <p className="eyebrow">Clientes</p>
-          <div className="v">{clientes.length}</div>
+          <p className="eyebrow">Clientes que compram</p>
+          <div className="v">{compram}</div>
+          <div className="d">
+            de {clientes.length} cadastrados · ritmo típico: a cada {ritmoLoja} dias
+          </div>
         </div>
         <div className="stat">
-          <p className="eyebrow">Compraram de novo</p>
-          <div className="v">{voltaram}</div>
-          <div className="d">{comCompra.length ? `${Math.round((voltaram / comCompra.length) * 100)}% de quem comprou` : "—"}</div>
+          <p className="eyebrow">Sumindo</p>
+          <div className="v">{sumindo.length}</div>
+          <div className="d">{reais(sumindo.reduce((s, c) => s + c.ticketCentavos, 0))} em ticket médio em risco</div>
         </div>
         <div className="stat">
-          <p className="eyebrow">Ticket médio</p>
-          <div className="v">{nVendas ? reais(Math.round(vendido / nVendas)) : "—"}</div>
+          <p className="eyebrow">No funil</p>
+          <div className="v">{reais(funil.valorAberto)}</div>
+          <div className="d">
+            {funil.abertas} {funil.abertas === 1 ? "oportunidade" : "oportunidades"} · previsão {reais(funil.previsto)}
+          </div>
         </div>
         <div className="stat">
-          <p className="eyebrow">Sumindo ou perdidos</p>
-          <div className="v">{porSegmento("sumindo") + porSegmento("perdido")}</div>
-          <div className="d">passaram do ritmo de compra</div>
+          <p className="eyebrow">Conversão (90 dias)</p>
+          <div className="v">{funil.conversao == null ? "—" : `${funil.conversao}%`}</div>
+          <div className="d">
+            {funil.ganhas} {funil.ganhas === 1 ? "ganha" : "ganhas"} · {funil.perdidas} {funil.perdidas === 1 ? "perdida" : "perdidas"}
+          </div>
         </div>
       </div>
-      <div className="ordbar">
-        <div className="chips">
-          <Link className="chip" href={link(null)} aria-pressed={!seg}>
-            Todos <span className="mono">{clientes.length}</span>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 18 }}>
+        {ORDEM_SEGMENTOS.map((s) => (
+          <Link key={s} href={`/crm/clientes?seg=${s}`} className="panel" style={{ textDecoration: "none", color: "inherit", margin: 0, padding: "12px 14px" }}>
+            <span className={`pill ${SEGMENTOS[s].pilula}`}>{SEGMENTOS[s].rotulo}</span>
+            <div style={{ fontSize: "1.4rem", fontWeight: 700, marginTop: 6 }}>{porSegmento(s)}</div>
+            <div className="muted" style={{ fontSize: ".78rem", marginTop: 2 }}>
+              {SEGMENTOS[s].acao}
+            </div>
           </Link>
-          {ORDEM_SEGMENTOS.map((s) => (
-            <Link key={s} className="chip" href={link(s)} aria-pressed={seg === s}>
-              {SEGMENTOS[s].rotulo} <span className="mono">{porSegmento(s)}</span>
-            </Link>
-          ))}
+        ))}
+      </div>
+
+      {acoes.total === 0 && (
+        <div className="emptybox">
+          <p>Nada para hoje. Quando alguém passar do ritmo de compra, fizer aniversário ou tiver um contato marcado, aparece aqui.</p>
         </div>
-        <form action="/crm" role="search" style={{ display: "flex", gap: 6 }}>
-          {seg && <input type="hidden" name="seg" value={seg} />}
-          <input type="search" name="q" defaultValue={q} placeholder="Nome ou etiqueta" aria-label="Buscar cliente" style={{ maxWidth: 200 }} />
-        </form>
-      </div>
-      {seg && <p className="muted" style={{ fontSize: ".86rem", margin: "0 0 10px" }}>{SEGMENTOS[seg].acao}</p>}
-      <div className="tablewrap">
-        <table>
-          <tbody>
-            <tr>
-              <th>Cliente</th>
-              <th>Canal</th>
-              <th>Segmento</th>
-              <th className="num">Pedidos</th>
-              <th className="num">Total</th>
-              <th>Última compra</th>
-              <th>Próxima esperada</th>
-            </tr>
-            {lista.length === 0 && (
-              <tr>
-                <td colSpan={7} className="muted" style={{ textAlign: "center", padding: 28 }}>
-                  {clientes.length === 0 ? (
-                    <>
-                      Nenhum cliente ainda. Eles aparecem aqui quando chegam pedidos do Mercado Livre ou da Shopee (veja em <Link href="/pedidos">Pedidos</Link>), ou
-                      cadastre os seus clientes próprios em <Link href="/crm/novo">Novo cliente</Link>.
-                    </>
-                  ) : (
-                    "Nenhum cliente aqui."
-                  )}
-                </td>
-              </tr>
-            )}
-            {lista.map((c) => (
-              <tr key={c.id}>
-                <td className="item">
-                  <Link href={`/crm/${c.id}`}>{c.nome}</Link>
-                  {c.maior && (
-                    <span className="pill p-accent" style={{ marginLeft: 6 }}>
-                      Top 20%
-                    </span>
-                  )}
-                  {(c.cidade || c.etiquetas.length > 0) && (
-                    <span className="sub2">{[c.cidade && `${c.cidade}${c.uf ? `/${c.uf}` : ""}`, ...c.etiquetas].filter(Boolean).join(" · ")}</span>
-                  )}
-                </td>
-                <td>
-                  {c.canal ? (
-                    <>
-                      <span className="chb st-live" style={{ ["--c" as string]: `var(--c-${CANAIS[c.canal].cor})` }}>{CANAIS[c.canal].sigla}</span> {CANAIS[c.canal].nome}
-                    </>
-                  ) : (
-                    "Cliente próprio"
-                  )}
-                </td>
-                <td>
-                  <span className={`pill ${SEGMENTOS[c.segmento].pilula}`}>{SEGMENTOS[c.segmento].um}</span>
-                </td>
-                <td className="num">{c.compras}</td>
-                <td className="num">{reais(c.totalCentavos)}</td>
-                <td>{dataCurta(c.ultima)}</td>
-                <td>
-                  {dataCurta(c.proxima)}
-                  {c.atraso > 0 && <span className="sub2" style={{ color: "var(--warn)" }}>{c.atraso} dias de atraso</span>}
-                </td>
-              </tr>
+      )}
+
+      <Bloco titulo="Contatos marcados" sub="O próximo passo que você marcou na ficha, para hoje ou atrasado." itens={acoes.contatos} />
+
+      {acoes.oportunidades.length > 0 && (
+        <div className="panel">
+          <h2>Oportunidades esperando você</h2>
+          <p className="muted" style={{ fontSize: ".84rem", marginTop: 2 }}>
+            Com a ação vencida ou paradas há mais de 5 dias.
+          </p>
+          <ol className="tl">
+            {acoes.oportunidades.map((o) => (
+              <li key={o.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
+                <div style={{ minWidth: 0 }}>
+                  <b>
+                    #{o.numero} {o.titulo}
+                  </b>
+                  <span className="sub2" style={{ display: "block" }}>
+                    {o.nome} · {ETAPAS[o.etapa].rotulo} · {reais(o.valorCentavos)}
+                    {o.proximaData ? ` · ${o.atrasada ? "atrasada desde" : "para"} ${dataCurta(o.proximaData)}` : " · sem próxima ação"}
+                    {o.proximaAcao ? `: ${o.proximaAcao}` : ""}
+                  </span>
+                </div>
+                <Link className="btn small" href={`/crm/oportunidades/${o.id}`}>
+                  Abrir
+                </Link>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ol>
+        </div>
+      )}
+
+      <Bloco titulo="Aniversários da semana" sub="Uma mensagem no dia faz diferença." itens={acoes.aniversarios} />
+      <Bloco titulo="Sumindo: os que mais compram primeiro" sub="Passaram do ritmo de compra de cada um." itens={acoes.sumindo} />
+
+      {acoes.chegou.map((p) => (
+        <Bloco key={p.pecaId} titulo={`Chegou: ${p.titulo}`} sub="Quem costuma levar peças assim. Avise antes que outro compre." itens={p.clientes} />
+      ))}
+
+      <Bloco titulo="Reconquistar" sub="Clientes que compravam bem e sumiram há mais tempo." itens={acoes.perdidos} />
+      <Bloco titulo="Pós-venda" sub="Primeira compra há poucos dias: pergunte se gostou." itens={acoes.novos} />
     </>
   );
 }

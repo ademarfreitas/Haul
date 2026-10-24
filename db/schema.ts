@@ -127,6 +127,12 @@ export const origemCliente = pgEnum("origem_cliente", [
   "outro",
 ]);
 
+// funil de vendas do CRM
+export const etapaOportunidade = pgEnum("etapa_oportunidade", ["contato", "qualificado", "proposta", "negociacao", "ganho", "perdido"]);
+export const motivoPerda = pgEnum("motivo_perda", ["preco", "prazo", "concorrente", "desistiu", "sem_resposta", "outro"]);
+// oferta só vai para quem aceitou (LGPD); relacionamento (pós-venda, aniversário) para todo cliente próprio com WhatsApp
+export const tipoCampanha = pgEnum("tipo_campanha", ["oferta", "relacionamento"]);
+
 export const situacaoTarefa = pgEnum("situacao_tarefa", ["aberta", "concluida", "ignorada"]);
 
 // ---------- conta, usuários, assinatura ----------
@@ -434,6 +440,86 @@ export const clienteNotas = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [index().on(t.clienteId, t.criadoEm)],
+);
+
+// Funil: a oportunidade pode ser de um cliente ou de um contato solto (lead), que vira cliente próprio ao ganhar.
+export const oportunidades = pgTable(
+  "oportunidades",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    numero: integer().notNull(),
+    clienteId: uuid().references(() => clientes.id, { onDelete: "cascade" }),
+    contatoNome: text(),
+    contatoWhatsapp: text(), // só dígitos, com 55
+    titulo: text().notNull(),
+    valorCentavos: centavos().notNull().default(0),
+    etapa: etapaOportunidade().notNull().default("contato"),
+    origem: origemCliente(),
+    proximaAcao: text(),
+    proximaData: date(),
+    motivoPerda: motivoPerda(),
+    motivoTexto: text(),
+    criadoPor: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+    etapaDesde: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    fechadoEm: timestamp({ withTimezone: true }),
+  },
+  (t) => [uniqueIndex().on(t.contaId, t.numero), index().on(t.contaId, t.etapa), index().on(t.clienteId)],
+);
+
+export const oportunidadeEventos = pgTable(
+  "oportunidade_eventos",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    oportunidadeId: uuid()
+      .notNull()
+      .references(() => oportunidades.id, { onDelete: "cascade" }),
+    de: etapaOportunidade(),
+    para: etapaOportunidade().notNull(),
+    texto: text(),
+    usuarioId: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [index().on(t.oportunidadeId, t.criadoEm)],
+);
+
+// Campanha: uma mensagem para um grupo de clientes próprios, mandada um a um pelo WhatsApp do lojista.
+export const campanhas = pgTable(
+  "campanhas",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    numero: integer().notNull(),
+    nome: text().notNull(),
+    filtro: jsonb().$type<Record<string, string | boolean>>().notNull().default({}),
+    mensagem: text().notNull(),
+    tipo: tipoCampanha().notNull().default("oferta"),
+    criadoPor: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex().on(t.contaId, t.numero)],
+);
+
+export const campanhaEnvios = pgTable(
+  "campanha_envios",
+  {
+    campanhaId: uuid()
+      .notNull()
+      .references(() => campanhas.id, { onDelete: "cascade" }),
+    clienteId: uuid()
+      .notNull()
+      .references(() => clientes.id, { onDelete: "cascade" }),
+    enviadoEm: criadoEm(),
+  },
+  (t) => [primaryKey({ columns: [t.campanhaId, t.clienteId] })],
 );
 
 // ---------- tarefas ----------

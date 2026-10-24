@@ -100,3 +100,34 @@ export async function contaComCrm() {
 export function clienteProprio(c: { canal: Canal | null }) {
   return c.canal === null || c.canal === "venda_direta" || c.canal === "facebook";
 }
+
+// Categorias que cada cliente já comprou (filtro "compraram..." das campanhas).
+export async function categoriasPorCliente(contaId: string) {
+  const { rows } = await obterDb().execute(sql`
+    select distinct p.cliente_id, pc.categoria
+      from pedidos p join pecas pc on pc.id = p.peca_id
+     where p.conta_id = ${contaId} and p.cliente_id is not null and pc.categoria is not null
+       and p.situacao not in (${sql.join(NAO_CONTA.map((s) => sql`${s}`), sql`, `)})
+  `);
+  const mapa = new Map<string, string[]>();
+  for (const r of rows as { cliente_id: string; categoria: string }[]) mapa.set(r.cliente_id, [...(mapa.get(r.cliente_id) ?? []), r.categoria]);
+  return mapa;
+}
+
+// O retorno das campanhas: quantos receberam, quantos compraram até JANELA dias depois do envio e quanto.
+export async function retornoDasCampanhas(contaId: string, janela: number) {
+  const { rows } = await obterDb().execute(sql`
+    select c.id, count(e.cliente_id)::int as enviados, count(distinct r.cliente_id)::int as compraram, coalesce(sum(r.total), 0)::int as vendido
+      from campanhas c
+      left join campanha_envios e on e.campanha_id = c.id
+      left join lateral (
+        select p.cliente_id, sum(p.valor_venda_centavos) as total from pedidos p
+         where p.conta_id = c.conta_id and p.cliente_id = e.cliente_id
+           and p.situacao not in (${sql.join(NAO_CONTA.map((s) => sql`${s}`), sql`, `)})
+           and p.vendido_em >= e.enviado_em and p.vendido_em < e.enviado_em + make_interval(days => ${janela})
+         group by p.cliente_id) r on true
+     where c.conta_id = ${contaId}
+     group by c.id
+  `);
+  return new Map((rows as { id: string; enviados: number; compraram: number; vendido: number }[]).map((r) => [r.id, r]));
+}

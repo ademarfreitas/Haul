@@ -1,17 +1,18 @@
 "use server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { obterDb } from "@/db/cliente";
-import { clienteEtiquetas, clienteNotas, clientes } from "@/db/schema";
+import { clienteEtiquetas, clienteNotas, clientes, pecas, pedidos } from "@/db/schema";
 import { clienteProprio, contaComCrm } from "@/lib/crm";
-import { etiquetaValida, ORIGENS } from "@/lib/crm-medidas";
+import { centavosDito, dataValida } from "@/lib/crm-funil";
+import { diaSP, etiquetaValida, ORIGENS } from "@/lib/crm-medidas";
+import { acompanharVenda } from "@/lib/multivenda";
 import { celularE164, emailValido } from "@/lib/validar";
 
 export type Resposta = { ok?: string; erro?: string };
 
 const texto = (f: FormData, nome: string, max = 200) => String(f.get(nome) ?? "").trim().slice(0, max);
-const dataValida = (s: string) => (/^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s)) ? s : null);
 
 // o cliente tem de ser da conta de quem está usando
 async function doCliente(contaId: string, id: string) {
@@ -110,4 +111,47 @@ export async function adicionarNota(f: FormData): Promise<void> {
   if (!c || !nota) return;
   await obterDb().insert(clienteNotas).values({ contaId: atual.conta.id, clienteId: c.id, texto: nota, usuarioId: atual.usuario.id });
   revalidatePath(`/crm/${c.id}`);
+}
+
+// Venda direta para um cliente próprio (bazar, Instagram, loja): vira pedido do Plist. Se for uma peça do
+// estoque, baixa a quantidade e tira dos outros canais, como numa venda de marketplace.
+export async function registrarVendaDireta(_: Resposta, f: FormData): Promise<Resposta> {
+  const atual = await contaComCrm();
+  if (!atual) return { erro: "O CRM é do plano Avançado." };
+  const c = await doCliente(atual.conta.id, texto(f, "id", 40));
+  if (!c || !clienteProprio(c)) return { erro: "Venda direta só para cliente próprio." };
+  const valor = centavosDito(texto(f, "valor", 20));
+  if (!(valor > 0)) return { erro: "Digite o valor da venda." };
+  const hoje = diaSP(new Date());
+  const dia = dataValida(texto(f, "dia", 10)) ?? hoje;
+  if (dia > hoje) return { erro: "A data não pode ser no futuro." };
+  const db = obterDb();
+  const pecaId = texto(f, "peca", 40) || null;
+  if (pecaId) {
+    const [p] = await db
+      .select({ id: pecas.id })
+      .from(pecas)
+      .where(and(eq(pecas.id, pecaId), eq(pecas.contaId, atual.conta.id), eq(pecas.situacao, "disponivel")));
+    if (!p) return { erro: "Essa peça não está mais disponível." };
+  }
+  await db.insert(pedidos).values({
+    contaId: atual.conta.id,
+    canal: "venda_direta",
+    clienteId: c.id,
+    pecaId,
+    situacao: "entregue",
+    logistica: "propria",
+    valorVendaCentavos: valor,
+    vendidoEm: dia === hoje ? new Date() : new Date(`${dia}T15:00:00Z`), // hoje: a hora certa conta para o retorno das campanhas
+    entregueEm: new Date(),
+  });
+  if (pecaId) {
+    await db.execute(sql`
+      update pecas set quantidade = greatest(quantidade - 1, 0),
+        situacao = case when quantidade - 1 <= 0 then 'vendida'::situacao_peca else situacao end
+      where id = ${pecaId}`);
+    await acompanharVenda(pecaId, "venda_direta");
+  }
+  revalidatePath(`/crm/${c.id}`);
+  return { ok: pecaId ? "Venda registrada. A peça saiu dos outros canais." : "Venda registrada." };
 }
