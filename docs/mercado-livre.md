@@ -10,7 +10,7 @@ A senha do lojista nunca passa pelo Plist.
 ## 1. Ter um endereço https
 
 O DevCenter exige um Redirect URI em https e fixo, então `http://localhost` não serve para o
-callback. Antes de criar o app, defina o endereço público do Plist (ex.: `https://haul-xxxx.vercel.app`).
+callback. Antes de criar o app, defina o endereço público do Plist (hoje `https://app.plist.com.br`, ver docs/dominio.md).
 Ele vira o `APP_URL`, e o callback fica em:
 
 ```

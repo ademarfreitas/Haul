@@ -44,7 +44,7 @@ auditoria extra da Amazon. Cidade, UF e CEP do pedido chegam sem eles.
 2. **OAuth Login URI**: `<APP_URL>/api/canais/amazon/conectar` (usado quando o lojista vem da Appstore
    da Amazon).
 3. **OAuth Redirect URI**: `<APP_URL>/api/canais/amazon/callback`, ex.:
-   `https://haul1.vercel.app/api/canais/amazon/callback` (depois `https://app.plist.com.br/...`).
+   `https://app.plist.com.br/api/canais/amazon/callback`.
 4. Anote o **App ID** (`amzn1.sp.solution...`) e, em **LWA credentials → View**, o **Client ID** e o
    **Client Secret**.
 5. O app nasce em **rascunho** (Draft). Nesse estado ele já pode ser autorizado com `version=beta` (o

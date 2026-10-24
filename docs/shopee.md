@@ -15,8 +15,7 @@ tokens, cifrados com `CHAVE_TOKENS`, na tabela `conexoes_canal` (o `shop_id` vai
    fala em gestão de produtos e pedidos para vários vendedores). Nome: Plist.
 3. Na página do app, anote o **Test Partner ID** e a **Test Partner Key** (sandbox). Os de produção
    (**Live**) só aparecem depois do "Go Live", que a Shopee analisa (pede dados da empresa/CNPJ).
-4. **Redirect URL Domain**: o endereço do Plist, ex.: `https://haul1.vercel.app` (depois
-   `https://app.plist.com.br`). O caminho completo do retorno é
+4. **Redirect URL Domain**: o endereço do Plist, `https://app.plist.com.br`. O caminho completo do retorno é
    `<APP_URL>/api/canais/shopee/callback`.
 5. **Push Mechanism** (avisos): URL `<APP_URL>/api/canais/shopee/notificacoes`. Marque pelo menos
    os avisos de pedido (status do pedido, número de rastreio) e de autorização cancelada/vencida.
