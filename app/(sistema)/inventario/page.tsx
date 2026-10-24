@@ -2,7 +2,7 @@ import Link from "next/link";
 import { and, count, eq, max } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal } from "@/db/schema";
-import { CANAIS, CANAIS_PRONTOS, ERROS_ML, type Canal } from "@/lib/canais";
+import { CANAIS, CANAIS_PRONTOS, CONECTAR, ERROS_ML, ERROS_SHOPEE, type Canal } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 import { Sincronizar } from "./sincronizar";
 
@@ -22,7 +22,7 @@ const quando = (d: Date | null) =>
 
 // Página inicial do sistema: traz os anúncios das contas conectadas para um inventário só.
 export default async function Inventario({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const { ml, ml_erro } = await searchParams;
+  const { ml, ml_erro, shopee, shopee_erro } = await searchParams;
   const { conta } = await exigirConta("/inventario");
 
   const conexoes = await obterDb()
@@ -48,6 +48,8 @@ export default async function Inventario({ searchParams }: { searchParams: Promi
     <>
       {ml === "conectado" && <div className="trialbar" style={{ background: "var(--good-soft)", color: "var(--good)" }}>Mercado Livre conectado. Agora traga seus anúncios.</div>}
       {ml_erro && <div className="trialbar bad">{ERROS_ML[ml_erro] ?? `Não deu para conectar o Mercado Livre (${ml_erro}).`}</div>}
+      {shopee === "conectado" && <div className="trialbar" style={{ background: "var(--good-soft)", color: "var(--good)" }}>Shopee conectada.</div>}
+      {shopee_erro && <div className="trialbar bad">{ERROS_SHOPEE[shopee_erro] ?? `Não deu para conectar a Shopee (${shopee_erro}).`}</div>}
 
       <div className="inv-hero">
         <svg viewBox="0 0 320 170" role="img" aria-label="Anúncios de vários canais entrando num só inventário">
@@ -111,7 +113,7 @@ export default async function Inventario({ searchParams }: { searchParams: Promi
                 {c.situacao === "ativa" ? (
                   <span className="pill p-good">Conectada</span>
                 ) : (
-                  <a className="btn small primary" href="/api/canais/mercado-livre/conectar?voltar=/inventario">Reconectar</a>
+                  <a className="btn small primary" href={`${CONECTAR[c.canal] ?? "/canais"}?voltar=/inventario`}>Reconectar</a>
                 )}
               </div>
             ))
@@ -134,7 +136,7 @@ export default async function Inventario({ searchParams }: { searchParams: Promi
                 <small>{CANAIS[c].descricao}</small>
               </div>
               {CANAIS_PRONTOS.includes(c) ? (
-                <a className="btn small primary" href="/api/canais/mercado-livre/conectar?voltar=/inventario">Conectar</a>
+                <a className="btn small primary" href={`${CONECTAR[c]}?voltar=/inventario`}>Conectar</a>
               ) : (
                 <span className="pill p-muted">Em breve</span>
               )}

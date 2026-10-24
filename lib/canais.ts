@@ -13,7 +13,13 @@ export const CANAIS = {
 export type Canal = keyof typeof CANAIS;
 
 // Os que já falam com o marketplace de verdade. Os outros aparecem como "em breve".
-export const CANAIS_PRONTOS: Canal[] = ["mercado_livre"];
+export const CANAIS_PRONTOS: Canal[] = ["mercado_livre", "shopee"];
+
+// rota que começa a conexão de cada canal pronto
+export const CONECTAR: Partial<Record<Canal, string>> = {
+  mercado_livre: "/api/canais/mercado-livre/conectar",
+  shopee: "/api/canais/shopee/conectar",
+};
 
 // textos para os códigos que o callback do ML devolve em ?ml_erro=
 export const ERROS_ML: Record<string, string> = {
@@ -25,6 +31,19 @@ export const ERROS_ML: Record<string, string> = {
   invalid_client: "Client ID ou Secret do app do Mercado Livre não conferem (ver .env.local).",
   ml_indisponivel: "O Mercado Livre não respondeu. Tente de novo em alguns minutos.",
   invalid_grant: "O Mercado Livre recusou o código. Confira se o Redirect URI do app é igual ao ML_REDIRECT_URI.",
+};
+
+// textos para os códigos que o callback da Shopee devolve em ?shopee_erro=
+export const ERROS_SHOPEE: Record<string, string> = {
+  state_invalido: "A conexão expirou ou veio de outra aba. Tente de novo.",
+  sem_sessao: "Entre na sua conta do Plist antes de conectar.",
+  sem_loja: "A Shopee não informou qual loja foi autorizada. Tente de novo.",
+  conta_principal: "Autorize uma loja específica, não a conta principal da Shopee.",
+  conta_fora_do_brasil: "Essa loja da Shopee não é do Brasil.",
+  conta_ja_conectada: "Essa loja da Shopee já está ligada a outra conta do Plist.",
+  shopee_indisponivel: "A Shopee não respondeu. Tente de novo em alguns minutos.",
+  error_sign: "A assinatura não conferiu: confira SHOPEE_PARTNER_ID e SHOPEE_PARTNER_KEY (e o ambiente).",
+  error_auth: "A Shopee recusou o código. Confira se o SHOPEE_REDIRECT_URI bate com o domínio cadastrado no console.",
 };
 
 export function reais(centavos: number | null | undefined): string {
