@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { conexoesCanal } from "@/db/schema";
-import { CANAIS, CANAIS_PRONTOS, CONECTAR, ERROS_AMAZON, ERROS_MAGALU, ERROS_ML, ERROS_SHOPEE, type Canal } from "@/lib/canais";
+import { CANAIS, CANAIS_PRONTOS, CONECTAR, ERROS_AMAZON, ERROS_MAGALU, ERROS_ML, ERROS_SHEIN, ERROS_SHOPEE, type Canal } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 
 export const dynamic = "force-dynamic";
@@ -13,20 +13,26 @@ const SITUACAO = { ativa: ["p-good", "Conectada"], expirada: ["p-bad", "Reconect
 const DETALHE: Partial<Record<Canal, { testar: string; idExterno: string; conectar: string; variaveis: RegExp }>> = {
   mercado_livre: { testar: "/api/canais/mercado-livre/testar", idExterno: "Vendedor", conectar: "Conectar Mercado Livre", variaveis: /^ML_[A-Z_]+$/ },
   shopee: { testar: "/api/canais/shopee/testar", idExterno: "Loja", conectar: "Conectar Shopee", variaveis: /^SHOPEE_[A-Z_]+$/ },
+  shein: { testar: "/api/canais/shein/testar", idExterno: "Chave", conectar: "Conectar Shein", variaveis: /^SHEIN_[A-Z_]+$/ },
   amazon: { testar: "/api/canais/amazon/testar", idExterno: "Vendedor", conectar: "Conectar Amazon", variaveis: /^AMAZON_[A-Z_]+$/ },
   magalu: { testar: "/api/canais/magalu/testar", idExterno: "Loja", conectar: "Conectar Magalu", variaveis: /^MAGALU_[A-Z_]+$/ },
 };
 
+// a chave da Shein (openKeyId) é metade da credencial: na tela só o começo e o fim
+const mostrarId = (canal: Canal, id: string) => (canal === "shein" && id.length > 10 ? `${id.slice(0, 4)}…${id.slice(-4)}` : id);
+
 export default async function Canais({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const { ml, ml_erro, shopee, shopee_erro, amazon, amazon_erro, magalu, magalu_erro, faltando } = await searchParams;
+  const { ml, ml_erro, shopee, shopee_erro, shein, shein_erro, amazon, amazon_erro, magalu, magalu_erro, faltando } = await searchParams;
   const { conta } = await exigirConta("/canais");
 
   const conexoes = await obterDb().select().from(conexoesCanal).where(eq(conexoesCanal.contaId, conta.id));
 
   const outros = (Object.keys(CANAIS) as Canal[]).filter((c) => c !== "venda_direta" && !CANAIS_PRONTOS.includes(c));
-  const ok = ml === "conectado" ? "Mercado Livre conectado." : shopee === "conectado" ? "Shopee conectada." : amazon === "conectado" ? "Amazon conectada." : magalu === "conectado" ? "Magalu conectada." : null;
+  const ok = ml === "conectado" ? "Mercado Livre conectado." : shopee === "conectado" ? "Shopee conectada." : shein === "conectado" ? "Shein conectada." : amazon === "conectado" ? "Amazon conectada." : magalu === "conectado" ? "Magalu conectada." : null;
   const erro = ml_erro ? { canal: "mercado_livre" as const, codigo: ml_erro, textos: ERROS_ML } : shopee_erro
       ? { canal: "shopee" as const, codigo: shopee_erro, textos: ERROS_SHOPEE }
+      : shein_erro
+        ? { canal: "shein" as const, codigo: shein_erro, textos: ERROS_SHEIN }
       : amazon_erro
         ? { canal: "amazon" as const, codigo: amazon_erro, textos: ERROS_AMAZON }
         : magalu_erro
@@ -76,7 +82,7 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
                     </div>
                     <dl style={{ marginTop: 8 }}>
                       <dt>{det.idExterno}</dt>
-                      <dd className="num">{c.usuarioExterno}</dd>
+                      <dd className="num">{mostrarId(canal, c.usuarioExterno)}</dd>
                       {c.tokenExpiraEm && (
                         <>
                           <dt>Acesso renova</dt>
@@ -97,6 +103,19 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
               <a className="btn primary" href={CONECTAR[canal]} style={{ justifyContent: "center", textDecoration: "none" }}>
                 {doCanal.length ? "Conectar outra conta" : det.conectar}
               </a>
+              {canal === "shein" && (
+                <details>
+                  <summary className="muted" style={{ fontSize: ".84rem", cursor: "pointer" }}>Já tenho as chaves da Shein</summary>
+                  <form method="post" action="/api/canais/shein/chaves" style={{ display: "grid", gap: 8, marginTop: 8 }}>
+                    <p className="muted" style={{ fontSize: ".8rem" }}>
+                      Se a Shein te passou um <i>open key ID</i> e uma <i>secret key</i> para integrar um sistema, cole aqui. O Plist confere com a Shein e guarda a chave cifrada.
+                    </p>
+                    <input name="openKeyId" placeholder="Open key ID" autoComplete="off" required />
+                    <input name="secretKey" type="password" placeholder="Secret key" autoComplete="off" required />
+                    <button className="btn small" type="submit">Conectar com as chaves</button>
+                  </form>
+                </details>
+              )}
             </div>
           );
         })}

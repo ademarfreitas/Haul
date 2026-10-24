@@ -13,12 +13,13 @@ export const CANAIS = {
 export type Canal = keyof typeof CANAIS;
 
 // Os que já falam com o marketplace de verdade. Os outros aparecem como "em breve".
-export const CANAIS_PRONTOS: Canal[] = ["mercado_livre", "shopee", "amazon", "magalu"];
+export const CANAIS_PRONTOS: Canal[] = ["mercado_livre", "shopee", "shein", "amazon", "magalu"];
 
 // rota que começa a conexão de cada canal pronto
 export const CONECTAR: Partial<Record<Canal, string>> = {
   mercado_livre: "/api/canais/mercado-livre/conectar",
   shopee: "/api/canais/shopee/conectar",
+  shein: "/api/canais/shein/conectar",
   amazon: "/api/canais/amazon/conectar",
   magalu: "/api/canais/magalu/conectar",
 };
@@ -46,6 +47,18 @@ export const ERROS_SHOPEE: Record<string, string> = {
   shopee_indisponivel: "A Shopee não respondeu. Tente de novo em alguns minutos.",
   error_sign: "A assinatura não conferiu: confira SHOPEE_PARTNER_ID e SHOPEE_PARTNER_KEY (e o ambiente).",
   error_auth: "A Shopee recusou o código. Confira se o SHOPEE_REDIRECT_URI bate com o domínio cadastrado no console.",
+};
+
+// textos para os códigos que o callback (ou o formulário de chaves) da Shein devolve em ?shein_erro=
+export const ERROS_SHEIN: Record<string, string> = {
+  state_invalido: "A conexão expirou ou veio de outra aba. Tente de novo.",
+  sem_sessao: "Entre na sua conta do Plist antes de conectar.",
+  conta_ja_conectada: "Essa loja da Shein já está ligada a outra conta do Plist.",
+  shein_indisponivel: "A Shein não respondeu. Tente de novo em alguns minutos.",
+  chaves_vazias: "Cole o open key ID e a secret key da sua loja.",
+  chaves_recusadas: "A Shein recusou essas chaves. Confira se copiou as duas inteiras.",
+  sem_chaves: "A Shein não devolveu as chaves da loja. Tente de novo.",
+  chave_ilegivel: "Não deu para abrir a chave da loja: confira o SHEIN_APP_SECRET.",
 };
 
 // textos para os códigos que o callback da Amazon devolve em ?amazon_erro=

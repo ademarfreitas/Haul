@@ -1,6 +1,6 @@
 // Multivenda: vendeu num canal, os anúncios da mesma peça nos outros canais acompanham.
-// - acabou o estoque: pausa no Mercado Livre, deslista na Shopee e zera a quantidade na Amazon e na Magalu
-//   (dá para voltar, se a venda for cancelada);
+// - acabou o estoque: pausa no Mercado Livre, deslista na Shopee e zera a quantidade na Amazon, na Magalu
+//   e na Shein (dá para voltar, se a venda for cancelada);
 // - ainda sobra: ajusta a quantidade nos outros canais.
 // Se o canal recusar, o anúncio fica "erro" e nasce a tarefa "Venda dupla" para o lojista tirar à mão.
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
@@ -8,16 +8,51 @@ import { obterDb } from "@/db/cliente";
 import { anuncios, pecas, tarefas } from "@/db/schema";
 import { CANAIS, type Canal } from "@/lib/canais";
 import { chamarApi, ErroMl, tokenValido } from "@/lib/mercado-livre";
+import { CAMINHOS_SHEIN, chamarShein, comChaves, ErroShein } from "@/lib/shein";
 import { chamarShopee, ErroShopee, lojaValida } from "@/lib/shopee";
 import { ErroAmazon } from "@/lib/amazon";
 import { quantidadeNaAmazon } from "@/lib/amazon-anuncio";
 import { ErroMagalu, lojaMagaluValida, mudarEstoqueMagalu, skuDoAnuncioMagalu } from "@/lib/magalu";
 
-const erroDeCanal = (e: unknown) => e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu;
+const erroDeCanal = (e: unknown) =>
+  e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu || e instanceof ErroShein;
 
 type Anuncio = { id: string; canal: Canal; idExterno: string | null; conexaoId: string | null; titulo: string | null };
 
 type Resposta = { response?: { failure_list?: { failed_reason?: string; fail_message?: string }[] } };
+
+// Os SKUs (tamanhos) de uma cor da Shein. O anúncio guarda "<spu>:<skc>"; o spu-info traz os SKUs.
+function acharSkc(v: unknown, skc: string): Record<string, unknown> | null {
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>;
+  if (o.skcName === skc) return o;
+  for (const filho of Array.isArray(v) ? v : Object.values(o)) {
+    const achado = acharSkc(filho, skc);
+    if (achado) return achado;
+  }
+  return null;
+}
+function codigosSku(v: unknown): string[] {
+  if (!v || typeof v !== "object") return [];
+  if (Array.isArray(v)) return v.flatMap(codigosSku);
+  const o = v as Record<string, unknown>;
+  return typeof o.skuCode === "string" ? [o.skuCode] : Object.values(o).flatMap(codigosSku);
+}
+
+// Estoque na Shein: zerar tira a cor de venda; com sobra, só dá para acertar quando a cor tem um tamanho só.
+async function estoqueShein(conexaoId: string, idExterno: string, quantidade: number): Promise<void> {
+  const [spu, skc] = idExterno.split(":");
+  if (!spu || !skc) throw new ErroShein(400, "anuncio_sem_skc", "anúncio da Shein sem o código da cor");
+  await comChaves(conexaoId, async (chaves) => {
+    const info = await chamarShein<unknown>(CAMINHOS_SHEIN.produto, chaves, { json: { languageList: ["pt-br"], spuName: spu } });
+    const skus = [...new Set(codigosSku(acharSkc(info, skc)))];
+    if (!skus.length) throw new ErroShein(404, "sem_sku", "a Shein não devolveu os tamanhos do anúncio");
+    if (quantidade > 0 && skus.length > 1) throw new ErroShein(409, "varios_tamanhos", "o anúncio tem vários tamanhos");
+    await chamarShein(CAMINHOS_SHEIN.estoque, chaves, {
+      json: { updateSkuInventoryQuantityRequests: skus.map((skuCode) => ({ skuCode, saleInventory: quantidade })) },
+    });
+  });
+}
 
 async function aplicarNoCanal(a: Anuncio, quantidade: number): Promise<void> {
   if (!a.idExterno || !a.conexaoId) throw new Error("anúncio sem id no canal");
@@ -50,6 +85,7 @@ async function aplicarNoCanal(a: Anuncio, quantidade: number): Promise<void> {
     await mudarEstoqueMagalu((await lojaMagaluValida(a.conexaoId)).accessToken, skuDoAnuncioMagalu(a.idExterno), quantidade);
     return;
   }
+  if (a.canal === "shein") return estoqueShein(a.conexaoId, a.idExterno, quantidade);
   throw new Error(`canal ${a.canal} ainda não fala com o Plist`);
 }
 
@@ -175,5 +211,6 @@ async function reativarNoCanal(a: Anuncio, quantidade: number): Promise<void> {
     await mudarEstoqueMagalu((await lojaMagaluValida(a.conexaoId)).accessToken, skuDoAnuncioMagalu(a.idExterno), quantidade);
     return;
   }
+  if (a.canal === "shein") return estoqueShein(a.conexaoId, a.idExterno, quantidade);
   throw new Error(`canal ${a.canal} ainda não fala com o Plist`);
 }

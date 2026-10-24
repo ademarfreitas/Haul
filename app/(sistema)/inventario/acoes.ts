@@ -7,6 +7,8 @@ import { CANAIS } from "@/lib/canais";
 import { contaAtual } from "@/lib/conta";
 import { ErroMl } from "@/lib/mercado-livre";
 import { importarMercadoLivre, type ResultadoImportacao } from "@/lib/ml-importar";
+import { ErroShein } from "@/lib/shein";
+import { importarShein } from "@/lib/shein-importar";
 import { ErroShopee } from "@/lib/shopee";
 import { ErroAmazon } from "@/lib/amazon";
 import { ErroMagalu } from "@/lib/magalu";
@@ -16,9 +18,9 @@ import { importarShopee } from "@/lib/shopee-importar";
 
 export type EstadoSinc = { em?: string; resultados?: ResultadoImportacao[]; erros?: string[] };
 
-const IMPORTAR = { mercado_livre: importarMercadoLivre, shopee: importarShopee, amazon: importarAmazon, magalu: importarMagalu } as const;
+const IMPORTAR = { mercado_livre: importarMercadoLivre, shopee: importarShopee, shein: importarShein, amazon: importarAmazon, magalu: importarMagalu } as const;
 
-// Sincroniza todas as contas ativas da conta (Mercado Livre, Shopee, Amazon e Magalu). Uma conta que falha não para as outras.
+// Sincroniza todas as contas ativas da conta (Mercado Livre, Shopee, Shein, Amazon e Magalu). Uma conta que falha não para as outras.
 export async function sincronizar(_: EstadoSinc): Promise<EstadoSinc> {
   const atual = await contaAtual();
   if (!atual) return { erros: ["Sua sessão terminou. Entre de novo."] };
@@ -33,7 +35,7 @@ export async function sincronizar(_: EstadoSinc): Promise<EstadoSinc> {
         eq(conexoesCanal.situacao, "ativa"),
       ),
     );
-  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre, a Shopee, a Amazon ou a Magalu em Canais."] };
+  if (!conexoes.length) return { erros: ["Nenhuma conta conectada. Conecte o Mercado Livre, a Shopee, a Shein, a Amazon ou a Magalu em Canais."] };
 
   const resultados: ResultadoImportacao[] = [];
   const erros: string[] = [];
@@ -43,7 +45,7 @@ export async function sincronizar(_: EstadoSinc): Promise<EstadoSinc> {
     try {
       resultados.push(await IMPORTAR[c.canal as keyof typeof IMPORTAR](c.id));
     } catch (e) {
-      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu ? e : null;
+      const erroCanal = e instanceof ErroMl || e instanceof ErroShopee || e instanceof ErroAmazon || e instanceof ErroMagalu || e instanceof ErroShein ? e : null;
       // só o código: a mensagem do canal pode trazer dados da conta
       console.error(`sincronizar ${c.canal} falhou:`, erroCanal ? erroCanal.codigo : e);
       const quem = c.apelido ?? CANAIS[c.canal].nome;

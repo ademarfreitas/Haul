@@ -53,7 +53,7 @@ const SITUACAO_ANUNCIO: Record<string, string> = {
 type AnuncioLinha = { pecaId: string; canal: Canal; situacao: string; url: string | null };
 
 // canais com tela de publicar uma peça do estoque pelo selo
-const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", amazon: "/novo-anuncio/amazon", magalu: "/novo-anuncio/magalu" };
+const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", shein: "/novo-anuncio/shein", amazon: "/novo-anuncio/amazon", magalu: "/novo-anuncio/magalu" };
 
 // publicar: id da peça e os canais conectados onde dá para publicá-la pelo selo
 function Selos({ lista, publicar }: { lista: AnuncioLinha[]; publicar?: { pecaId: string; canais: Canal[] } }) {
@@ -237,7 +237,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
         <div className="emptybox">
           <p>Seu estoque está vazio.</p>
           <p style={{ marginTop: 8 }}>
-            Traga os anúncios do Mercado Livre e da Shopee em <Link href="/inventario">Inventário</Link> ou cadastre uma peça em{" "}
+            Traga os anúncios do Mercado Livre, da Shopee e da Shein em <Link href="/inventario">Inventário</Link> ou cadastre uma peça em{" "}
             <Link href="/novo-anuncio">Novo anúncio</Link>.
           </p>
         </div>
