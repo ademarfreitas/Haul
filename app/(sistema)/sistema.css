@@ -553,3 +553,8 @@ table.cmp{min-width:720px}
 .app>main.main{max-width:none;margin:0}
 .app a{color:inherit}
 .app :is(a.btn,a.chip,a.nav,a.brand,a.trialchip){text-decoration:none}
+.cc .conta{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.cc .conta .top b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cc .conta .top .pill{flex:none}
+.cc .conta .actions{justify-content:flex-end}
+.cc>.btn.primary{margin-top:auto;justify-content:center}

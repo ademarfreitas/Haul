@@ -54,6 +54,14 @@ trocar("  h1{font-size:1.45rem}", "  .app h1{font-size:1.45rem}");
 // app/estilo.css limita <main> a 720px para as telas de acesso; aqui a área é larga
 r += "\n.app{min-height:100vh}\n.app>main.main{max-width:none;margin:0}\n.app a{color:inherit}\n.app :is(a.btn,a.chip,a.nav,a.brand,a.trialchip){text-decoration:none}\n";
 
+// Canais: a conta conectada vira um bloco dentro do card; o nome longo encolhe em vez de empurrar o selo
+// para fora, e o botão principal desce para o pé, alinhado com o dos outros cards da mesma linha
+r += ".cc .conta{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px}\n" +
+  ".cc .conta .top b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}\n" +
+  ".cc .conta .top .pill{flex:none}\n" +
+  ".cc .conta .actions{justify-content:flex-end}\n" +
+  ".cc>.btn.primary{margin-top:auto;justify-content:center}\n";
+
 const abre = r.split("{").length;
 const fecha = r.split("}").length;
 if (abre !== fecha) throw new Error(`chaves desequilibradas: ${abre - 1} "{" e ${fecha - 1} "}"`);

@@ -75,12 +75,12 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
               {doCanal.map((c) => {
                 const [cls, txt] = SITUACAO[c.situacao];
                 return (
-                  <div key={c.id} style={{ borderTop: "1px solid var(--line)", paddingTop: 10 }}>
-                    <div className="top" style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
-                      <b>{c.apelido ?? c.usuarioExterno}</b>
+                  <div className="conta" key={c.id}>
+                    <div className="top">
+                      <b title={c.apelido ?? c.usuarioExterno}>{c.apelido ?? c.usuarioExterno}</b>
                       <span className={`pill ${cls}`}>{txt}</span>
                     </div>
-                    <dl style={{ marginTop: 8 }}>
+                    <dl>
                       <dt>{det.idExterno}</dt>
                       <dd className="num">{mostrarId(canal, c.usuarioExterno)}</dd>
                       {c.tokenExpiraEm && (
@@ -90,7 +90,7 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
                         </>
                       )}
                     </dl>
-                    <div className="actions" style={{ marginTop: 8 }}>
+                    <div className="actions">
                       {c.situacao === "ativa" ? (
                         <a className="btn small" href={`${det.testar}?id=${c.id}`}>Testar</a>
                       ) : (
@@ -100,9 +100,6 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
                   </div>
                 );
               })}
-              <a className="btn primary" href={CONECTAR[canal]} style={{ justifyContent: "center", textDecoration: "none" }}>
-                {doCanal.length ? "Conectar outra conta" : det.conectar}
-              </a>
               {canal === "shein" && (
                 <details>
                   <summary className="muted" style={{ fontSize: ".84rem", cursor: "pointer" }}>Já tenho as chaves da Shein</summary>
@@ -116,6 +113,9 @@ export default async function Canais({ searchParams }: { searchParams: Promise<R
                   </form>
                 </details>
               )}
+              <a className="btn primary" href={CONECTAR[canal]}>
+                {doCanal.length ? "Conectar outra conta" : det.conectar}
+              </a>
             </div>
           );
         })}
