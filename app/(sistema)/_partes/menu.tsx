@@ -17,7 +17,13 @@ const GRUPOS: { nome: string; itens: Item[] }[] = [
       { href: "/pedidos", nome: "Pedidos", icone: "sacola" },
     ],
   },
-  { nome: "Análise", itens: [{ href: "/resultados", nome: "Resultados", icone: "grafico" }] },
+  {
+    nome: "Análise",
+    itens: [
+      { href: "/resultados", nome: "Resultados", icone: "grafico" },
+      { href: "/crm", nome: "CRM", icone: "pessoas" },
+    ],
+  },
   {
     nome: "Configuração",
     itens: [

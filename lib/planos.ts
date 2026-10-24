@@ -17,7 +17,7 @@ export const PLANOS = [
     id: "avancado",
     nome: "Avançado",
     precoCentavos: 7990,
-    itens: ["Tudo do Profissional", "Até 500 anúncios", "Até 5 usuários", "IA nos anúncios: 50 por mês", "Command Center com comparação de preços", "Módulo CRM (em breve)"],
+    itens: ["Tudo do Profissional", "Até 500 anúncios", "Até 5 usuários", "IA nos anúncios: 50 por mês", "Command Center com comparação de preços", "Módulo CRM: clientes, funil e campanhas"],
   },
 ] as const;
 

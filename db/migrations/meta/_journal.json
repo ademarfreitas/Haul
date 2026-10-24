@@ -8,6 +8,13 @@
       "when": 1792648524204,
       "tag": "0000_inicial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792885173639,
+      "tag": "0001_crm",
+      "breakpoints": true
     }
   ]
 }
