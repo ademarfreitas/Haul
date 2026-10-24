@@ -220,7 +220,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
         <div className="emptybox">
           <p>Seu estoque está vazio.</p>
           <p style={{ marginTop: 8 }}>
-            Traga os anúncios do Mercado Livre em <Link href="/inventario">Inventário</Link> ou cadastre uma peça em{" "}
+            Traga os anúncios do Mercado Livre e da Shopee em <Link href="/inventario">Inventário</Link> ou cadastre uma peça em{" "}
             <Link href="/novo-anuncio">Novo anúncio</Link>.
           </p>
         </div>

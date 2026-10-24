@@ -56,7 +56,7 @@ export function Sincronizar() {
             </div>
             <div>
               <b>{soma("total")}</b>
-              <span className="muted">ativos e pausados no ML</span>
+              <span className="muted">ativos e pausados nos canais</span>
             </div>
             <div>
               <b>{soma("deFora")}</b>
@@ -65,8 +65,8 @@ export function Sincronizar() {
           </div>
           {soma("deFora") > 0 && (
             <p className="note">
-              Ficam de fora os anúncios que o Mercado Livre não devolveu (ele só deixa buscar 1000 por situação de cada vez) ou
-              que já estão ligados a outra conta do Plist.
+              Ficam de fora os anúncios que o canal não devolveu (o Mercado Livre só deixa buscar 1000 por situação de cada vez)
+              ou que já estão ligados a outra conta do Plist.
             </p>
           )}
         </div>

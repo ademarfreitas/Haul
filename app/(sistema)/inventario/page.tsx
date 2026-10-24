@@ -42,13 +42,13 @@ export default async function Inventario({ searchParams }: { searchParams: Promi
 
   const conectados = new Set(conexoes.map((c) => c.canal));
   const disponiveis = (Object.keys(CANAIS) as Canal[]).filter((c) => c !== "venda_direta" && !conectados.has(c));
-  const temMl = conexoes.some((c) => c.canal === "mercado_livre" && c.situacao === "ativa");
+  const temConta = conexoes.some((c) => CANAIS_PRONTOS.includes(c.canal) && c.situacao === "ativa");
 
   return (
     <>
       {ml === "conectado" && <div className="trialbar" style={{ background: "var(--good-soft)", color: "var(--good)" }}>Mercado Livre conectado. Agora traga seus anúncios.</div>}
       {ml_erro && <div className="trialbar bad">{ERROS_ML[ml_erro] ?? `Não deu para conectar o Mercado Livre (${ml_erro}).`}</div>}
-      {shopee === "conectado" && <div className="trialbar" style={{ background: "var(--good-soft)", color: "var(--good)" }}>Shopee conectada.</div>}
+      {shopee === "conectado" && <div className="trialbar" style={{ background: "var(--good-soft)", color: "var(--good)" }}>Shopee conectada. Agora traga seus anúncios.</div>}
       {shopee_erro && <div className="trialbar bad">{ERROS_SHOPEE[shopee_erro] ?? `Não deu para conectar a Shopee (${shopee_erro}).`}</div>}
 
       <div className="inv-hero">
@@ -78,7 +78,7 @@ export default async function Inventario({ searchParams }: { searchParams: Promi
         </svg>
         <h1>Seu inventário num lugar só</h1>
         <p>O Plist traz os anúncios das contas conectadas, junta os que são da mesma peça e mantém preço e quantidade iguais em todos os canais.</p>
-        {temMl ? (
+        {temConta ? (
           <Sincronizar />
         ) : (
           <a className="btn primary" href="/api/canais/mercado-livre/conectar?voltar=/inventario" style={{ textDecoration: "none" }}>
