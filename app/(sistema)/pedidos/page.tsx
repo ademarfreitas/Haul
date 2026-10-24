@@ -162,8 +162,19 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
                       <a className={`btn small${o.situacao === "pronto_para_envio" ? " primary" : ""}`} href={`/api/canais/mercado-livre/etiqueta?pedido=${o.id}`} target="_blank" rel="noreferrer">
                         {o.situacao === "pronto_para_envio" ? "Imprimir" : "Reimprimir"}
                       </a>
+                    ) : o.canal === "shopee" && d?.logistica !== "Full" && ["pago", "pronto_para_envio", "enviado"].includes(o.situacao) ? (
+                      <a
+                        className={`btn small${o.situacao === "enviado" ? "" : " primary"}`}
+                        href={`/api/canais/shopee/etiqueta?pedido=${o.id}${o.situacao === "pago" ? "&organizar=1" : ""}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {o.situacao === "pago" ? "Organizar envio" : o.situacao === "pronto_para_envio" ? "Imprimir" : "Reimprimir"}
+                      </a>
                     ) : (
-                      <span className="muted" style={{ fontSize: ".8rem" }}>{d?.logistica === "Full" ? "Full: o ML envia" : "—"}</span>
+                      <span className="muted" style={{ fontSize: ".8rem" }}>
+                        {d?.logistica === "Full" ? (o.canal === "shopee" ? "Full: a Shopee envia" : "Full: o ML envia") : "—"}
+                      </span>
                     )}
                   </td>
                 </tr>

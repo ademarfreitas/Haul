@@ -141,6 +141,21 @@ export async function chamarShopee<T>(
   return lerResposta<T>(r);
 }
 
+// POST que devolve arquivo (ex.: PDF da etiqueta). Se a Shopee responder JSON, é erro.
+export async function baixarShopee(caminho: string, loja: { accessToken: string; shopId: number }, json: unknown): Promise<Response> {
+  const { host } = credenciais();
+  const r = await buscar(`${host}${caminho}?${parametrosAssinados(caminho, loja).toString()}`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify(json),
+  });
+  if (!r.ok || (r.headers.get("content-type") ?? "").includes("application/json")) {
+    await lerResposta(r);
+    throw new ErroShopee(502, "sem_arquivo", "A Shopee não devolveu o arquivo.");
+  }
+  return r;
+}
+
 // Confere a assinatura de um aviso (push): Authorization = HMAC-SHA256(partner_key, url + "|" + corpo).
 export function avisoAutentico(url: string, corpo: string, autorizacao: string | null): boolean {
   if (!autorizacao) return false;

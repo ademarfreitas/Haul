@@ -54,6 +54,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
         concluidaEm: tarefas.concluidaEm,
         pedidoId: tarefas.pedidoId,
         pedidoSituacao: pedidos.situacao,
+        pedidoCanal: pedidos.canal,
         sku: pecas.sku,
       })
       .from(tarefas)
@@ -89,7 +90,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
             <path d="M12 11v5M12 8h.01" />
           </svg>
           <span>
-            As tarefas nascem das vendas: <b>Atualizar pedidos</b> traz as vendas do Mercado Livre, abre a tarefa da etiqueta e fecha sozinha quando o envio sai.
+            As tarefas nascem das vendas: <b>Atualizar pedidos</b> traz as vendas do Mercado Livre e da Shopee, abre a tarefa da etiqueta e fecha sozinha quando o envio sai.
           </span>
         </div>
         {lista.length === 0 ? (
@@ -129,7 +130,16 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
                       <td>
                         <div className="actions" style={{ justifyContent: "flex-end" }}>
                           {t.situacao === "aberta" && t.tipo === "imprimir_etiqueta" && t.pedidoId && (
-                            <a className="btn small primary" href={`/api/canais/mercado-livre/etiqueta?pedido=${t.pedidoId}`} target="_blank" rel="noreferrer">
+                            <a
+                              className="btn small primary"
+                              href={
+                                t.pedidoCanal === "shopee"
+                                  ? `/api/canais/shopee/etiqueta?pedido=${t.pedidoId}${t.pedidoSituacao === "pago" ? "&organizar=1" : ""}`
+                                  : `/api/canais/mercado-livre/etiqueta?pedido=${t.pedidoId}`
+                              }
+                              target="_blank"
+                              rel="noreferrer"
+                            >
                               Etiqueta
                             </a>
                           )}

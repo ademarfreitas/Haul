@@ -12,7 +12,7 @@ function Botao({ primario }: { primario?: boolean }) {
   );
 }
 
-// Botão de Pedidos e Tarefas: traz as vendas do ML e mostra o resumo numa linha.
+// Botão de Pedidos e Tarefas: traz as vendas do ML e da Shopee e mostra o resumo numa linha.
 export function AtualizarPedidos({ primario }: { primario?: boolean }) {
   const [estado, acao] = useActionState(atualizarPedidos, {} as EstadoPedidos);
   const r = estado.resultados ?? [];
