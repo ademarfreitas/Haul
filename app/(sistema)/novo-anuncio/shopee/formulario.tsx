@@ -1,6 +1,5 @@
 "use client";
 // Formulário de publicar uma peça na Shopee: fotos da peça à esquerda, dados e o que a Shopee exige à direita.
-import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { AtributoShopee, CategoriaShopee, FreteShopee } from "@/lib/shopee-anuncio";
@@ -135,28 +134,6 @@ export function FormularioShopee({ loja, peca, fretes }: { loja: { id: string; n
     if (peca) acharCategoria();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  if (estado.feito) {
-    return (
-      <div className="panel" style={{ maxWidth: 640 }}>
-        <h2>Publicado na Shopee</h2>
-        <p className="muted" style={{ marginTop: 6 }}>
-          <span className="tag">{estado.feito.sku}</span> {estado.feito.titulo}
-        </p>
-        <div className="actions" style={{ marginTop: 14 }}>
-          <a className="btn primary" href={estado.feito.link} target="_blank" rel="noreferrer">
-            Ver anúncio na Shopee
-          </a>
-          <Link className="btn" href={peca ? "/novo-anuncio/shopee" : "/novo-anuncio/shopee?nova=1"}>
-            {peca ? "Publicar outra peça" : "Cadastrar outra peça"}
-          </Link>
-          <Link className="btn" href="/estoque">
-            Ver estoque
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const marca = ficha?.marcas.find((m) => normal(m.nome) === normal(v.marca));
   const falta: string[] = [];
