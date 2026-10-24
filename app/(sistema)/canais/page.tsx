@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { conexoesCanal } from "@/db/schema";
-import { CANAIS, CANAIS_PRONTOS, CONECTAR, ERROS_ML, ERROS_SHOPEE, type Canal } from "@/lib/canais";
+import { CANAIS, CANAIS_PRONTOS, CONECTAR, ERROS_AMAZON, ERROS_ML, ERROS_SHOPEE, type Canal } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 
 export const dynamic = "force-dynamic";
@@ -13,17 +13,22 @@ const SITUACAO = { ativa: ["p-good", "Conectada"], expirada: ["p-bad", "Reconect
 const DETALHE: Partial<Record<Canal, { testar: string; idExterno: string; conectar: string; variaveis: RegExp }>> = {
   mercado_livre: { testar: "/api/canais/mercado-livre/testar", idExterno: "Vendedor", conectar: "Conectar Mercado Livre", variaveis: /^ML_[A-Z_]+$/ },
   shopee: { testar: "/api/canais/shopee/testar", idExterno: "Loja", conectar: "Conectar Shopee", variaveis: /^SHOPEE_[A-Z_]+$/ },
+  amazon: { testar: "/api/canais/amazon/testar", idExterno: "Vendedor", conectar: "Conectar Amazon", variaveis: /^AMAZON_[A-Z_]+$/ },
 };
 
 export default async function Canais({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
-  const { ml, ml_erro, shopee, shopee_erro, faltando } = await searchParams;
+  const { ml, ml_erro, shopee, shopee_erro, amazon, amazon_erro, faltando } = await searchParams;
   const { conta } = await exigirConta("/canais");
 
   const conexoes = await obterDb().select().from(conexoesCanal).where(eq(conexoesCanal.contaId, conta.id));
 
   const outros = (Object.keys(CANAIS) as Canal[]).filter((c) => c !== "venda_direta" && !CANAIS_PRONTOS.includes(c));
-  const ok = ml === "conectado" ? "Mercado Livre conectado." : shopee === "conectado" ? "Shopee conectada." : null;
-  const erro = ml_erro ? { canal: "mercado_livre" as const, codigo: ml_erro, textos: ERROS_ML } : shopee_erro ? { canal: "shopee" as const, codigo: shopee_erro, textos: ERROS_SHOPEE } : null;
+  const ok = ml === "conectado" ? "Mercado Livre conectado." : shopee === "conectado" ? "Shopee conectada." : amazon === "conectado" ? "Amazon conectada." : null;
+  const erro = ml_erro ? { canal: "mercado_livre" as const, codigo: ml_erro, textos: ERROS_ML } : shopee_erro
+      ? { canal: "shopee" as const, codigo: shopee_erro, textos: ERROS_SHOPEE }
+      : amazon_erro
+        ? { canal: "amazon" as const, codigo: amazon_erro, textos: ERROS_AMAZON }
+        : null;
 
   return (
     <>

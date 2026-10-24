@@ -13,12 +13,13 @@ export const CANAIS = {
 export type Canal = keyof typeof CANAIS;
 
 // Os que já falam com o marketplace de verdade. Os outros aparecem como "em breve".
-export const CANAIS_PRONTOS: Canal[] = ["mercado_livre", "shopee"];
+export const CANAIS_PRONTOS: Canal[] = ["mercado_livre", "shopee", "amazon"];
 
 // rota que começa a conexão de cada canal pronto
 export const CONECTAR: Partial<Record<Canal, string>> = {
   mercado_livre: "/api/canais/mercado-livre/conectar",
   shopee: "/api/canais/shopee/conectar",
+  amazon: "/api/canais/amazon/conectar",
 };
 
 // textos para os códigos que o callback do ML devolve em ?ml_erro=
@@ -44,6 +45,20 @@ export const ERROS_SHOPEE: Record<string, string> = {
   shopee_indisponivel: "A Shopee não respondeu. Tente de novo em alguns minutos.",
   error_sign: "A assinatura não conferiu: confira SHOPEE_PARTNER_ID e SHOPEE_PARTNER_KEY (e o ambiente).",
   error_auth: "A Shopee recusou o código. Confira se o SHOPEE_REDIRECT_URI bate com o domínio cadastrado no console.",
+};
+
+// textos para os códigos que o callback da Amazon devolve em ?amazon_erro=
+export const ERROS_AMAZON: Record<string, string> = {
+  access_denied: "Você não autorizou o Plist na Amazon.",
+  state_invalido: "A conexão expirou ou veio de outra aba. Tente de novo.",
+  sem_sessao: "Entre na sua conta do Plist antes de conectar.",
+  sem_vendedor: "A Amazon não informou qual conta foi autorizada. Tente de novo.",
+  conta_fora_do_brasil: "Essa conta da Amazon não vende na Amazon.com.br.",
+  conta_ja_conectada: "Essa conta da Amazon já está ligada a outra conta do Plist.",
+  amazon_indisponivel: "A Amazon não respondeu. Tente de novo em alguns minutos.",
+  invalid_client: "Client ID ou Secret do app da Amazon não conferem (ver AMAZON_LWA_* no .env.local).",
+  invalid_grant: "A Amazon recusou o código. Confira se o AMAZON_REDIRECT_URI é igual ao OAuth Redirect URI do app.",
+  Unauthorized: "A Amazon negou o acesso: confira as permissões (roles) do app no Solution Provider Portal.",
 };
 
 export function reais(centavos: number | null | undefined): string {
