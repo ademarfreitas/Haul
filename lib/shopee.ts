@@ -141,6 +141,20 @@ export async function chamarShopee<T>(
   return lerResposta<T>(r);
 }
 
+// Envia uma foto para o espaço de mídia da Shopee (chamada da plataforma, assinada sem loja).
+// Devolve o image_id que vai no add_item.
+export async function enviarImagemShopee(arquivo: Blob, nome: string): Promise<string> {
+  const { host } = credenciais();
+  const caminho = "/api/v2/media_space/upload_image";
+  const form = new FormData();
+  form.append("image", arquivo, nome);
+  const r = await buscar(`${host}${caminho}?${parametrosAssinados(caminho).toString()}`, { method: "POST", body: form });
+  const j = await lerResposta<{ response?: { image_info?: { image_id?: string } } }>(r);
+  const id = j.response?.image_info?.image_id;
+  if (!id) throw new ErroShopee(502, "foto_sem_id", "A Shopee não devolveu a foto.");
+  return id;
+}
+
 // POST que devolve arquivo (ex.: PDF da etiqueta). Se a Shopee responder JSON, é erro.
 export async function baixarShopee(caminho: string, loja: { accessToken: string; shopId: number }, json: unknown): Promise<Response> {
   const { host } = credenciais();

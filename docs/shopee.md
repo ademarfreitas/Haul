@@ -58,3 +58,17 @@ Erros comuns: `error_sign` (Partner ID/Key de um ambiente com o host do outro) e
 - O access token vale cerca de 4 horas; o refresh token, cerca de 30 dias, e cada renovação devolve
   um novo. Se a renovação for recusada, a conexão fica "expirada" e nasce a tarefa "Reconectar a Shopee".
 - A autorização da loja vence em até 1 ano: aí o lojista conecta de novo pelo mesmo botão.
+
+## 6. O que já funciona com a Shopee
+
+- **Inventário → Sincronizar anúncios**: traz os anúncios ativos e deslistados. Anúncio com o mesmo
+  SKU de uma peça que já existe (ex.: veio do ML) é ligado a ela, sem duplicar.
+- **Pedidos / Tarefas → Atualizar pedidos**: vendas dos últimos 60 dias, taxa real pelo escrow, baixa
+  de estoque no Plist e tarefa de etiqueta. Botão **Organizar envio** (pedido pago): organiza por
+  postagem quando a Shopee não pede escolha; coleta com horário fica no Seller Centre. Depois,
+  **Imprimir** baixa a etiqueta oficial em PDF.
+- **Publicar na Shopee** (`/novo-anuncio/shopee`, ou o selo SP no Estoque): publica uma peça do
+  estoque com as fotos dela, pedindo categoria, ficha obrigatória, marca, peso, medidas e envio.
+
+Ainda não: tirar o anúncio do outro canal quando vende (vale para todos os canais e vem a seguir) e
+criar peça nova direto na Shopee sem passar pelo ML.

@@ -22,7 +22,7 @@ export default async function NovoAnuncio() {
         <div>
           <p className="eyebrow">Cadastre uma vez</p>
           <h1>Novo anúncio</h1>
-          <p className="sub">Coloque as fotos, preencha o anúncio e publique nos canais conectados. Hoje o Plist publica no Mercado Livre; os outros canais chegam em seguida.</p>
+          <p className="sub">Coloque as fotos, preencha o anúncio e publique nos canais conectados. Hoje o Plist publica no Mercado Livre; depois, a mesma peça vai para a Shopee em <Link href="/novo-anuncio/shopee">Publicar na Shopee</Link>.</p>
         </div>
       </header>
       {conexoes.length === 0 ? (

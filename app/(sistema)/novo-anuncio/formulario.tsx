@@ -155,6 +155,11 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
               Ver anúncio no ML
             </a>
           )}
+          {f.publicado && (
+            <Link className="btn" href={`/novo-anuncio/shopee?peca=${f.pecaId}`}>
+              Publicar também na Shopee
+            </Link>
+          )}
           <Link className="btn" href="/estoque">
             Ver estoque
           </Link>

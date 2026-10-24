@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { and, asc, count, desc, eq, ilike, inArray, or, sql, sum, type SQL } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
-import { anuncios, fotosPeca, pecas } from "@/db/schema";
+import { anuncios, conexoesCanal, fotosPeca, pecas } from "@/db/schema";
 import { CANAIS, reais, type Canal } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 
@@ -52,19 +52,21 @@ const SITUACAO_ANUNCIO: Record<string, string> = {
 
 type AnuncioLinha = { pecaId: string; canal: Canal; situacao: string; url: string | null };
 
-function Selos({ lista }: { lista: AnuncioLinha[] }) {
+// publicarShopee: id da peça, quando dá para publicá-la na Shopee pelo selo
+function Selos({ lista, publicarShopee }: { lista: AnuncioLinha[]; publicarShopee?: string }) {
   return (
     <div className="chans">
       {CANAIS_ESTOQUE.map((c) => {
         const a = lista.find((x) => x.canal === c);
-        const titulo = `${CANAIS[c].nome}: ${a ? SITUACAO_ANUNCIO[a.situacao] : "não anunciado"}`;
+        const titulo = `${CANAIS[c].nome}: ${a ? SITUACAO_ANUNCIO[a.situacao] : c === "shopee" && publicarShopee ? "publicar" : "não anunciado"}`;
         const selo = (
           <span className={`chb ${a ? SELO[a.situacao] : "st-none"}`} style={{ ["--c" as string]: `var(--c-${CANAIS[c].cor})` }} title={titulo} aria-label={titulo}>
             {CANAIS[c].sigla}
           </span>
         );
-        return a?.url ? (
-          <a key={c} href={a.url} target="_blank" rel="noreferrer" style={{ textDecoration: "none" }}>
+        const destino = a?.url ?? (!a && c === "shopee" && publicarShopee ? `/novo-anuncio/shopee?peca=${publicarShopee}` : null);
+        return destino ? (
+          <a key={c} href={destino} target={a ? "_blank" : undefined} rel="noreferrer" style={{ textDecoration: "none" }}>
             {selo}
           </a>
         ) : (
@@ -101,6 +103,11 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
     : undefined;
   const condicao = and(eq(pecas.contaId, conta.id), busca, filtro === "todas" ? undefined : eq(pecas.situacao, filtro));
 
+  const [shopee] = await db
+    .select({ id: conexoesCanal.id })
+    .from(conexoesCanal)
+    .where(and(eq(conexoesCanal.contaId, conta.id), eq(conexoesCanal.canal, "shopee"), eq(conexoesCanal.situacao, "ativa")))
+    .limit(1);
   const [porSituacao, [noAr], [{ total }], linhas] = await Promise.all([
     db
       .select({ situacao: pecas.situacao, n: count(), valor: sum(sql`${pecas.precoCentavos} * ${pecas.quantidade}`), unidades: sum(pecas.quantidade) })
@@ -241,7 +248,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
                 <div className="cb">
                   <div className="t">{it.titulo}</div>
                   <span className="tag" style={{ alignSelf: "flex-start" }}>{it.sku}</span>
-                  <Selos lista={anunciosDe(it.id)} />
+                  <Selos lista={anunciosDe(it.id)} publicarShopee={shopee && it.situacao === "disponivel" ? it.id : undefined} />
                   <div className="pr">
                     <b className="num">{reais(it.precoCentavos)}</b>
                     <span className="num muted" style={{ fontSize: ".78rem" }}>{dias(it.criadoEm)}d</span>
@@ -278,7 +285,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
                     <span className={`pill ${cls}`}>{txt}</span>
                   </div>
                 </div>
-                <Selos lista={anunciosDe(it.id)} />
+                <Selos lista={anunciosDe(it.id)} publicarShopee={shopee && it.situacao === "disponivel" ? it.id : undefined} />
                 <div className="r num">{reais(it.precoCentavos)}</div>
                 <div className="r num">{it.quantidade}</div>
                 <div className="r num muted">{dias(it.criadoEm)}d</div>
