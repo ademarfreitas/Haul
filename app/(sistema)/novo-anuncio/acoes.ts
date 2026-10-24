@@ -1,9 +1,10 @@
 "use server";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal, fotosPeca, pecas } from "@/db/schema";
 import { contaAtual } from "@/lib/conta";
+import { proximoSku } from "@/lib/sku";
 import { ErroMl, tokenValido } from "@/lib/mercado-livre";
 import {
   atributosObrigatorios,
@@ -67,13 +68,6 @@ const centavos = (v: string) => {
   const n = Number(v.replace(/\./g, "").replace(",", "."));
   return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
 };
-
-async function proximoSku(contaId: string): Promise<string> {
-  const r = await obterDb().execute<{ n: number | null }>(
-    sql`select max(substring(sku from 4)::int) as n from pecas where conta_id = ${contaId} and sku ~ '^PL-[0-9]{1,9}$'`,
-  );
-  return `PL-${String((Number(r.rows[0]?.n) || 0) + 1).padStart(4, "0")}`;
-}
 
 // "Salvar rascunho" grava só no Plist. "Publicar" manda para o ML primeiro e só grava se der certo,
 // para uma tentativa que falhou não deixar peça repetida no estoque.

@@ -15,6 +15,11 @@ export default async function NovoAnuncio() {
     .select({ id: conexoesCanal.id, apelido: conexoesCanal.apelido, usuarioExterno: conexoesCanal.usuarioExterno })
     .from(conexoesCanal)
     .where(and(eq(conexoesCanal.contaId, conta.id), eq(conexoesCanal.canal, "mercado_livre"), eq(conexoesCanal.situacao, "ativa")));
+  const [shopee] = await obterDb()
+    .select({ id: conexoesCanal.id })
+    .from(conexoesCanal)
+    .where(and(eq(conexoesCanal.contaId, conta.id), eq(conexoesCanal.canal, "shopee"), eq(conexoesCanal.situacao, "ativa")))
+    .limit(1);
 
   return (
     <>
@@ -22,14 +27,23 @@ export default async function NovoAnuncio() {
         <div>
           <p className="eyebrow">Cadastre uma vez</p>
           <h1>Novo anúncio</h1>
-          <p className="sub">Coloque as fotos, preencha o anúncio e publique nos canais conectados. Hoje o Plist publica no Mercado Livre; os outros canais chegam em seguida.</p>
+          <p className="sub">Coloque as fotos, preencha o anúncio e publique nos canais conectados. Aqui a peça vai para o Mercado Livre; depois, a mesma peça vai para a Shopee em <Link href="/novo-anuncio/shopee">Publicar na Shopee</Link>.</p>
         </div>
       </header>
       {conexoes.length === 0 ? (
         <div className="emptybox">
-          <p>Para publicar, conecte sua conta do Mercado Livre. As fotos também ficam guardadas lá.</p>
+          <p>
+            {shopee
+              ? "Sua loja da Shopee está conectada: cadastre a peça direto nela. Para publicar também no Mercado Livre, conecte a conta."
+              : "Para publicar, conecte sua conta do Mercado Livre ou sua loja da Shopee. As fotos ficam guardadas no canal."}
+          </p>
           <p style={{ marginTop: 12 }}>
-            <a className="btn primary" href="/api/canais/mercado-livre/conectar?voltar=/inventario">Conectar Mercado Livre</a>{" "}
+            {shopee ? (
+              <Link className="btn primary" href="/novo-anuncio/shopee?nova=1">Cadastrar na Shopee</Link>
+            ) : (
+              <a className="btn primary" href="/api/canais/shopee/conectar?voltar=/inventario">Conectar Shopee</a>
+            )}{" "}
+            <a className="btn" href="/api/canais/mercado-livre/conectar?voltar=/inventario">Conectar Mercado Livre</a>{" "}
             <Link className="btn" href="/canais">Ver Canais</Link>
           </p>
         </div>

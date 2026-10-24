@@ -5,6 +5,7 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal, pedidos, tarefas } from "@/db/schema";
+import { desfazerVenda, registrarVenda } from "@/lib/multivenda";
 import { chamarApi, ErroMl, tokenValido } from "@/lib/mercado-livre";
 
 const DIAS = 60;
@@ -144,7 +145,18 @@ export async function importarPedidos(conexaoId: string): Promise<ResultadoPedid
     };
 
     let pedidoId: string;
+    let contar = false;
+    let desfazer = false;
     if (ja) {
+      // venda contada que foi cancelada: troca atômica, para duas atualizações não desfazerem duas vezes
+      if (sit === "cancelado") {
+        const t = await db
+          .update(pedidos)
+          .set({ situacao: sit })
+          .where(and(eq(pedidos.id, ja.id), sql`${pedidos.situacao} not in ('cancelado', 'devolvido')`))
+          .returning({ id: pedidos.id });
+        desfazer = t.length > 0;
+      }
       await db.update(pedidos).set(campos).where(eq(pedidos.id, ja.id));
       pedidoId = ja.id;
       atualizados++;
@@ -173,16 +185,7 @@ export async function importarPedidos(conexaoId: string): Promise<ResultadoPedid
       if (!novo) continue;
       pedidoId = novo.id;
       novos++;
-      // venda nova: baixa o estoque da peça (uma vez só, no primeiro registro do pedido)
-      if (anuncio && sit !== "cancelado") {
-        await db.execute(sql`
-          update pecas set quantidade = greatest(quantidade - ${quantidade}, 0),
-            situacao = case when quantidade - ${quantidade} <= 0 then 'vendida'::situacao_peca else situacao end
-          where id = ${anuncio.pecaId}`);
-        await db.execute(sql`
-          update anuncios set situacao = 'vendido'
-          where id = ${anuncio.id} and exists (select 1 from pecas where id = ${anuncio.pecaId} and situacao = 'vendida')`);
-      }
+      contar = sit !== "cancelado";
       if (taxaReal != null && taxaEstimada != null && Math.abs(taxaReal - taxaEstimada) > TOLERANCIA_TAXA) {
         await db.insert(tarefas).values({
           contaId,
@@ -195,6 +198,8 @@ export async function importarPedidos(conexaoId: string): Promise<ResultadoPedid
         tarefasNovas++;
       }
     }
+    if (anuncio && contar) await registrarVenda(anuncio, quantidade, "mercado_livre");
+    if (anuncio && desfazer) await desfazerVenda(anuncio, quantidade, "mercado_livre");
 
     // etiqueta: tarefa aberta enquanto está pronto para envio (o Full é o ML quem despacha)
     if (sit === "pronto_para_envio" && tipoLogistica !== "fulfillment") {
