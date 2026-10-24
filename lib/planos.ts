@@ -1,18 +1,23 @@
-// Planos do Plist. Preços e conteúdo ainda são exemplo (em aberto no CLAUDE.md): mudar só aqui.
+// Planos do Plist (definidos pelo usuário em 24/10/2026): mudar só aqui. Os limites ainda não são cobrados pelo sistema.
 export const PLANOS = [
-  { id: "essencial", nome: "Essencial", precoCentavos: 4990, itens: ["Até 2 canais conectados", "Até 300 anúncios", "Etiquetas em PDF e ZPL", "Avisos por e-mail"] },
+  {
+    id: "essencial",
+    nome: "Essencial",
+    precoCentavos: 1490,
+    itens: ["1 canal conectado", "Até 30 anúncios", "1 usuário", "Etiquetas em PDF e ZPL", "Avisos por e-mail"],
+  },
   {
     id: "profissional",
     nome: "Profissional",
-    precoCentavos: 9990,
+    precoCentavos: 2990,
     selo: "Mais escolhido",
-    itens: ["Os 7 canais", "Anúncios ilimitados", "Impressão direta pelo Plist Agente", "Avisos por WhatsApp e SMS", "IA nos anúncios: 200 por mês"],
+    itens: ["Até 2 canais conectados", "Até 100 anúncios", "Até 3 usuários", "IA nos anúncios: 10 por mês", "Avisos por WhatsApp", "Impressão direta pelo Plist Agente"],
   },
   {
     id: "avancado",
     nome: "Avançado",
-    precoCentavos: 17990,
-    itens: ["Tudo do Profissional", "Command Center com comparação de preços", "Perguntas ao mercado sem limite", "3 usuários com permissões", "Suporte por WhatsApp"],
+    precoCentavos: 5990,
+    itens: ["Tudo do Profissional", "Todos os canais", "Até 500 anúncios", "Até 10 usuários", "IA nos anúncios: 50 por mês", "Avisos e relatório por WhatsApp", "Command Center com comparação de preços"],
   },
 ] as const;
 

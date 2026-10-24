@@ -16,7 +16,7 @@ O arquivo é um trecho de página (sem `<html>`/`<head>`), feito para o visualiz
 
 ## Valores que são exemplo
 
-- Preços dos planos (Essencial R$ 49,90, Profissional R$ 99,90, Avançado R$ 179,90) e o que entra em cada um.
+- Planos (Essencial R$ 14,90, Profissional R$ 29,90, Avançado R$ 59,90): preços definidos em 24/10/2026, mas os limites ainda não são cobrados pelo sistema.
 - Tabela de taxas de out/2026 tirada de fontes não oficiais: conferir na central de cada marketplace.
 - Prazo de repasse (12 dias), compradores, endereços, rastreios e notas fiscais.
 
