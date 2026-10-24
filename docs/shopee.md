@@ -69,6 +69,10 @@ Erros comuns: `error_sign` (Partner ID/Key de um ambiente com o host do outro) e
   **Imprimir** baixa a etiqueta oficial em PDF.
 - **Publicar na Shopee** (`/novo-anuncio/shopee`, ou o selo SP no Estoque): publica uma peça do
   estoque com as fotos dela, pedindo categoria, ficha obrigatória, marca, peso, medidas e envio.
-
-Ainda não: tirar o anúncio do outro canal quando vende (vale para todos os canais e vem a seguir) e
-criar peça nova direto na Shopee sem passar pelo ML.
+  **Peça nova** (`/novo-anuncio/shopee?nova=1`) cadastra direto na Shopee, com as fotos enviadas para lá;
+  serve também para quem só tem a Shopee conectada.
+- **Multivenda**: vendeu num canal, o Plist baixa o estoque e pausa o anúncio da mesma peça no ML /
+  deslista na Shopee (ou só ajusta a quantidade, se sobrar). Se o canal recusar, nasce a tarefa
+  "Venda dupla". Venda cancelada devolve a quantidade e reativa o que o Plist tirou.
+- **Na hora**: os avisos de pedido do ML (`orders_v2`) e da Shopee (push de status e rastreio) fazem o
+  Plist buscar as vendas daquela conta logo depois do aviso, sem precisar clicar em Atualizar pedidos.

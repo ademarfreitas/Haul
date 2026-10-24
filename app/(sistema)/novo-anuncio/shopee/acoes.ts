@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal, fotosPeca, pecas } from "@/db/schema";
 import { contaAtual } from "@/lib/conta";
+import { proximoSku } from "@/lib/sku";
 import { enviarImagemShopee, ErroShopee, lojaValida } from "@/lib/shopee";
 import { fichaShopee, publicarItemShopee, sugerirCategoriasShopee, type AtributoShopee, type CategoriaShopee } from "@/lib/shopee-anuncio";
 
@@ -51,7 +52,7 @@ export async function ficha(
   }
 }
 
-export type EstadoShopee = { erro?: string; feito?: { link: string; titulo: string } };
+export type EstadoShopee = { erro?: string; feito?: { link: string; titulo: string; sku: string } };
 
 const texto = (f: FormData, nome: string, max = 200) => String(f.get(nome) ?? "").trim().slice(0, max);
 const inteiro = (f: FormData, nome: string) => Number.parseInt(texto(f, nome, 10), 10) || 0;
@@ -60,32 +61,40 @@ const centavos = (v: string) => {
   return Number.isFinite(n) && n > 0 ? Math.round(n * 100) : null;
 };
 
-// Publica uma peça do estoque na Shopee. Só grava o anúncio no Plist se a Shopee aceitar.
+const CONDICOES = ["nova_com_etiqueta", "nova_sem_etiqueta", "seminova", "usada_bom_estado", "usada_com_detalhes"] as const;
+type Condicao = (typeof CONDICOES)[number];
+
+// Publica na Shopee uma peça do estoque (campo "peca") ou uma peça nova, com fotos já enviadas para a
+// Shopee (campo "fotos"). Só grava no Plist o que a Shopee aceitar.
 export async function publicarNaShopee(_: EstadoShopee, f: FormData): Promise<EstadoShopee> {
   const dono = await lojaDaConta(texto(f, "conexao", 40));
   if (!dono) return { erro: "Conecte a Shopee em Canais para publicar." };
   const db = obterDb();
 
-  const [peca] = await db
-    .select()
-    .from(pecas)
-    .where(and(eq(pecas.id, texto(f, "peca", 40)), eq(pecas.contaId, dono.contaId)));
-  if (!peca) return { erro: "Peça não encontrada." };
-  const [ja] = await db.select({ id: anuncios.id }).from(anuncios).where(and(eq(anuncios.pecaId, peca.id), eq(anuncios.canal, "shopee")));
-  if (ja) return { erro: "Esta peça já tem anúncio na Shopee." };
+  const pecaId = texto(f, "peca", 40);
+  const [peca] = pecaId ? await db.select().from(pecas).where(and(eq(pecas.id, pecaId), eq(pecas.contaId, dono.contaId))) : [];
+  if (pecaId && !peca) return { erro: "Peça não encontrada." };
+  if (peca) {
+    const [ja] = await db.select({ id: anuncios.id }).from(anuncios).where(and(eq(anuncios.pecaId, peca.id), eq(anuncios.canal, "shopee")));
+    if (ja) return { erro: "Esta peça já tem anúncio na Shopee." };
+  }
 
   const titulo = texto(f, "titulo", 120).replace(/\s+/g, " ");
   const descricao = texto(f, "descricao", 5000);
   const precoCentavos = centavos(texto(f, "preco", 20));
+  const custoCentavos = centavos(texto(f, "custo", 20));
   const quantidade = Math.max(1, Math.min(9999, inteiro(f, "quantidade") || 1));
   const categoriaId = inteiro(f, "categoria");
   const pesoGramas = inteiro(f, "peso");
   const dimensoes = { comprimento: inteiro(f, "comprimento"), largura: inteiro(f, "largura"), altura: inteiro(f, "altura") };
   const fretes = f.getAll("frete").map((x) => Number(x)).filter((n) => Number.isInteger(n) && n > 0);
+  const condicaoNova = (CONDICOES as readonly string[]).includes(texto(f, "condicao")) ? (texto(f, "condicao") as Condicao) : null;
+  const condicao = peca ? peca.condicao : condicaoNova;
 
   if (titulo.length < 3) return { erro: "Escreva o título do anúncio." };
   if (!precoCentavos) return { erro: "Coloque o preço." };
   if (!categoriaId) return { erro: "Escolha a categoria da Shopee." };
+  if (!peca && !condicao) return { erro: "Escolha o estado da peça." };
   if (pesoGramas <= 0) return { erro: "Coloque o peso com a embalagem." };
   if (Object.values(dimensoes).some((d) => d <= 0)) return { erro: "Coloque as medidas do pacote." };
   if (!fretes.length) return { erro: "Escolha pelo menos uma forma de envio." };
@@ -103,25 +112,41 @@ export async function publicarNaShopee(_: EstadoShopee, f: FormData): Promise<Es
     });
   }
   const marcaId = inteiro(f, "marcaId");
-  const marca = marcaId > 0 ? { id: marcaId, nome: texto(f, "marca", 80) } : { id: 0, nome: "NoBrand" };
+  const marcaTexto = texto(f, "marca", 80);
+  const marca = marcaId > 0 ? { id: marcaId, nome: marcaTexto } : { id: 0, nome: "NoBrand" };
 
-  const urls = (await db.select({ url: fotosPeca.url }).from(fotosPeca).where(eq(fotosPeca.pecaId, peca.id)).orderBy(asc(fotosPeca.ordem)))
-    .map((x) => x.url)
-    .filter((u) => u.startsWith("https://"))
-    .slice(0, MAX_FOTOS);
-  if (!urls.length) return { erro: "A peça não tem foto. A Shopee pede pelo menos uma." };
+  // peça nova: as fotos já estão na Shopee (vieram de /api/canais/shopee/fotos)
+  let novas: { id: string; url: string }[] = [];
+  if (!peca) {
+    try {
+      novas = (JSON.parse(texto(f, "fotos", 20_000) || "[]") as { id: string; url: string }[])
+        .filter((x) => typeof x?.id === "string" && typeof x?.url === "string")
+        .slice(0, MAX_FOTOS);
+    } catch {
+      novas = [];
+    }
+    if (!novas.length) return { erro: "A Shopee pede pelo menos uma foto." };
+  }
+  const urls = peca
+    ? (await db.select({ url: fotosPeca.url }).from(fotosPeca).where(eq(fotosPeca.pecaId, peca.id)).orderBy(asc(fotosPeca.ordem)))
+        .map((x) => x.url)
+        .filter((u) => u.startsWith("https://"))
+        .slice(0, MAX_FOTOS)
+    : [];
+  if (peca && !urls.length) return { erro: "A peça não tem foto. A Shopee pede pelo menos uma." };
 
+  const sku = peca?.sku ?? (await proximoSku(dono.contaId));
   let itemId: number;
   let shopId: number;
   try {
     const loja = await lojaValida(dono.conexaoId);
     shopId = loja.shopId;
-    // as fotos da peça (guardadas no ML ou na Shopee) sobem de novo para o espaço da Shopee
-    const fotos: string[] = [];
+    // peça do estoque: as fotos dela (guardadas no ML ou na Shopee) sobem de novo para o espaço da Shopee
+    const fotos: string[] = novas.map((x) => x.id);
     for (const [n, url] of urls.entries()) {
       const r = await fetch(url, { signal: AbortSignal.timeout(15_000) }).catch(() => null);
       if (!r?.ok) continue;
-      fotos.push(await enviarImagemShopee(await r.blob(), `foto-${n + 1}.jpg`));
+      fotos.push((await enviarImagemShopee(await r.blob(), `foto-${n + 1}.jpg`)).id);
     }
     if (!fotos.length) return { erro: "Não deu para copiar as fotos da peça para a Shopee. Tente de novo." };
     ({ itemId } = await publicarItemShopee(loja, {
@@ -130,8 +155,8 @@ export async function publicarNaShopee(_: EstadoShopee, f: FormData): Promise<Es
       categoriaId,
       precoCentavos,
       quantidade,
-      condicao: peca.condicao?.startsWith("nova") ? "NEW" : "USED",
-      sku: peca.sku,
+      condicao: condicao?.startsWith("nova") ? "NEW" : "USED",
+      sku,
       pesoGramas,
       dimensoes,
       fotos,
@@ -145,9 +170,49 @@ export async function publicarNaShopee(_: EstadoShopee, f: FormData): Promise<Es
   }
 
   const link = `https://shopee.com.br/product/${shopId}/${itemId}`;
+  let idDaPeca: string;
+  if (peca) {
+    idDaPeca = peca.id;
+    // peso e medidas ficam na peça para o próximo canal
+    await db
+      .update(pecas)
+      .set({
+        pesoGramas: peca.pesoGramas ?? pesoGramas,
+        comprimentoCm: peca.comprimentoCm ?? dimensoes.comprimento,
+        larguraCm: peca.larguraCm ?? dimensoes.largura,
+        alturaCm: peca.alturaCm ?? dimensoes.altura,
+        situacao: peca.situacao === "rascunho" ? "disponivel" : peca.situacao,
+      })
+      .where(eq(pecas.id, peca.id));
+  } else {
+    const [nova] = await db
+      .insert(pecas)
+      .values({
+        contaId: dono.contaId,
+        sku,
+        titulo,
+        descricao: descricao || null,
+        marca: marcaTexto || null,
+        categoria: texto(f, "categoriaNome", 160) || null,
+        condicao,
+        precoCentavos,
+        custoCentavos,
+        quantidade,
+        pesoGramas,
+        comprimentoCm: dimensoes.comprimento,
+        larguraCm: dimensoes.largura,
+        alturaCm: dimensoes.altura,
+        atributos: { shopee_categoria: String(categoriaId) },
+        situacao: "disponivel",
+      })
+      .returning({ id: pecas.id });
+    idDaPeca = nova.id;
+    const comEndereco = novas.filter((x) => x.url.startsWith("https://"));
+    if (comEndereco.length) await db.insert(fotosPeca).values(comEndereco.map((x, ordem) => ({ pecaId: nova.id, url: x.url, ordem })));
+  }
   await db.insert(anuncios).values({
     contaId: dono.contaId,
-    pecaId: peca.id,
+    pecaId: idDaPeca,
     conexaoId: dono.conexaoId,
     canal: "shopee",
     idExterno: String(itemId),
@@ -157,18 +222,7 @@ export async function publicarNaShopee(_: EstadoShopee, f: FormData): Promise<Es
     situacao: "ativo",
     publicadoEm: new Date(),
   });
-  // peso e medidas ficam na peça para o próximo canal
-  await db
-    .update(pecas)
-    .set({
-      pesoGramas: peca.pesoGramas ?? pesoGramas,
-      comprimentoCm: peca.comprimentoCm ?? dimensoes.comprimento,
-      larguraCm: peca.larguraCm ?? dimensoes.largura,
-      alturaCm: peca.alturaCm ?? dimensoes.altura,
-      situacao: peca.situacao === "rascunho" ? "disponivel" : peca.situacao,
-    })
-    .where(eq(pecas.id, peca.id));
 
   revalidatePath("/estoque");
-  return { feito: { link, titulo } };
+  return { feito: { link, titulo, sku } };
 }

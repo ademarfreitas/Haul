@@ -12,10 +12,22 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export const metadata = { title: "Publicar na Shopee · Plist" };
 
-// Publica na Shopee uma peça que já está no estoque (cadastrada aqui ou vinda do Mercado Livre).
+async function formasDeEnvio(conexaoId: string): Promise<{ fretes: FreteShopee[]; erro?: string }> {
+  try {
+    return { fretes: await fretesShopee(await lojaValida(conexaoId)) };
+  } catch (e) {
+    return {
+      fretes: [],
+      erro: e instanceof ErroShopee && e.codigo === "reconectar" ? "A autorização da Shopee venceu. Reconecte em Canais." : "Não deu para buscar as formas de envio da loja.",
+    };
+  }
+}
+
+// Publica na Shopee uma peça que já está no estoque (cadastrada aqui ou vinda do Mercado Livre),
+// ou uma peça nova (?nova=1) com fotos enviadas direto para a Shopee.
 export default async function PublicarShopee({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { conta } = await exigirConta("/novo-anuncio/shopee");
-  const { peca: pecaId } = await searchParams;
+  const { peca: pecaId, nova } = await searchParams;
   const db = obterDb();
 
   const lojas = await db
@@ -28,7 +40,10 @@ export default async function PublicarShopee({ searchParams }: { searchParams: P
       <div>
         <p className="eyebrow">Mesma peça, mais um canal</p>
         <h1>Publicar na Shopee</h1>
-        <p className="sub">Escolha uma peça do estoque. O Plist usa as fotos e os dados dela e pede só o que a Shopee exige a mais.</p>
+        <p className="sub">Escolha uma peça do estoque (o Plist usa as fotos e os dados dela) ou cadastre uma peça nova só para a Shopee.</p>
+      </div>
+      <div className="actions">
+        <Link className="btn" href="/novo-anuncio/shopee?nova=1">Peça nova</Link>
       </div>
     </header>
   );
@@ -43,6 +58,17 @@ export default async function PublicarShopee({ searchParams }: { searchParams: P
             <a className="btn primary" href="/api/canais/shopee/conectar?voltar=/inventario">Conectar Shopee</a>
           </p>
         </div>
+      </>
+    );
+  }
+
+  if (nova === "1") {
+    const formas = await formasDeEnvio(lojas[0].id);
+    return (
+      <>
+        {cabeca}
+        {formas.erro && <div className="trialbar bad">{formas.erro}</div>}
+        <FormularioShopee loja={{ id: lojas[0].id, nome: lojas[0].apelido ?? lojas[0].usuarioExterno }} fretes={formas.fretes} peca={null} />
       </>
     );
   }
@@ -64,7 +90,7 @@ export default async function PublicarShopee({ searchParams }: { searchParams: P
         {cabeca}
         {livres.length === 0 ? (
           <div className="emptybox">
-            Todas as peças disponíveis já estão na Shopee. Cadastre uma nova em <Link href="/novo-anuncio">Novo anúncio</Link>.
+            Todas as peças disponíveis já estão na Shopee. Cadastre uma <Link href="/novo-anuncio/shopee?nova=1">peça nova</Link>.
           </div>
         ) : (
           <div className="panel">
@@ -101,13 +127,7 @@ export default async function PublicarShopee({ searchParams }: { searchParams: P
   }
 
   const fotos = (await db.select({ url: fotosPeca.url }).from(fotosPeca).where(eq(fotosPeca.pecaId, peca.id)).orderBy(asc(fotosPeca.ordem))).map((f) => f.url);
-  let fretes: FreteShopee[] = [];
-  let erroFretes = "";
-  try {
-    fretes = await fretesShopee(await lojaValida(lojas[0].id));
-  } catch (e) {
-    erroFretes = e instanceof ErroShopee && e.codigo === "reconectar" ? "A autorização da Shopee venceu. Reconecte em Canais." : "Não deu para buscar as formas de envio da loja.";
-  }
+  const { fretes, erro: erroFretes } = await formasDeEnvio(lojas[0].id);
 
   return (
     <>

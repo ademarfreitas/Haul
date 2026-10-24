@@ -142,17 +142,19 @@ export async function chamarShopee<T>(
 }
 
 // Envia uma foto para o espaço de mídia da Shopee (chamada da plataforma, assinada sem loja).
-// Devolve o image_id que vai no add_item.
-export async function enviarImagemShopee(arquivo: Blob, nome: string): Promise<string> {
+// Devolve o image_id (vai no add_item) e o endereço da foto (fica na peça do Plist).
+export async function enviarImagemShopee(arquivo: Blob, nome: string): Promise<{ id: string; url: string }> {
   const { host } = credenciais();
   const caminho = "/api/v2/media_space/upload_image";
   const form = new FormData();
   form.append("image", arquivo, nome);
   const r = await buscar(`${host}${caminho}?${parametrosAssinados(caminho).toString()}`, { method: "POST", body: form });
-  const j = await lerResposta<{ response?: { image_info?: { image_id?: string } } }>(r);
-  const id = j.response?.image_info?.image_id;
-  if (!id) throw new ErroShopee(502, "foto_sem_id", "A Shopee não devolveu a foto.");
-  return id;
+  const j = await lerResposta<{ response?: { image_info?: { image_id?: string; image_url_list?: { image_url_region?: string; image_url?: string }[] } } }>(r);
+  const info = j.response?.image_info;
+  if (!info?.image_id) throw new ErroShopee(502, "foto_sem_id", "A Shopee não devolveu a foto.");
+  const urls = info.image_url_list ?? [];
+  const url = (urls.find((u) => u.image_url_region === "BR") ?? urls[0])?.image_url ?? "";
+  return { id: info.image_id, url };
 }
 
 // POST que devolve arquivo (ex.: PDF da etiqueta). Se a Shopee responder JSON, é erro.
