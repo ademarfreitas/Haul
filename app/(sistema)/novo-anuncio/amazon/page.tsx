@@ -14,7 +14,7 @@ export const metadata = { title: "Publicar na Amazon · Plist" };
 // ou uma peça nova (?nova=1), que na Amazon só pode ser oferta num produto que já existe (as fotos são do catálogo).
 export default async function PublicarAmazon({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { conta } = await exigirConta("/novo-anuncio/amazon");
-  const { peca: pecaId, nova } = await searchParams;
+  const { peca: pecaId, nova, publicado } = await searchParams;
   const db = obterDb();
 
   const contas = await db
@@ -49,6 +49,44 @@ export default async function PublicarAmazon({ searchParams }: { searchParams: P
     );
   }
   const loja = { id: contas[0].id, nome: contas[0].apelido ?? contas[0].usuarioExterno };
+
+  // confirmação depois de publicar (a ação redireciona para cá)
+  if (publicado && /^[0-9a-f-]{36}$/.test(publicado)) {
+    const [a] = await db
+      .select({ url: anuncios.url, titulo: anuncios.titulo, sku: pecas.sku })
+      .from(anuncios)
+      .innerJoin(pecas, eq(pecas.id, anuncios.pecaId))
+      .where(and(eq(anuncios.id, publicado), eq(anuncios.contaId, conta.id), eq(anuncios.canal, "amazon")));
+    if (a) {
+      return (
+        <>
+          {cabeca}
+          <div className="panel" style={{ maxWidth: 640 }}>
+            <h2>Enviado para a Amazon</h2>
+            <p className="muted" style={{ marginTop: 6 }}>
+              <span className="tag">{a.sku}</span> {a.titulo}
+            </p>
+            <p className="muted" style={{ marginTop: 6, fontSize: ".86rem" }}>
+              A Amazon leva alguns minutos para pôr o anúncio no ar. Se ela pedir algum ajuste, aparece no Seller Central e na próxima sincronização do Inventário.
+            </p>
+            <div className="actions" style={{ marginTop: 14 }}>
+              {a.url && (
+                <a className="btn primary" href={a.url} target="_blank" rel="noreferrer">
+                  Ver produto na Amazon
+                </a>
+              )}
+              <Link className="btn" href="/novo-anuncio/amazon">
+                Publicar outra peça
+              </Link>
+              <Link className="btn" href="/estoque">
+                Ver estoque
+              </Link>
+            </div>
+          </div>
+        </>
+      );
+    }
+  }
 
   if (nova === "1") {
     return (

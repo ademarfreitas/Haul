@@ -1,6 +1,7 @@
 "use server";
 import { and, asc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal, fotosPeca, pecas } from "@/db/schema";
 import { contaAtual } from "@/lib/conta";
@@ -73,7 +74,7 @@ export async function campos(conexaoId: string, tipo: string): Promise<{ campos?
   }
 }
 
-export type EstadoAmazon = { erro?: string; feito?: { link: string | null; titulo: string; sku: string } };
+export type EstadoAmazon = { erro?: string };
 
 const texto = (f: FormData, nome: string, max = 200) => String(f.get(nome) ?? "").trim().slice(0, max);
 const inteiro = (f: FormData, nome: string) => Number.parseInt(texto(f, nome, 10), 10) || 0;
@@ -230,21 +231,26 @@ export async function publicarNaAmazon(_: EstadoAmazon, f: FormData): Promise<Es
     const imagem = texto(f, "imagem", 500);
     if (imagem.startsWith("https://")) await db.insert(fotosPeca).values({ pecaId: nova.id, url: imagem, ordem: 0 });
   }
-  await db.insert(anuncios).values({
-    contaId: dono.contaId,
-    pecaId: idDaPeca,
-    conexaoId: dono.conexaoId,
-    canal: "amazon",
-    idExterno: idAnuncioAmazon(vendedorId, sku),
-    url: link,
-    titulo: tituloAnuncio,
-    precoCentavos,
-    taxaEstimadaCentavos: taxa,
-    // a Amazon processa o envio em alguns minutos; a sincronização do Inventário traz a situação final
-    situacao: "publicando",
-    publicadoEm: new Date(),
-  });
+  const [criado] = await db
+    .insert(anuncios)
+    .values({
+      contaId: dono.contaId,
+      pecaId: idDaPeca,
+      conexaoId: dono.conexaoId,
+      canal: "amazon",
+      idExterno: idAnuncioAmazon(vendedorId, sku),
+      url: link,
+      titulo: tituloAnuncio,
+      precoCentavos,
+      taxaEstimadaCentavos: taxa,
+      // a Amazon processa o envio em alguns minutos; a sincronização do Inventário traz a situação final
+      situacao: "publicando",
+      publicadoEm: new Date(),
+    })
+    .returning({ id: anuncios.id });
 
   revalidatePath("/estoque");
-  return { feito: { link, titulo: tituloAnuncio, sku } };
+  // A confirmação vem da página (?publicado=): depois da ação a página é renderizada de novo e,
+  // com o anúncio já gravado, trocaria o formulário por "já está na Amazon".
+  redirect(`/novo-anuncio/amazon?publicado=${criado.id}`);
 }

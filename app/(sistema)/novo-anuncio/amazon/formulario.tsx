@@ -1,7 +1,6 @@
 "use client";
 // Formulário de publicar na Amazon: primeiro acha o produto no catálogo (vender num ASIN que já existe);
 // se não houver, cria um produto novo com as fotos da peça e a ficha que o tipo de produto exige.
-import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
 import type { CampoAmazon, ProdutoCatalogo, TipoProduto } from "@/lib/amazon-anuncio";
@@ -110,33 +109,6 @@ export function FormularioAmazon({ loja, peca }: { loja: { id: string; nome: str
     if (peca) buscar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  if (estado.feito) {
-    return (
-      <div className="panel" style={{ maxWidth: 640 }}>
-        <h2>Enviado para a Amazon</h2>
-        <p className="muted" style={{ marginTop: 6 }}>
-          <span className="tag">{estado.feito.sku}</span> {estado.feito.titulo}
-        </p>
-        <p className="muted" style={{ marginTop: 6, fontSize: ".86rem" }}>
-          A Amazon leva alguns minutos para pôr o anúncio no ar. Se ela pedir algum ajuste, aparece no Seller Central e na próxima sincronização do Inventário.
-        </p>
-        <div className="actions" style={{ marginTop: 14 }}>
-          {estado.feito.link && (
-            <a className="btn primary" href={estado.feito.link} target="_blank" rel="noreferrer">
-              Ver produto na Amazon
-            </a>
-          )}
-          <Link className="btn" href={peca ? "/novo-anuncio/amazon" : "/novo-anuncio/amazon?nova=1"}>
-            {peca ? "Publicar outra peça" : "Cadastrar outra peça"}
-          </Link>
-          <Link className="btn" href="/estoque">
-            Ver estoque
-          </Link>
-        </div>
-      </div>
-    );
-  }
 
   const falta: string[] = [];
   if (!(Number(v.preco.replace(/\./g, "").replace(",", ".")) > 0)) falta.push("Falta o preço");
