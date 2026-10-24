@@ -3,21 +3,21 @@ export const PLANOS = [
   {
     id: "essencial",
     nome: "Essencial",
-    precoCentavos: 1490,
-    itens: ["Até 2 canais conectados", "Até 30 anúncios", "1 usuário", "Etiquetas em PDF e ZPL", "Avisos por e-mail"],
+    precoCentavos: 1990,
+    itens: ["Até 2 canais conectados", "Até 50 anúncios", "1 usuário", "IA nos anúncios: 5 por mês", "SMS a cada venda", "Etiquetas em PDF e ZPL"],
   },
   {
     id: "profissional",
     nome: "Profissional",
-    precoCentavos: 3990,
+    precoCentavos: 4990,
     selo: "Mais escolhido",
-    itens: ["Até 3 canais conectados", "Até 100 anúncios", "Até 3 usuários", "IA nos anúncios: 10 por mês", "Avisos por SMS", "Impressão direta pelo Plist Agente"],
+    itens: ["Todos os canais", "Até 100 anúncios", "Até 3 usuários", "IA nos anúncios: 15 por mês", "SMS a cada venda", "Impressão direta pelo Plist Agente"],
   },
   {
     id: "avancado",
     nome: "Avançado",
-    precoCentavos: 5990,
-    itens: ["Tudo do Profissional", "Todos os canais", "Até 500 anúncios", "Até 5 usuários", "IA nos anúncios: 30 por mês", "Avisos por SMS e relatório por WhatsApp", "Command Center com comparação de preços"],
+    precoCentavos: 7990,
+    itens: ["Tudo do Profissional", "Até 500 anúncios", "Até 5 usuários", "IA nos anúncios: 50 por mês", "Command Center com comparação de preços", "Módulo CRM (em breve)"],
   },
 ] as const;
 

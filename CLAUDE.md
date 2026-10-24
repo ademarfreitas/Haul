@@ -64,14 +64,15 @@ o que falta fazer até o dinheiro ser liberado.
   documento, celular) → sistema. Os primeiros passos não ficam no menu.
 - **30 dias grátis sem cartão**; depois cobra o plano; sem pagamento em 5 dias a conta fica só leitura.
   Indicação: 30 dias de plano para quem indica, quando o indicado paga a primeira mensalidade.
-- **Planos** (24/10/2026, `lib/planos.ts`): Essencial R$ 14,90 (2 canais, 30 anúncios, 1 usuário);
-  Profissional R$ 39,90 (3 canais, 100 anúncios, 3 usuários, 10 IA/mês, avisos por SMS);
-  Avançado R$ 59,90 (todos os canais, 500 anúncios, 5 usuários, 30 IA/mês, avisos por SMS e relatório no WhatsApp).
+- **Planos** (24/10/2026, `lib/planos.ts`): Essencial R$ 19,90 (2 canais, 50 anúncios, 1 usuário, 5 IA/mês);
+  Profissional R$ 49,90 (todos os canais, 100 anúncios, 3 usuários, 15 IA/mês);
+  Avançado R$ 79,90 (todos os canais, 500 anúncios, 5 usuários, 50 IA/mês, módulo CRM em breve).
+  Todos com SMS a cada venda.
 - **Site público** com Planos e Entrar no canto superior direito; fonte **Inter**.
 
 ## Em aberto (decidir com o usuário)
 
-- Limites dos planos ainda não são cobrados pelo sistema (canais, anúncios, usuários, IA, WhatsApp).
+- Limites dos planos ainda não são cobrados pelo sistema (canais, anúncios, usuários, IA, SMS).
 - Facebook Marketplace: sem API oficial; automatizar por extensão pode violar as regras da Meta.
   Lançar sem ele ou só com publicação assistida?
 - Marca **Plist**: busca no INPI e registro de plist.com.br ainda por fazer; CNPJ próprio.
