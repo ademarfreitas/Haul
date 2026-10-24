@@ -2,7 +2,7 @@ import Link from "next/link";
 import { and, count, desc, eq, inArray, sum } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { pecas, pedidos } from "@/db/schema";
-import { CANAIS, reais } from "@/lib/canais";
+import { CANAIS, PORTAL_SELLER_MAGALU, reais } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
 import { AtualizarPedidos } from "../_partes/atualizar-pedidos";
 
@@ -170,6 +170,11 @@ export default async function Pedidos({ searchParams }: { searchParams: Promise<
                         rel="noreferrer"
                       >
                         {o.situacao === "pago" ? "Organizar envio" : o.situacao === "pronto_para_envio" ? "Imprimir" : "Reimprimir"}
+                      </a>
+                    ) : o.canal === "magalu" && ["pago", "pronto_para_envio"].includes(o.situacao) ? (
+                      // NF-e e etiqueta da Magalu ainda pelo Portal do Seller
+                      <a className="btn small primary" href={PORTAL_SELLER_MAGALU} target="_blank" rel="noreferrer">
+                        {o.situacao === "pago" ? "NF-e no portal" : "Etiqueta no portal"}
                       </a>
                     ) : (
                       <span className="muted" style={{ fontSize: ".8rem" }}>

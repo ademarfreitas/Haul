@@ -13,12 +13,13 @@ export const CANAIS = {
 export type Canal = keyof typeof CANAIS;
 
 // Os que já falam com o marketplace de verdade. Os outros aparecem como "em breve".
-export const CANAIS_PRONTOS: Canal[] = ["mercado_livre", "shopee"];
+export const CANAIS_PRONTOS: Canal[] = ["mercado_livre", "shopee", "magalu"];
 
 // rota que começa a conexão de cada canal pronto
 export const CONECTAR: Partial<Record<Canal, string>> = {
   mercado_livre: "/api/canais/mercado-livre/conectar",
   shopee: "/api/canais/shopee/conectar",
+  magalu: "/api/canais/magalu/conectar",
 };
 
 // textos para os códigos que o callback do ML devolve em ?ml_erro=
@@ -44,6 +45,23 @@ export const ERROS_SHOPEE: Record<string, string> = {
   shopee_indisponivel: "A Shopee não respondeu. Tente de novo em alguns minutos.",
   error_sign: "A assinatura não conferiu: confira SHOPEE_PARTNER_ID e SHOPEE_PARTNER_KEY (e o ambiente).",
   error_auth: "A Shopee recusou o código. Confira se o SHOPEE_REDIRECT_URI bate com o domínio cadastrado no console.",
+};
+
+// NF-e e etiqueta da Magalu ainda são feitas no Portal do Seller (ver lib/magalu-pedidos.ts)
+export const PORTAL_SELLER_MAGALU = "https://seller.magalu.com";
+
+// textos para os códigos que o callback da Magalu devolve em ?magalu_erro=
+export const ERROS_MAGALU: Record<string, string> = {
+  access_denied: "Você não autorizou o Plist na Magalu.",
+  state_invalido: "A conexão expirou ou veio de outra aba. Tente de novo.",
+  sem_sessao: "Entre na sua conta do Plist antes de conectar.",
+  sem_loja: "A Magalu não informou a loja. Entre com o login da empresa (CNPJ) que vende na Magalu.",
+  conta_ja_conectada: "Essa loja da Magalu já está ligada a outra conta do Plist.",
+  magalu_indisponivel: "A Magalu não respondeu. Tente de novo em alguns minutos.",
+  invalid_client: "Client ID ou Secret da Magalu não conferem (ver MAGALU_CLIENT_ID e MAGALU_CLIENT_SECRET).",
+  invalid_grant: "A Magalu recusou o código. Confira se o MAGALU_REDIRECT_URI é igual ao endereço cadastrado no client.",
+  UNAUTHORIZED: "A Magalu não aceitou a autorização. Confira as permissões do client (idm client list).",
+  FORBIDDEN: "Falta permissão no client da Magalu, ou a loja não é de pessoa jurídica.",
 };
 
 export function reais(centavos: number | null | undefined): string {

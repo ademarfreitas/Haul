@@ -5,10 +5,13 @@ import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { eventosCanal } from "@/db/schema";
 import { importarPedidos } from "@/lib/ml-pedidos";
+import { importarPedidosMagalu } from "@/lib/magalu-pedidos";
 import { importarPedidosShopee } from "@/lib/shopee-pedidos";
 
-// tópicos que viram busca de pedidos: orders_v2 no ML; na Shopee, push 3 (status do pedido) e 4 (rastreio)
-export const TOPICOS_PEDIDO = { mercado_livre: ["orders_v2"], shopee: ["push_3", "push_4"] } as const;
+// tópicos que viram busca de pedidos: orders_v2 no ML; na Shopee, push 3 (status do pedido) e 4 (rastreio);
+// na Magalu, qualquer aviso de pedido ou entrega (a rota grava como "pedido")
+export const TOPICOS_PEDIDO = { mercado_livre: ["orders_v2"], shopee: ["push_3", "push_4"], magalu: ["pedido"] } as const;
+const IMPORTAR = { mercado_livre: importarPedidos, shopee: importarPedidosShopee, magalu: importarPedidosMagalu } as const;
 type CanalComPedidos = keyof typeof TOPICOS_PEDIDO;
 
 export async function processarAvisosDePedido(conexaoId: string, canal: CanalComPedidos): Promise<void> {
@@ -22,7 +25,7 @@ export async function processarAvisosDePedido(conexaoId: string, canal: CanalCom
   if (!pegos.length) return;
 
   try {
-    await (canal === "mercado_livre" ? importarPedidos(conexaoId) : importarPedidosShopee(conexaoId));
+    await IMPORTAR[canal](conexaoId);
   } catch (e) {
     // devolve para a fila: o próximo aviso (ou o botão Atualizar pedidos) tenta de novo
     const motivo = e instanceof Error ? e.message.slice(0, 300) : "falhou";

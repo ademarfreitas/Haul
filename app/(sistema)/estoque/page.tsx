@@ -52,19 +52,23 @@ const SITUACAO_ANUNCIO: Record<string, string> = {
 
 type AnuncioLinha = { pecaId: string; canal: Canal; situacao: string; url: string | null };
 
-// publicarShopee: id da peça, quando dá para publicá-la na Shopee pelo selo
-function Selos({ lista, publicarShopee }: { lista: AnuncioLinha[]; publicarShopee?: string }) {
+// rotas de publicar uma peça do estoque pelo selo do canal
+const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", magalu: "/novo-anuncio/magalu" };
+
+// publicar: id da peça, quando dá para publicá-la pelo selo; canais: os conectados que aceitam publicar
+function Selos({ lista, publicar, canais }: { lista: AnuncioLinha[]; publicar?: string; canais: Canal[] }) {
   return (
     <div className="chans">
       {CANAIS_ESTOQUE.map((c) => {
         const a = lista.find((x) => x.canal === c);
-        const titulo = `${CANAIS[c].nome}: ${a ? SITUACAO_ANUNCIO[a.situacao] : c === "shopee" && publicarShopee ? "publicar" : "não anunciado"}`;
+        const podePublicar = !a && !!publicar && canais.includes(c) && !!PUBLICAR[c];
+        const titulo = `${CANAIS[c].nome}: ${a ? SITUACAO_ANUNCIO[a.situacao] : podePublicar ? "publicar" : "não anunciado"}`;
         const selo = (
           <span className={`chb ${a ? SELO[a.situacao] : "st-none"}`} style={{ ["--c" as string]: `var(--c-${CANAIS[c].cor})` }} title={titulo} aria-label={titulo}>
             {CANAIS[c].sigla}
           </span>
         );
-        const destino = a?.url ?? (!a && c === "shopee" && publicarShopee ? `/novo-anuncio/shopee?peca=${publicarShopee}` : null);
+        const destino = a?.url ?? (podePublicar ? `${PUBLICAR[c]}?peca=${publicar}` : null);
         return destino ? (
           <a key={c} href={destino} target={a ? "_blank" : undefined} rel="noreferrer" style={{ textDecoration: "none" }}>
             {selo}
@@ -103,11 +107,12 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
     : undefined;
   const condicao = and(eq(pecas.contaId, conta.id), busca, filtro === "todas" ? undefined : eq(pecas.situacao, filtro));
 
-  const [shopee] = await db
-    .select({ id: conexoesCanal.id })
-    .from(conexoesCanal)
-    .where(and(eq(conexoesCanal.contaId, conta.id), eq(conexoesCanal.canal, "shopee"), eq(conexoesCanal.situacao, "ativa")))
-    .limit(1);
+  const publicaveis = (
+    await db
+      .selectDistinct({ canal: conexoesCanal.canal })
+      .from(conexoesCanal)
+      .where(and(eq(conexoesCanal.contaId, conta.id), inArray(conexoesCanal.canal, ["shopee", "magalu"]), eq(conexoesCanal.situacao, "ativa")))
+  ).map((c) => c.canal);
   const [porSituacao, [noAr], [{ total }], linhas] = await Promise.all([
     db
       .select({ situacao: pecas.situacao, n: count(), valor: sum(sql`${pecas.precoCentavos} * ${pecas.quantidade}`), unidades: sum(pecas.quantidade) })
@@ -227,7 +232,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
         <div className="emptybox">
           <p>Seu estoque está vazio.</p>
           <p style={{ marginTop: 8 }}>
-            Traga os anúncios do Mercado Livre e da Shopee em <Link href="/inventario">Inventário</Link> ou cadastre uma peça em{" "}
+            Traga os anúncios do Mercado Livre, da Shopee e da Magalu em <Link href="/inventario">Inventário</Link> ou cadastre uma peça em{" "}
             <Link href="/novo-anuncio">Novo anúncio</Link>.
           </p>
         </div>
@@ -248,7 +253,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
                 <div className="cb">
                   <div className="t">{it.titulo}</div>
                   <span className="tag" style={{ alignSelf: "flex-start" }}>{it.sku}</span>
-                  <Selos lista={anunciosDe(it.id)} publicarShopee={shopee && it.situacao === "disponivel" ? it.id : undefined} />
+                  <Selos lista={anunciosDe(it.id)} canais={publicaveis} publicar={it.situacao === "disponivel" ? it.id : undefined} />
                   <div className="pr">
                     <b className="num">{reais(it.precoCentavos)}</b>
                     <span className="num muted" style={{ fontSize: ".78rem" }}>{dias(it.criadoEm)}d</span>
@@ -285,7 +290,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
                     <span className={`pill ${cls}`}>{txt}</span>
                   </div>
                 </div>
-                <Selos lista={anunciosDe(it.id)} publicarShopee={shopee && it.situacao === "disponivel" ? it.id : undefined} />
+                <Selos lista={anunciosDe(it.id)} canais={publicaveis} publicar={it.situacao === "disponivel" ? it.id : undefined} />
                 <div className="r num">{reais(it.precoCentavos)}</div>
                 <div className="r num">{it.quantidade}</div>
                 <div className="r num muted">{dias(it.criadoEm)}d</div>
