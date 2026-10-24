@@ -27,7 +27,7 @@ async function formasDeEnvio(conexaoId: string): Promise<{ fretes: FreteShopee[]
 // ou uma peça nova (?nova=1) com fotos enviadas direto para a Shopee.
 export default async function PublicarShopee({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { conta } = await exigirConta("/novo-anuncio/shopee");
-  const { peca: pecaId, nova } = await searchParams;
+  const { peca: pecaId, nova, publicado } = await searchParams;
   const db = obterDb();
 
   const lojas = await db
@@ -60,6 +60,44 @@ export default async function PublicarShopee({ searchParams }: { searchParams: P
         </div>
       </>
     );
+  }
+
+  // confirmação depois de publicar (a ação redireciona para cá)
+  if (publicado && /^[0-9a-f-]{36}$/.test(publicado)) {
+    const [a] = await db
+      .select({ url: anuncios.url, titulo: anuncios.titulo, sku: pecas.sku })
+      .from(anuncios)
+      .innerJoin(pecas, eq(pecas.id, anuncios.pecaId))
+      .where(and(eq(anuncios.id, publicado), eq(anuncios.contaId, conta.id), eq(anuncios.canal, "shopee")));
+    if (a) {
+      return (
+        <>
+          {cabeca}
+          <div className="panel" style={{ maxWidth: 640 }}>
+            <h2>Publicado na Shopee</h2>
+            <p className="muted" style={{ marginTop: 6 }}>
+              <span className="tag">{a.sku}</span> {a.titulo}
+            </p>
+            <div className="actions" style={{ marginTop: 14 }}>
+              {a.url && (
+                <a className="btn primary" href={a.url} target="_blank" rel="noreferrer">
+                  Ver anúncio na Shopee
+                </a>
+              )}
+              <Link className="btn" href="/novo-anuncio/shopee">
+                Publicar outra peça
+              </Link>
+              <Link className="btn" href="/novo-anuncio/shopee?nova=1">
+                Cadastrar peça nova
+              </Link>
+              <Link className="btn" href="/estoque">
+                Ver estoque
+              </Link>
+            </div>
+          </div>
+        </>
+      );
+    }
   }
 
   if (nova === "1") {

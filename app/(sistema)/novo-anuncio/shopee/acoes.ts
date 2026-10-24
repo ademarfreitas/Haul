@@ -1,6 +1,7 @@
 "use server";
 import { and, eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal, fotosPeca, pecas } from "@/db/schema";
 import { contaAtual } from "@/lib/conta";
@@ -52,7 +53,7 @@ export async function ficha(
   }
 }
 
-export type EstadoShopee = { erro?: string; feito?: { link: string; titulo: string; sku: string } };
+export type EstadoShopee = { erro?: string };
 
 const texto = (f: FormData, nome: string, max = 200) => String(f.get(nome) ?? "").trim().slice(0, max);
 const inteiro = (f: FormData, nome: string) => Number.parseInt(texto(f, nome, 10), 10) || 0;
@@ -210,7 +211,7 @@ export async function publicarNaShopee(_: EstadoShopee, f: FormData): Promise<Es
     const comEndereco = novas.filter((x) => x.url.startsWith("https://"));
     if (comEndereco.length) await db.insert(fotosPeca).values(comEndereco.map((x, ordem) => ({ pecaId: nova.id, url: x.url, ordem })));
   }
-  await db.insert(anuncios).values({
+  const [criado] = await db.insert(anuncios).values({
     contaId: dono.contaId,
     pecaId: idDaPeca,
     conexaoId: dono.conexaoId,
@@ -221,8 +222,10 @@ export async function publicarNaShopee(_: EstadoShopee, f: FormData): Promise<Es
     precoCentavos,
     situacao: "ativo",
     publicadoEm: new Date(),
-  });
+  }).returning({ id: anuncios.id });
 
   revalidatePath("/estoque");
-  return { feito: { link, titulo, sku } };
+  // A confirmação vem da página (?publicado=): depois da ação a página é renderizada de novo e,
+  // com o anúncio já gravado, trocaria o formulário por "já está na Shopee".
+  redirect(`/novo-anuncio/shopee?publicado=${criado.id}`);
 }
