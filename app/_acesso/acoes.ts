@@ -3,10 +3,12 @@
 // mostrar a mensagem sem apagar o que a pessoa digitou (a senha nunca volta).
 import { eq, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { obterDb } from "@/db/cliente";
 import { contas, indicacoes, usuarios } from "@/db/schema";
 import { contaAtual, destinoSeguro } from "@/lib/conta";
 import { bloqueado, limparFalhas, registrarFalha } from "@/lib/limite";
+import { manterConexoes } from "@/lib/manter-conexoes";
 import { emailConfigurado, enviarEmail } from "@/lib/email";
 import { gerarTokenSenha, lerTokenSenha, valeParaSenha } from "@/lib/redefinir-senha";
 import { conferirSenha, gerarHash, SENHA_MINIMA } from "@/lib/senha";
@@ -94,6 +96,8 @@ export async function entrar(_: Estado, f: FormData): Promise<Estado> {
   }
   limparFalhas(email);
   await abrirSessao({ c: u.contaId, u: u.id }, manter);
+  // renova os canais já conectados depois da resposta, sem atrasar a entrada
+  after(() => manterConexoes(u.contaId));
   redirect(destinoSeguro(volta));
 }
 
