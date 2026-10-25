@@ -44,6 +44,8 @@ o que falta fazer até o dinheiro ser liberado.
   CRM (`app/(sistema)/crm`, `lib/crm*.ts`, `docs/crm.md`, 24/10/2026): só no Avançado (e no teste); abas Hoje, Clientes,
   Funil, Campanhas e Captação; clientes saem dos pedidos; contato direto (WhatsApp, campanhas) só com cliente próprio ou
   com quem se cadastrou na página da loja (`/c/<codigo>`, QR e cartão no pacote sem cupom), nunca com comprador de marketplace. Testes: `npm run testar`.
+  Assinantes (`app/(sistema)/admin`, 25/10/2026): só para e-mails em `ADMIN_EMAILS`; contas, teste, plano, vencimento,
+  inadimplentes, entradas e custos estimados; pagamento lançado à mão na tabela `cobrancas` (`docs/cobranca.md`).
   Avisos segue "em construção" (avisos por SMS, decidido 24/10/2026); cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
   `app/(sistema)/sistema.css` a partir do `<style>` dele.
   Por cima vem `app/(sistema)/tema.css` (escrito à mão, 24/10/2026): menu escuro com ícones e grupos, barra no topo,

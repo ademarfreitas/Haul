@@ -3,6 +3,7 @@ import Link from "next/link";
 import { and, count, eq, ne } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { conexoesCanal, tarefas } from "@/db/schema";
+import { ehAdmin } from "@/lib/admin";
 import { contaAtual, diasDeTeste } from "@/lib/conta";
 import { sair } from "../_acesso/acoes";
 import { Icone } from "./_partes/icone";
@@ -43,7 +44,7 @@ export default async function LayoutSistema({ children }: { children: ReactNode 
 
   return (
     <div className="app">
-      <Menu contadores={{ tarefas: abertas.n, canais: problemas.n }} teste={teste} sair={sair} />
+      <Menu contadores={{ tarefas: abertas.n, canais: problemas.n }} teste={teste} sair={sair} admin={ehAdmin(usuario.email)} />
       <div className="coluna">
         <header className="topo-sis">
           <Link className="marca-cel" href="/inventario">

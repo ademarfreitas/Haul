@@ -598,3 +598,40 @@ export const tabelaTaxas = pgTable(
   },
   (t) => [index().on(t.canal, t.categoria)],
 );
+
+// ---------- cobrança da mensalidade (desenho em docs/cobranca.md) ----------
+
+// pendente → paga (ou vencida, se passar do vencimento sem pagar); cancelada; estornada depois de paga.
+export const situacaoCobranca = pgEnum("situacao_cobranca", ["pendente", "paga", "vencida", "cancelada", "estornada"]);
+export const formaPagamento = pgEnum("forma_pagamento", ["pix", "boleto", "cartao", "manual"]);
+
+// Uma linha por mensalidade. Quem preenche: o provedor de cobrança (aviso/webhook) ou o dono do Plist à mão,
+// no /admin, enquanto o provedor não está ligado. Paga, empurra contas.pago_ate para o fim do período.
+export const cobrancas = pgTable(
+  "cobrancas",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    plano: plano().notNull(),
+    valorCentavos: centavos().notNull(),
+    periodoInicio: timestamp({ withTimezone: true }).notNull(),
+    periodoFim: timestamp({ withTimezone: true }).notNull(),
+    vencimento: timestamp({ withTimezone: true }).notNull(),
+    situacao: situacaoCobranca().notNull().default("pendente"),
+    forma: formaPagamento(),
+    pagaEm: timestamp({ withTimezone: true }),
+    taxaProvedorCentavos: centavos(), // o que o provedor cobrou desta mensalidade
+    provedor: text(), // "asaas", "mercado_pago"... ou nulo no lançamento manual
+    idProvedor: text(),
+    observacao: text(),
+    criadoEm: criadoEm(),
+    atualizadoEm: atualizadoEm(),
+  },
+  (t) => [
+    index().on(t.contaId, t.vencimento),
+    index().on(t.situacao, t.vencimento),
+    uniqueIndex().on(t.provedor, t.idProvedor),
+  ],
+);
