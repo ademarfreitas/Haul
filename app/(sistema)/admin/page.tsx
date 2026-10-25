@@ -5,7 +5,8 @@ import { cobrancas, contas, usuarios } from "@/db/schema";
 import { exigirAdmin } from "@/lib/admin";
 import { custosDoMes, diasAteVencer, receitaRecorrente, SITUACOES, situacaoDe, vencimento, type Situacao } from "@/lib/assinantes";
 import { reais } from "@/lib/canais";
-import { descontoIndicacao, MESES_COM_DESCONTO, PLANOS, precoNoCiclo } from "@/lib/planos";
+import { saldosDeIndicacao, type SaldoIndicacao } from "@/lib/indicacao";
+import { descontoIndicacao, PLANOS, precoNoCiclo } from "@/lib/planos";
 import { registrarPagamento } from "./acoes";
 
 export const dynamic = "force-dynamic";
@@ -29,12 +30,7 @@ async function lerCobrancas() {
   try {
     const [porConta, doMes] = await Promise.all([
       db
-        .select({
-          contaId: cobrancas.contaId,
-          total: sql<number>`sum(${cobrancas.valorCentavos})::int`,
-          n: sql<number>`count(*)::int`,
-          meses: sql<number>`sum(case when ${cobrancas.ciclo} = 'anual' then 12 else 1 end)::int`,
-        })
+        .select({ contaId: cobrancas.contaId, total: sql<number>`sum(${cobrancas.valorCentavos})::int`, n: sql<number>`count(*)::int` })
         .from(cobrancas)
         .where(eq(cobrancas.situacao, "paga"))
         .groupBy(cobrancas.contaId),
@@ -48,7 +44,7 @@ async function lerCobrancas() {
     // 42P01 = tabela não existe (o drizzle embrulha o erro do banco em `cause`)
     const erro = e as { code?: string; cause?: { code?: string } };
     if (erro.code === "42P01" || erro.cause?.code === "42P01") {
-      return { porConta: new Map<string, { total: number; n: number; meses: number }>(), doMes: [], falta: true };
+      return { porConta: new Map<string, { total: number; n: number }>(), doMes: [], falta: true };
     }
     throw e;
   }
@@ -78,7 +74,6 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
         testeAte: contas.testeAte,
         pagoAte: contas.pagoAte,
         criadoEm: contas.criadoEm,
-        indicada: sql<boolean>`exists(select 1 from indicacoes i where i.indicada_id = contas.id)`,
       })
       .from(contas)
       .where(ne(contas.id, eu.conta.id)) // a conta do próprio dono fica de fora
@@ -86,6 +81,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
     lerCobrancas(),
   ]);
 
+  const saldos = cob.falta ? new Map<string, SaldoIndicacao>() : await saldosDeIndicacao(lista.map((c) => c.id));
   const todas = lista.map((c) => ({ ...c, situacao: situacaoDe(c, agora), vence: vencimento(c), dias: diasAteVencer(c, agora) }));
   const conta = (s: Situacao[]) => todas.filter((c) => s.includes(c.situacao)).length;
   const entradaMes = cob.doMes.reduce((s, p) => s + p.valorCentavos, 0);
@@ -193,9 +189,10 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
             {linhas.map((c) => {
               const s = SITUACOES[c.situacao];
               const pago = cob.porConta.get(c.id);
-              // indicada: quanto sai o próximo pagamento com os 5% dos primeiros meses
+              // indicação: quanto sai o próximo pagamento com os 5% dos meses de saldo
               const plano = PLANOS.find((p) => p.id === c.plano);
-              const desconto = c.indicada && plano ? descontoIndicacao(plano, c.ciclo, Number(pago?.meses ?? 0)) : 0;
+              const ind = saldos.get(c.id);
+              const desconto = ind && plano ? descontoIndicacao(plano, c.ciclo, ind.saldo) : 0;
               return (
                 <tr key={c.id}>
                   <td>
@@ -210,11 +207,10 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
                     ) : (
                       <span className="muted">não escolheu</span>
                     )}
-                    {c.indicada && (
+                    {ind && (
                       <span className="sub2" style={{ display: "block" }}>
-                        {plano && desconto > 0
-                          ? `indicada · próximo pagamento ${reais(precoNoCiclo(plano, c.ciclo) - desconto)} (5% nos ${MESES_COM_DESCONTO} primeiros meses)`
-                          : "indicada"}
+                        {[ind.indicada && "indicada", ind.premios && `indicou ${ind.premios} que ${ind.premios === 1 ? "pagou" : "pagaram"}`].filter(Boolean).join(" · ")}
+                        {plano && desconto > 0 && ` · próximo pagamento ${reais(precoNoCiclo(plano, c.ciclo) - desconto)} (5% em ${ind.saldo} ${ind.saldo === 1 ? "mês" : "meses"})`}
                       </span>
                     )}
                   </td>

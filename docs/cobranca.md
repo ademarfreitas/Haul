@@ -46,12 +46,14 @@ que falta a tabela e mostra entradas zeradas.
 
 ## Desconto de indicação
 
-Quem entrou pelo link de outra conta (`indicacoes.indicada_id`) paga 5% a menos nos 3 primeiros meses de plano:
-nas 3 primeiras mensalidades, ou, no anual, 5% sobre 3 dos 12 meses da primeira anuidade (R$ 2,49 / 6,24 / 9,99).
-Os meses já pagos contam mensalidade = 1 e anuidade = 12, então quem pagou 1 mês e passou para o anual ainda tem
-2 meses de desconto. O "+ Pagamento" do /admin calcula sozinho: grava em `valor_centavos` o valor já com o desconto
-e anota o desconto na observação. A coluna Plano mostra quanto sai o próximo pagamento de cada indicada.
-Quem indicou continua ganhando os 30 dias no primeiro pagamento da indicada.
+As duas pontas ganham 5% de desconto em 3 meses de plano. Quem entrou pelo link de outra conta ganha 3 meses no
+cadastro; quem indicou ganha mais 3 meses (além dos 30 dias) toda vez que uma indicada paga a primeira vez. Os meses
+se somam (duas indicações = 6 meses com 5%), o percentual não. Cada pagamento gasta os meses que cobre (mensalidade = 1,
+anuidade = 12); no anual o desconto é 5% sobre a parte da anuidade que cai no saldo (3 meses = 5% sobre 3/12).
+O saldo sai das datas, sem coluna nova: `saldoDeMeses` (lib/planos.ts) junta os créditos (`indicacoes.criado_em` da
+indicada e `recompensa_concedida_em` de quem indicou) com os pagamentos em ordem de data. O "+ Pagamento" do /admin
+calcula sozinho, grava em `valor_centavos` o valor já com desconto e anota o desconto na observação. A coluna Plano
+mostra quanto sai o próximo pagamento de cada conta com saldo.
 
 ## Custos
 

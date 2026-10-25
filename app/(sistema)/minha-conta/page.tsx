@@ -4,7 +4,7 @@ import { obterDb } from "@/db/cliente";
 import { contas, indicacoes } from "@/db/schema";
 import { reais } from "@/lib/canais";
 import { diasDeTeste, exigirConta } from "@/lib/conta";
-import { mesesPagosDaIndicada } from "@/lib/indicacao";
+import { saldoDeIndicacao } from "@/lib/indicacao";
 import { descontoIndicacao, DIAS_DE_TOLERANCIA, economiaAnual, MESES_COM_DESCONTO, PLANOS, precoNoCiclo, type Ciclo } from "@/lib/planos";
 import { SENHA_MINIMA } from "@/lib/senha";
 import { escolherPlano } from "./acoes";
@@ -89,9 +89,9 @@ export default async function MinhaConta({ searchParams }: { searchParams: Promi
 
 // ver = qual preço os cartões mostram (mensal ou anual); começa no ciclo da conta
 async function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirConta>>["conta"]; ver: Ciclo }) {
-  // veio por indicação: 5% a menos nos 3 primeiros meses (null = não veio)
-  const mesesPagos = await mesesPagosDaIndicada(conta.id);
-  const desconto = (p: (typeof PLANOS)[number], c: Ciclo) => (mesesPagos === null ? 0 : descontoIndicacao(p, c, mesesPagos));
+  // indicação (entrou por link ou indicou quem pagou): meses que ainda têm 5% de desconto
+  const saldo = (await saldoDeIndicacao(conta.id))?.saldo ?? 0;
+  const desconto = (p: (typeof PLANOS)[number], c: Ciclo) => descontoIndicacao(p, c, saldo);
   const fim = conta.testeAte;
   const dias = diasDeTeste(fim);
   const escolhido = PLANOS.find((p) => p.id === conta.plano);
@@ -138,10 +138,10 @@ async function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirCo
       <div className="panel">
         <h2>Planos</h2>
         <p className="muted" style={{ fontSize: ".84rem" }}>Troque de plano quando quiser. Nada é cobrado durante o teste.</p>
-        {mesesPagos !== null && mesesPagos < MESES_COM_DESCONTO && (
+        {saldo > 0 && (
           <p style={{ fontSize: ".84rem", marginTop: 6 }}>
-            <span className="pill p-good">Indicação</span> Você entrou por indicação: 5% de desconto nos {MESES_COM_DESCONTO} primeiros meses de plano
-            {ver === "anual" ? " (no anual, sobre 3 dos 12 meses da primeira anuidade)" : ""}.
+            <span className="pill p-good">Indicação</span> Você tem 5% de desconto {saldo === 1 ? "no próximo mês" : `nos próximos ${saldo} meses`} de plano
+            {ver === "anual" ? ` (no anual, sobre ${Math.min(saldo, 12)} dos 12 meses da anuidade)` : ""}.
           </p>
         )}
         <div className="chips" style={{ marginTop: 10 }}>
@@ -222,10 +222,11 @@ async function Indicacao({ contaId }: { contaId: string }) {
   return (
     <>
       <div className="panel">
-        <h2>Indique e ganhe 30 dias</h2>
+        <h2>Indique e ganhe 30 dias e 5% de desconto</h2>
         <p className="muted" style={{ fontSize: ".86rem", marginTop: 4 }}>
           Quem entrar pelo seu link ganha o teste de 30 dias e 5% de desconto nos {MESES_COM_DESCONTO} primeiros meses de plano, no mensal ou no anual. Quando essa
-          pessoa pagar a primeira vez, você ganha 30 dias de plano.
+          pessoa pagar a primeira vez, você ganha 30 dias de plano e 5% de desconto nos {MESES_COM_DESCONTO} meses seguintes. Cada indicação que paga soma mais{" "}
+          {MESES_COM_DESCONTO} meses de desconto.
         </p>
         <Copiar texto={link} />
       </div>
@@ -248,7 +249,7 @@ async function Indicacao({ contaId }: { contaId: string }) {
                     <td>{i.nome}</td>
                     <td>{i.entrou.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" })}</td>
                     <td>{i.situacao === "teste" ? <span className="pill p-accent">Em teste</span> : i.situacao === "ativa" ? <span className="pill p-good">Pagou</span> : <span className="pill p-muted">Sem plano</span>}</td>
-                    <td>{i.premio ? "30 dias de plano" : "Quando pagar"}</td>
+                    <td>{i.premio ? `30 dias + 5% por ${MESES_COM_DESCONTO} meses` : "Quando pagar"}</td>
                   </tr>
                 ))}
               </tbody>
