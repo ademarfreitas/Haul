@@ -59,7 +59,29 @@ export function CabecalhoCrm({ aba, sub, contador, acoes }: { aba: (typeof ABAS)
           </Link>
         ))}
       </nav>
+      <AvisoMarketplace />
     </>
+  );
+}
+
+// Em todas as abas: o risco de levar comprador de marketplace para comprar fora (docs/crm.md).
+export function AvisoMarketplace() {
+  return (
+    <div role="note" style={{ background: "var(--warn-soft)", border: "1px solid var(--warn)", borderRadius: 10, padding: "10px 14px", marginBottom: 18, fontSize: ".86rem", lineHeight: 1.5 }}>
+      <b style={{ color: "var(--warn)" }}>Atenção com compradores de marketplace.</b> Convidar quem comprou no Mercado Livre, na Shopee, na Amazon, na Magalu ou na Shein
+      para comprar fora da plataforma vai contra as regras desses canais. Isso pode gerar advertência, queda na reputação, anúncios pausados e até a
+      suspensão da sua conta lá.
+      <details style={{ marginTop: 4 }}>
+        <summary style={{ cursor: "pointer", fontWeight: 600 }}>O que pode e o que não pode</summary>
+        <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
+          <li>Não mande link, telefone, Instagram ou cupom pela conversa do pedido no canal.</li>
+          <li>Não ofereça desconto ou cupom para a próxima compra ser feita fora do canal.</li>
+          <li>No pacote, use só o cartão neutro da aba Captação: ele agradece e convida a receber novidades, sem cupom.</li>
+          <li>Campanhas e WhatsApp do CRM são para seus clientes próprios e para quem deixou o contato e aceitou na sua página.</li>
+          <li>Cada canal muda as regras com frequência: confira a política de uso da sua conta antes de agir.</li>
+        </ul>
+      </details>
+    </div>
   );
 }
 
