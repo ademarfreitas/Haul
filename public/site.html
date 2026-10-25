@@ -3300,11 +3300,11 @@ function renderAccount() {
   } else if (acctTab === "referral") {
     const code = (acct.name.split(" ")[0] || "plist").normalize("NFD").replace(/[^A-Za-z]/g, "").toUpperCase().slice(0, 6) + "30";
     const link = `https://plist.com.br/c/${code}`;
-    body.innerHTML = `<div class="panel"><h2>Indique e ganhe 30 dias e 5% de desconto</h2><p class="muted" style="font-size:.86rem;margin-top:4px">Quem entrar pelo seu link ganha o teste de 30 dias e 5% de desconto nos 3 primeiros meses de plano, no mensal ou no anual. Quando essa pessoa pagar a primeira vez, você ganha 30 dias de plano e 5% de desconto nos 3 meses seguintes.</p>
+    body.innerHTML = `<div class="panel"><h2>Indique e ganhe 30 dias e 5% de desconto</h2><p class="muted" style="font-size:.86rem;margin-top:4px">Quem entrar pelo seu link ganha o teste de 30 dias e 5% de desconto nos 12 primeiros meses de plano, no mensal ou no anual. Quando essa pessoa pagar a primeira vez, você ganha 30 dias de plano e 5% de desconto nos 12 meses seguintes.</p>
       <div class="copyrow"><input id="refLink" value="${link}" readonly aria-label="Seu link de indicação"><button class="btn primary" type="button" id="refCopy">Copiar link</button></div>
       <p class="muted" style="font-size:.8rem;margin-top:6px">Link de exemplo; no produto real cada conta tem o seu.</p></div>
       <div class="panel"><h2>Suas indicações</h2><div class="tw"><table class="wide" style="min-width:480px"><tr><th>Loja</th><th>Entrou em</th><th>Situação</th><th>Seu prêmio</th></tr>
-        <tr><td>Brechó da Lu</td><td>02/10/2026</td><td><span class="pill p-good">Pagou o 1º mês</span></td><td>30 dias + 5% por 3 meses</td></tr>
+        <tr><td>Brechó da Lu</td><td>02/10/2026</td><td><span class="pill p-good">Pagou o 1º mês</span></td><td>30 dias + 5% por 12 meses</td></tr>
         <tr><td>Garimpo 22</td><td>14/10/2026</td><td><span class="pill p-accent">Em teste</span></td><td>Quando pagar</td></tr></table></div></div>`;
     $("#refCopy").onclick = async () => { try { await navigator.clipboard.writeText(link); toast("Link copiado."); } catch (e) { $("#refLink").select(); toast("Link selecionado: use Ctrl+C."); } };
   } else if (acctTab === "notif") {

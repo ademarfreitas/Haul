@@ -50,7 +50,7 @@ export async function registrarPagamento(f: FormData): Promise<void> {
   await db.update(contas).set({ plano: plano.id, ciclo, pagoAte: fim, situacaoAssinatura: "ativa" }).where(eq(contas.id, conta.id));
 
   // Indicação: quem indicou ganha 30 dias quando a indicada paga a primeira mensalidade (uma vez só). A data do prêmio
-  // também dá a quem indicou 3 meses com 5% de desconto (lib/indicacao.ts).
+  // também dá a quem indicou 12 meses com 5% de desconto (lib/indicacao.ts).
   if (primeira) {
     const [ind] = await db
       .select({ id: indicacoes.id, indicadora: contas })

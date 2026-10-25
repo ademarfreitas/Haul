@@ -141,7 +141,7 @@ async function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirCo
         {saldo > 0 && (
           <p style={{ fontSize: ".84rem", marginTop: 6 }}>
             <span className="pill p-good">Indicação</span> Você tem 5% de desconto {saldo === 1 ? "no próximo mês" : `nos próximos ${saldo} meses`} de plano
-            {ver === "anual" ? ` (no anual, sobre ${Math.min(saldo, 12)} dos 12 meses da anuidade)` : ""}.
+            {ver === "anual" ? (saldo >= 12 ? " (no anual, sobre a anuidade inteira)" : ` (no anual, sobre ${saldo} dos 12 meses da anuidade)`) : ""}.
           </p>
         )}
         <div className="chips" style={{ marginTop: 10 }}>

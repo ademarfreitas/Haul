@@ -18,7 +18,7 @@ export default async function Cadastro({ searchParams }: { searchParams: Promise
     <Moldura
       titulo="Crie sua conta"
       sub="Venda no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook com um cadastro só."
-      selo={`${nome ? `Plano ${nome}${anual ? " anual" : ""} · ` : ""}30 dias grátis, sem cartão${indicado ? " · indicação: 5% off nos 3 primeiros meses" : ""}`}
+      selo={`${nome ? `Plano ${nome}${anual ? " anual" : ""} · ` : ""}30 dias grátis, sem cartão${indicado ? " · indicação: 5% off nos 12 primeiros meses" : ""}`}
     >
       <FormCadastro plano={nome ? plano : ""} ciclo={anual ? "anual" : "mensal"} ind={indicado ? ind : ""} />
       <p className="rodape-form">Já tem conta? <a href="/entrar">Entrar</a></p>
