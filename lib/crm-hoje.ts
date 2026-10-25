@@ -1,9 +1,9 @@
 // "Quem chamar hoje": as ações do dia do CRM, cada uma com a mensagem pronta. WhatsApp só para cliente
-// próprio com número; o comprador de marketplace aparece para o lojista falar pela conversa do pedido no canal.
+// próprio (ou que se cadastrou na página da loja) com número; o comprador de marketplace aparece para o lojista falar pela conversa do pedido no canal.
 import { and, eq, gte, inArray, isNotNull, lte, notInArray, or, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { clientes, oportunidades, pecas, pedidos } from "@/db/schema";
-import { clienteProprio, NAO_CONTA, type clientesComMedidas } from "@/lib/crm";
+import { contatoLiberado, NAO_CONTA, type clientesComMedidas } from "@/lib/crm";
 import { ABERTAS, linkZap, MODELOS, preenche } from "@/lib/crm-funil";
 import { diaSP, somaDias } from "@/lib/crm-medidas";
 
@@ -24,7 +24,7 @@ export async function acoesDoDia(contaId: string, medidas: Medidas, empresa: str
   const hoje = diaSP(new Date());
   const item = (c: Cliente, tipo: keyof typeof MODELOS, detalhe: string, extra: Record<string, string> = {}): Acao => {
     const msg = preenche(MODELOS[tipo], { nome: c.nome, empresa, ...extra });
-    const proprio = clienteProprio(c);
+    const proprio = contatoLiberado(c);
     return {
       id: c.id,
       nome: c.nome,

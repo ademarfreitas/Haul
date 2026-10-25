@@ -11,6 +11,7 @@ const ABAS = [
   { id: "clientes", nome: "Clientes", href: "/crm/clientes" },
   { id: "funil", nome: "Funil de vendas", href: "/crm/funil" },
   { id: "campanhas", nome: "Campanhas", href: "/crm/campanhas" },
+  { id: "captacao", nome: "Captação", href: "/crm/captacao" },
 ] as const;
 
 // Cabeçalho do CRM com as abas e os atalhos de criar.

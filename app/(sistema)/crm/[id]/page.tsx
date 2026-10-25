@@ -5,10 +5,10 @@ import { obterDb } from "@/db/cliente";
 import { clienteNotas, clientes, oportunidades, pecas, pedidos, usuarios } from "@/db/schema";
 import { CANAIS, reais } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
-import { clienteProprio, clientesComMedidas, NAO_CONTA, temCrm } from "@/lib/crm";
+import { clienteProprio, clientesComMedidas, contatoLiberado, NAO_CONTA, temCrm } from "@/lib/crm";
 import { ETAPAS } from "@/lib/crm-funil";
 import { diaSP, ORIGENS, SEGMENTOS } from "@/lib/crm-medidas";
-import { adicionarNota, removerEtiqueta, salvarProximoPasso } from "../acoes";
+import { adicionarNota, removerEtiqueta, salvarProximoPasso, tirarAceite } from "../acoes";
 import { FormCliente, FormEtiqueta, FormVenda } from "../formularios";
 import { dataCurta } from "../partes";
 import { Vitrine } from "../vitrine";
@@ -101,6 +101,7 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
   ].sort((a, b) => b.quando.getTime() - a.quando.getTime());
 
   const proprio = clienteProprio(cad);
+  const liberado = contatoLiberado(cad);
   const seg = SEGMENTOS[c.segmento];
   const dado = (rotulo: string, valor: React.ReactNode) => (
     <div>
@@ -126,7 +127,7 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
           </h1>
           <p className="sub">{seg.acao}</p>
         </div>
-        {proprio && cad.whatsapp && (
+        {liberado && cad.whatsapp && (
           <a className="btn primary" href={`https://wa.me/${cad.whatsapp}`} target="_blank" rel="noreferrer">
             Chamar no WhatsApp
           </a>
@@ -144,12 +145,24 @@ export default async function Ficha({ params }: { params: Promise<{ id: string }
           {dado("Próxima esperada", c.proxima ? `${dataCurta(c.proxima)}${c.atraso ? ` · ${c.atraso} dias de atraso` : ""}` : null)}
           {dado("Cidade", c.cidade ? `${c.cidade}${c.uf ? `/${c.uf}` : ""}` : null)}
           {dado("Aniversário", c.aniversario ? `${dataCurta(c.aniversario).replace(/ de \d{4}$/, "")}${c.aniversarioEm === 0 ? " · hoje!" : c.aniversarioEm != null && c.aniversarioEm <= 7 ? ` · em ${c.aniversarioEm} dias` : ""}` : null)}
-          {proprio && dado("Ofertas", c.ofertas ? "Aceitou receber" : "Não aceitou")}
+          {liberado && dado("Ofertas", c.ofertas ? `Aceitou receber${cad.ofertasOrigem ? ` (${cad.ofertasOrigem})` : ""}` : "Não aceitou")}
+          {!proprio && liberado && dado("Contato", [cad.whatsapp && `WhatsApp ${cad.whatsapp.replace(/^55(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3")}`, cad.email].filter(Boolean).join(" · "))}
         </div>
-        {!proprio && (
+        {!proprio && liberado && (
+          <form action={tirarAceite} style={{ marginTop: 12 }}>
+            <input type="hidden" name="id" value={id} />
+            <button className="btn small" type="submit" style={{ color: "var(--bad)" }}>
+              Tirar o aceite (pediu para sair)
+            </button>
+            <span className="muted" style={{ fontSize: ".8rem", marginLeft: 8 }}>
+              Apaga o WhatsApp, o e-mail e o aniversário que ele deixou; as compras continuam.
+            </span>
+          </form>
+        )}
+        {!liberado && (
           <p className="muted" style={{ fontSize: ".84rem", marginTop: 12 }}>
             O {c.canal ? CANAIS[c.canal].nome : "canal"} não passa o contato do comprador e não deixa usar os dados dele para oferta fora do canal. Para falar com ele, use a
-            conversa do pedido no próprio canal.
+            conversa do pedido no próprio canal. Se ele se cadastrar na sua página (aba Captação), o contato aparece aqui.
           </p>
         )}
       </div>

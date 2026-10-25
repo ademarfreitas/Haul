@@ -16,8 +16,10 @@
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
+    "@types/qrcode": "^1.5.5",
     "drizzle-orm": "^0.45.4",
     "next": "^16.4.2",
+    "qrcode": "^1.5.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

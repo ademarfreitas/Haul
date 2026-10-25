@@ -41,5 +41,16 @@ Shopee, o primeiro nome na Magalu) e proíbem usar esses dados para marketing. D
   mensagem com {nome} e {empresa}. Só clientes próprios com WhatsApp; oferta só para quem aceitou. Envio um a um pelo
   WhatsApp do lojista (o botão abre o wa.me e marca enviado). Retorno: quem comprou em 7 dias e quanto.
 
+- **Captação** (`/crm/captacao`, `lib/crm-captacao.ts`): a página de cadastro da loja em `/c/<codigo>` (código de 7 letras,
+  `contas.captacao_codigo`, nasce na primeira visita à aba e não muda). O comprador deixa nome, WhatsApp, e-mail e
+  aniversário (opcionais) e marca o aceite; sem aceite não guarda nada. Dois links com QR: **loja** (bio do Instagram,
+  balcão, venda direta, Facebook; mostra o cupom `captacao_cupom` / `captacao_beneficio`) e **pacote** (`?de=pacote`,
+  cartão dentro do pacote de qualquer canal: só agradece e convida, **sem cupom**, porque o ML e a Shopee proíbem levar
+  a venda para fora; decidido com o usuário em 25/10/2026). Cartões para imprimir em `/imprimir/cartao` (8 por A4).
+  No pacote a pessoa pode pôr o número do pedido: o contato entra no cliente de marketplace, com o histórico, e o
+  apelido vira o nome digitado. Cliente que já existe só ganha o que estava vazio (ninguém troca o WhatsApp de outro).
+  Quem deu o aceite ali passa a valer como contato (`contatoLiberado` em `lib/crm.ts`): WhatsApp, Hoje e campanhas.
+  "Tirar o aceite" na ficha apaga WhatsApp, e-mail e aniversário (LGPD). Nunca mandar o link pela conversa do pedido.
+
 Fora por enquanto: cashback (precisa de caixa no Plist) e perguntas pelo WhatsApp (precisa do WhatsApp Business).
 Testes das regras puras: `npm run testar`.

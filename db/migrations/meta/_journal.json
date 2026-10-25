@@ -15,6 +15,13 @@
       "when": 1792885173639,
       "tag": "0001_crm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792887297244,
+      "tag": "0002_captacao",
+      "breakpoints": true
     }
   ]
 }

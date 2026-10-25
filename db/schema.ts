@@ -152,6 +152,10 @@ export const contas = pgTable("contas", {
     .notNull()
     .default(sql`now() + interval '30 days'`),
   pagoAte: timestamp({ withTimezone: true }),
+  // CRM: página de cadastro da loja (/c/<codigo>), onde o comprador deixa o contato e ganha o cupom
+  captacaoCodigo: text().unique(),
+  captacaoCupom: text(),
+  captacaoBeneficio: text(),
   criadoEm: criadoEm(),
   atualizadoEm: atualizadoEm(),
 });

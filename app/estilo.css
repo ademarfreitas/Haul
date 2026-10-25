@@ -105,3 +105,13 @@ h1 { font-size: 24px; margin: 0 0 4px; }
   .acesso-lado { display: none; }
   .acesso-meio { align-items: flex-start; padding-top: 32px; }
 }
+
+/* Página de cadastro da loja (/c/<codigo>, CRM) */
+.loja-cad { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 16px; background: #f6f7fb; }
+.loja-caixa { width: 100%; max-width: 420px; background: #fff; border: 1px solid var(--borda); border-radius: 16px; padding: 28px 24px; box-shadow: 0 10px 30px rgba(20, 17, 31, .06); }
+.loja-caixa h1 { font-size: 26px; line-height: 1.2; letter-spacing: -.02em; margin: 12px 0 8px; }
+.loja-caixa > .suave { font-size: 15px; line-height: 1.5; margin: 0; }
+.loja-rodape { font-size: 12px; color: var(--suave); margin-top: 18px; }
+.loja-rodape a { color: inherit; font-weight: 600; }
+.escondido { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.cupom { font-size: 28px; font-weight: 800; letter-spacing: .08em; color: var(--azul-escuro); margin: 4px 0 8px; }
