@@ -53,7 +53,7 @@ const SITUACAO_ANUNCIO: Record<string, string> = {
 type AnuncioLinha = { pecaId: string; canal: Canal; situacao: string; url: string | null };
 
 // canais com tela de publicar uma peça do estoque pelo selo
-const PUBLICAR: Partial<Record<Canal, string>> = { shopee: "/novo-anuncio/shopee", shein: "/novo-anuncio/shein", amazon: "/novo-anuncio/amazon", magalu: "/novo-anuncio/magalu" };
+const PUBLICAR: Partial<Record<Canal, string>> = { mercado_livre: "/novo-anuncio", shopee: "/novo-anuncio/shopee", shein: "/novo-anuncio/shein", amazon: "/novo-anuncio/amazon", magalu: "/novo-anuncio/magalu" };
 
 // publicar: id da peça e os canais conectados onde dá para publicá-la pelo selo
 function Selos({ lista, publicar }: { lista: AnuncioLinha[]; publicar?: { pecaId: string; canais: Canal[] } }) {
@@ -117,7 +117,9 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
       ).map((c) => c.canal),
     ),
   ];
-  const publicar = (it: { id: string; situacao: string }) => (it.situacao === "disponivel" ? { pecaId: it.id, canais: conectados } : undefined);
+  // rascunho (veio do fornecedor, ainda sem foto) começa pelo ML, onde as fotos sobem; os outros canais usam as fotos dela
+  const publicar = (it: { id: string; situacao: string }) =>
+    it.situacao === "disponivel" ? { pecaId: it.id, canais: conectados } : it.situacao === "rascunho" ? { pecaId: it.id, canais: conectados.filter((c) => c === "mercado_livre") } : undefined;
   const [porSituacao, [noAr], [{ total }], linhas] = await Promise.all([
     db
       .select({ situacao: pecas.situacao, n: count(), valor: sum(sql`${pecas.precoCentavos} * ${pecas.quantidade}`), unidades: sum(pecas.quantidade) })
@@ -184,6 +186,7 @@ export default async function Estoque({ searchParams }: { searchParams: Promise<
         </div>
         <div className="actions">
           <Link className="btn" href="/inventario">Sincronizar</Link>
+          <Link className="btn" href="/estoque/importar">Importar do fornecedor</Link>
           <Link className="btn primary" href="/novo-anuncio">Novo anúncio</Link>
         </div>
       </header>

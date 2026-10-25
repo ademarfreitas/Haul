@@ -46,7 +46,10 @@ o que falta fazer até o dinheiro ser liberado.
   com quem se cadastrou na página da loja (`/c/<codigo>`, QR e cartão no pacote sem cupom), nunca com comprador de marketplace. Testes: `npm run testar`.
   Assinantes (`app/(sistema)/admin`, 25/10/2026): só para e-mails em `ADMIN_EMAILS`; contas, teste, plano, vencimento,
   inadimplentes, entradas e custos estimados; pagamento lançado à mão na tabela `cobrancas` (`docs/cobranca.md`).
-  Avisos segue "em construção" (avisos por SMS, decidido 24/10/2026); cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
+  IA, fornecedor e avisos (25/10/2026, `docs/ia-e-fornecedores.md`): "Preencher com IA" no Novo anúncio do ML e da Shopee
+  (Claude Haiku 5.5, limite do plano e teto de R$ 2 a cada 50 anúncios, `lib/ia-limites.ts`); Estoque > Importar do
+  fornecedor (XML da NF-e e CSV, `lib/fornecedor-arquivo.ts`, `lib/importar.ts`); avisos de custo e estoque em Tarefas e
+  por e-mail (`lib/avisos.ts`), com a tela Avisos escolhendo o e-mail. SMS segue em construção; cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
   `app/(sistema)/sistema.css` a partir do `<style>` dele.
   Por cima vem `app/(sistema)/tema.css` (escrito à mão, 24/10/2026): menu escuro com ícones e grupos, barra no topo,
   cartões e tabelas novos. Entrar/cadastro/primeiros passos em duas colunas (`app/_acesso/moldura.tsx`, `app/estilo.css`).
@@ -80,7 +83,8 @@ o que falta fazer até o dinheiro ser liberado.
 
 ## Em aberto (decidir com o usuário)
 
-- Limites dos planos ainda não são cobrados pelo sistema (canais, anúncios, usuários, IA, SMS).
+- Limites dos planos ainda não são cobrados pelo sistema (canais, anúncios, usuários, SMS); só o de IA é.
+- Dropshipping internacional (AliExpress, CJ) fora do lançamento (25/10/2026); Bling/Tiny só se os lojistas pedirem.
 - Facebook Marketplace: sem API oficial; automatizar por extensão pode violar as regras da Meta.
   Lançar sem ele ou só com publicação assistida?
 - Marca **Plist**: busca no INPI e registro de plist.com.br ainda por fazer; CNPJ próprio.

@@ -6,6 +6,7 @@
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { anuncios, pecas, tarefas } from "@/db/schema";
+import { conferirEstoqueBaixo } from "@/lib/avisos";
 import { CANAIS, type Canal } from "@/lib/canais";
 import { chamarApi, ErroMl, tokenValido } from "@/lib/mercado-livre";
 import { CAMINHOS_SHEIN, chamarShein, comChaves, ErroShein } from "@/lib/shein";
@@ -146,6 +147,39 @@ export async function registrarVenda(anuncio: { id: string; pecaId: string }, qu
     update anuncios set situacao = 'vendido'
     where id = ${anuncio.id} and exists (select 1 from pecas where id = ${anuncio.pecaId} and situacao = 'vendida')`);
   await acompanharVenda(anuncio.pecaId, origem);
+  await conferirEstoqueBaixo({ pecaIds: [anuncio.pecaId] });
+}
+
+// Chegou mercadoria (nota ou planilha do fornecedor): leva a quantidade nova da peça aos anúncios no ar.
+// Nunca lança; o canal que recusar vira tarefa.
+export async function levarEstoqueAosCanais(pecaId: string): Promise<void> {
+  const db = obterDb();
+  try {
+    const [peca] = await db.select({ contaId: pecas.contaId, quantidade: pecas.quantidade, titulo: pecas.titulo }).from(pecas).where(eq(pecas.id, pecaId));
+    if (!peca || peca.quantidade <= 0) return;
+    const noAr: Anuncio[] = await db
+      .select({ id: anuncios.id, canal: anuncios.canal, idExterno: anuncios.idExterno, conexaoId: anuncios.conexaoId, titulo: anuncios.titulo })
+      .from(anuncios)
+      .where(and(eq(anuncios.pecaId, pecaId), eq(anuncios.situacao, "ativo")));
+    for (const a of noAr) {
+      try {
+        await aplicarNoCanal(a, peca.quantidade);
+      } catch (e) {
+        const motivo = erroDeCanal(e) ? (e as Error).message : "o canal não respondeu";
+        await db.insert(tarefas).values({
+          contaId: peca.contaId,
+          tipo: "outra",
+          titulo: `Acertar estoque à mão: ${peca.titulo}`,
+          detalhe: `Chegaram unidades novas (agora são ${peca.quantidade}), mas ${CANAIS[a.canal].nome} não aceitou a quantidade (${motivo}).`,
+          pecaId,
+          anuncioId: a.id,
+          conexaoId: a.conexaoId,
+        });
+      }
+    }
+  } catch (e) {
+    console.error("levar estoque aos canais falhou:", e);
+  }
 }
 
 // Venda cancelada depois de contada: devolve a quantidade e põe de volta no ar o que o Plist tirou.

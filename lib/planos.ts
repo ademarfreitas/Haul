@@ -1,4 +1,5 @@
-// Planos do Plist (definidos pelo usuário em 24/10/2026): mudar só aqui. Os limites ainda não são cobrados pelo sistema.
+// Planos do Plist (definidos pelo usuário em 24/10/2026): mudar só aqui. Só o limite de IA é cobrado pelo sistema
+// (lib/ia-limites.ts, que repete os números); canais, anúncios, usuários e SMS ainda não.
 export const PLANOS = [
   {
     id: "essencial",

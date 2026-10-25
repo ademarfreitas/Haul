@@ -236,6 +236,26 @@ export const fornecedores = pgTable(
   (t) => [uniqueIndex().on(t.contaId, t.nome)],
 );
 
+// Cada nota ou planilha importada. A chave da NF-e impede somar a mesma nota duas vezes.
+export const importacoes = pgTable(
+  "importacoes",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    fornecedorId: uuid().references(() => fornecedores.id, { onDelete: "set null" }),
+    tipo: text().notNull(), // "nfe" ou "planilha"
+    chaveNfe: char({ length: 44 }),
+    numero: text(), // número da nota, para mostrar
+    itens: integer().notNull(),
+    criadas: integer().notNull(),
+    atualizadas: integer().notNull(),
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex().on(t.contaId, t.chaveNfe), index().on(t.contaId, t.criadoEm)],
+);
+
 export const pecas = pgTable(
   "pecas",
   {

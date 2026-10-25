@@ -86,7 +86,12 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
   const conta = (s: Situacao[]) => todas.filter((c) => s.includes(c.situacao)).length;
   const entradaMes = cob.doMes.reduce((s, p) => s + p.valorCentavos, 0);
   const entradaTotal = [...cob.porConta.values()].reduce((s, p) => s + Number(p.total), 0);
-  const custos = custosDoMes(cob.doMes, todas);
+  // gasto de IA do mês; sem a migração 0005 a tabela não existe e conta zero
+  const ia = await db
+    .execute<{ total: string | null }>(sql`select sum(custo_micro_reais) as total from usos_ia where criado_em >= ${inicioDoMes}`)
+    .then((r) => Number(r.rows[0]?.total ?? 0))
+    .catch(() => 0);
+  const custos = custosDoMes(cob.doMes, todas, ia);
   const mrr = receitaRecorrente(todas);
   const resultado = entradaMes - custos.total;
   const linhas = (filtro.situacoes.length ? todas.filter((c) => filtro.situacoes.includes(c.situacao)) : todas).sort(

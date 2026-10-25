@@ -89,8 +89,8 @@ type ContaAtiva = { plano: IdPlano | null; ciclo?: Ciclo; situacao: Situacao };
 export type Custos = { linhas: { nome: string; centavos: number }[]; total: number };
 
 // Custo do mês: fixo + imposto e taxa de cobrança sobre o que entrou + infraestrutura de cada conta que usa o sistema.
-// IA e SMS ainda não estão ligados; entram aqui quando forem.
-export function custosDoMes(pagas: Paga[], contasDoMes: ContaAtiva[]): Custos {
+// IA: o gasto real do mês (tabela usos_ia, em milionésimos de real). SMS ainda não está ligado.
+export function custosDoMes(pagas: Paga[], contasDoMes: ContaAtiva[], iaMicroReais = 0): Custos {
   const entrada = pagas.reduce((s, p) => s + p.valorCentavos, 0);
   const usando = contasDoMes.filter((c) => c.situacao !== "cancelada" && c.situacao !== "nao_converteu" && c.situacao !== "vencida");
   const linhas = [
@@ -98,6 +98,7 @@ export function custosDoMes(pagas: Paga[], contasDoMes: ContaAtiva[]): Custos {
     { nome: `Imposto (${Math.round(IMPOSTO * 100)}% do que entrou)`, centavos: Math.round(entrada * IMPOSTO) },
     { nome: "Taxa do provedor de cobrança", centavos: pagas.reduce((s, p) => s + (p.taxaProvedorCentavos ?? TAXA_COBRANCA_PADRAO), 0) },
     { nome: `Infraestrutura por conta (${usando.length} usando)`, centavos: usando.reduce((s, c) => s + INFRA_POR_CONTA[c.plano ?? "essencial"], 0) },
+    ...(iaMicroReais > 0 ? [{ nome: "IA nos anúncios (Claude)", centavos: Math.ceil(iaMicroReais / 10_000) }] : []),
   ];
   return { linhas, total: linhas.reduce((s, l) => s + l.centavos, 0) };
 }

@@ -3,6 +3,7 @@ import { and, asc, count, desc, eq, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { pecas, pedidos, tarefas } from "@/db/schema";
 import { PORTAL_SELLER_MAGALU } from "@/lib/canais";
+import { conferirEstoqueBaixo } from "@/lib/avisos";
 import { exigirConta } from "@/lib/conta";
 import { pedidoNoSellerCentral } from "@/lib/amazon";
 import { AtualizarPedidos } from "../_partes/atualizar-pedidos";
@@ -20,6 +21,8 @@ const TIPOS: Record<string, [string, string]> = {
   remover_anuncio_falhou: ["p-bad", "Venda dupla"],
   reconectar_canal: ["p-bad", "Canal"],
   responder_comprador: ["p-accent", "Comprador"],
+  conferir_custo: ["p-warn", "Custo"],
+  repor_estoque: ["p-warn", "Estoque"],
   outra: ["p-muted", "Outra"],
 };
 
@@ -37,6 +40,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
   const { conta } = await exigirConta("/tarefas");
   const aba = (await searchParams).aba === "feitas" ? "feitas" : "abertas";
   const db = obterDb();
+  if (aba === "abertas") await conferirEstoqueBaixo({ contaId: conta.id });
 
   const [contagem, lista] = await Promise.all([
     db
@@ -124,7 +128,7 @@ export default async function Tarefas({ searchParams }: { searchParams: Promise<
                       </td>
                       <td style={{ whiteSpace: "normal" }}>
                         <b>{t.titulo}</b>
-                        <span className="sub2">
+                        <span className="sub2" style={{ whiteSpace: "pre-line" }}>
                           {t.detalhe}
                           {t.sku ? ` · ${t.sku}` : ""}
                         </span>
