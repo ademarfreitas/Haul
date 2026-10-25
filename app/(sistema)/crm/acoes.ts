@@ -68,6 +68,20 @@ export async function salvarCliente(_: Resposta, f: FormData): Promise<Resposta>
   redirect(`/crm/${novo.id}`);
 }
 
+// O comprador pediu para sair (LGPD): apaga o aceite e o contato que ele deixou na página da loja.
+// O cliente próprio sai pela ficha (desmarcar o aceite); este é para o de marketplace, que não tem ficha editável.
+export async function tirarAceite(f: FormData): Promise<void> {
+  const atual = await contaComCrm();
+  if (!atual) return;
+  const c = await doCliente(atual.conta.id, texto(f, "id", 40));
+  if (!c || clienteProprio(c)) return;
+  await obterDb()
+    .update(clientes)
+    .set({ ofertasAceiteEm: null, ofertasOrigem: null, whatsapp: null, email: null, aniversario: null })
+    .where(eq(clientes.id, c.id));
+  revalidatePath(`/crm/${c.id}`);
+}
+
 export async function salvarProximoPasso(f: FormData): Promise<void> {
   const atual = await contaComCrm();
   if (!atual) return;

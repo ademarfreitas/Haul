@@ -101,6 +101,13 @@ export function clienteProprio(c: { canal: Canal | null }) {
   return c.canal === null || c.canal === "venda_direta" || c.canal === "facebook";
 }
 
+// Pode receber WhatsApp e campanhas: o cliente próprio, ou o comprador de marketplace que deu o contato
+// e o aceite ele mesmo, na página de cadastro da loja (lib/crm-captacao.ts). O aceite do comprador de
+// marketplace só nasce lá: a ficha não deixa o lojista editar esse cliente.
+export function contatoLiberado(c: { canal: Canal | null; ofertas?: boolean; ofertasAceiteEm?: Date | null }) {
+  return clienteProprio(c) || !!c.ofertas || c.ofertasAceiteEm != null;
+}
+
 // Categorias que cada cliente já comprou (filtro "compraram..." das campanhas).
 export async function categoriasPorCliente(contaId: string) {
   const { rows } = await obterDb().execute(sql`

@@ -24,8 +24,8 @@ export default async function Campanhas() {
     <>
       <CabecalhoCrm aba="campanhas" sub="Uma mensagem para um grupo dos seus clientes próprios, mandada um a um pelo seu WhatsApp, sem custo e sem disparo em massa." />
       <p className="muted" style={{ fontSize: ".84rem", margin: "0 0 12px" }}>
-        Compradores do Mercado Livre, Shopee e outros marketplaces não entram: o canal não passa o contato e proíbe oferta fora dele. Oferta vai só para quem aceitou
-        receber (LGPD).
+        Compradores do Mercado Livre, Shopee e outros marketplaces só entram se deixaram o contato na sua página de cadastro (aba Captação): o canal não
+        passa o contato e proíbe oferta fora dele. Oferta vai só para quem aceitou receber (LGPD).
       </p>
       <div className="tablewrap">
         <table>

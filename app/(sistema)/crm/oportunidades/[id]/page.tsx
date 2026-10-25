@@ -5,7 +5,7 @@ import { obterDb } from "@/db/cliente";
 import { clientes, oportunidadeEventos, oportunidades, usuarios } from "@/db/schema";
 import { reais } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
-import { clienteProprio, temCrm } from "@/lib/crm";
+import { contatoLiberado, temCrm } from "@/lib/crm";
 import { ABERTAS, aberta, ETAPAS, linkZap, MODELOS, MOTIVOS_PERDA, preenche } from "@/lib/crm-funil";
 import { ORIGENS } from "@/lib/crm-medidas";
 import { anotarOportunidade, moverOportunidade } from "../../acoes-funil";
@@ -25,7 +25,7 @@ export default async function Oportunidade({ params, searchParams }: { params: P
 
   const db = obterDb();
   const [linha] = await db
-    .select({ o: oportunidades, cliente: { id: clientes.id, nome: clientes.nome, canal: clientes.canal, whatsapp: clientes.whatsapp } })
+    .select({ o: oportunidades, cliente: { id: clientes.id, nome: clientes.nome, canal: clientes.canal, whatsapp: clientes.whatsapp, ofertasAceiteEm: clientes.ofertasAceiteEm } })
     .from(oportunidades)
     .leftJoin(clientes, eq(clientes.id, oportunidades.clienteId))
     .where(and(eq(oportunidades.id, id), eq(oportunidades.contaId, conta.id)));
@@ -39,7 +39,7 @@ export default async function Oportunidade({ params, searchParams }: { params: P
     .orderBy(asc(oportunidadeEventos.criadoEm));
 
   const nome = cliente?.nome ?? o.contatoNome ?? "—";
-  const whatsapp = cliente ? (clienteProprio(cliente) ? cliente.whatsapp : null) : o.contatoWhatsapp;
+  const whatsapp = cliente ? (contatoLiberado(cliente) ? cliente.whatsapp : null) : o.contatoWhatsapp;
   const zap = linkZap(whatsapp, preenche(MODELOS.contato, { nome, empresa: conta.nome }));
   const estaAberta = aberta(o.etapa);
   const pilula = o.etapa === "ganho" ? "p-good" : o.etapa === "perdido" ? "p-bad" : "p-accent";
@@ -73,7 +73,7 @@ export default async function Oportunidade({ params, searchParams }: { params: P
             {o.proximaData ? ` · próxima ação ${dataCurta(o.proximaData)}${o.proximaAcao ? `: ${o.proximaAcao}` : ""}` : ""}
           </p>
         </div>
-        <BotaoZap zap={zap} semZap={cliente && !clienteProprio(cliente) ? "fale pela conversa do pedido no canal" : "sem WhatsApp"} />
+        <BotaoZap zap={zap} semZap={cliente && !contatoLiberado(cliente) ? "fale pela conversa do pedido no canal" : "sem WhatsApp"} />
       </header>
 
       <div className="panel">

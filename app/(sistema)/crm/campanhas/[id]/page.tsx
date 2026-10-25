@@ -5,7 +5,7 @@ import { obterDb } from "@/db/cliente";
 import { campanhaEnvios, campanhas } from "@/db/schema";
 import { reais } from "@/lib/canais";
 import { exigirConta } from "@/lib/conta";
-import { categoriasPorCliente, clienteProprio, clientesComMedidas, retornoDasCampanhas, temCrm } from "@/lib/crm";
+import { categoriasPorCliente, clientesComMedidas, contatoLiberado, retornoDasCampanhas, temCrm } from "@/lib/crm";
 import { descreveFiltro, filtraClientes, JANELA_RETORNO, linkZap, preenche } from "@/lib/crm-funil";
 import { SEGMENTOS } from "@/lib/crm-medidas";
 import { Vitrine } from "../../vitrine";
@@ -32,7 +32,7 @@ export default async function Campanha({ params }: { params: Promise<{ id: strin
 
   const enviados = new Map(envios.map((e) => [e.clienteId, e.em]));
   const doGrupo = filtraClientes(clientes, c.filtro, categorias);
-  const proprios = doGrupo.filter(clienteProprio);
+  const proprios = doGrupo.filter(contatoLiberado);
   const deMarketplace = doGrupo.length - proprios.length;
   const semZap = proprios.filter((x) => !x.whatsapp).length;
   const semAceite = c.tipo === "oferta" ? proprios.filter((x) => x.whatsapp && !x.ofertas).length : 0;
@@ -112,7 +112,7 @@ export default async function Campanha({ params }: { params: Promise<{ id: strin
             {fila.length === 0 && (
               <tr>
                 <td colSpan={4} className="muted" style={{ textAlign: "center", padding: 28 }}>
-                  Ninguém no grupo com WhatsApp{c.tipo === "oferta" ? " e aceite de ofertas" : ""}. Cadastre o WhatsApp e o aceite na ficha dos seus clientes próprios.
+                  Ninguém no grupo com WhatsApp{c.tipo === "oferta" ? " e aceite de ofertas" : ""}. Cadastre o WhatsApp e o aceite na ficha dos seus clientes próprios ou divulgue a página de cadastro (aba Captação).
                 </td>
               </tr>
             )}

@@ -42,8 +42,8 @@ o que falta fazer até o dinheiro ser liberado.
   oficial em PDF, taxa real × estimada, baixa de estoque), Resultados (Command Center com os números reais),
   Minha conta (dados, plano escolhido, senha, link de indicação `/cadastro?ind=<conta>`), Canais conecta.
   CRM (`app/(sistema)/crm`, `lib/crm*.ts`, `docs/crm.md`, 24/10/2026): só no Avançado (e no teste); abas Hoje, Clientes,
-  Funil e Campanhas; clientes saem dos pedidos; contato direto (WhatsApp, campanhas) só com cliente próprio, nunca com
-  comprador de marketplace. Testes: `npm run testar`.
+  Funil, Campanhas e Captação; clientes saem dos pedidos; contato direto (WhatsApp, campanhas) só com cliente próprio ou
+  com quem se cadastrou na página da loja (`/c/<codigo>`, QR e cartão no pacote sem cupom), nunca com comprador de marketplace. Testes: `npm run testar`.
   Avisos segue "em construção" (avisos por SMS, decidido 24/10/2026); cobrança e comparação de preços também. A cara vem do protótipo: `node scripts/montar-estilo-sistema.mjs` gera
   `app/(sistema)/sistema.css` a partir do `<style>` dele.
   Por cima vem `app/(sistema)/tema.css` (escrito à mão, 24/10/2026): menu escuro com ícones e grupos, barra no topo,
