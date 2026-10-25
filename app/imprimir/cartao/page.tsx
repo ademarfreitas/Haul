@@ -1,6 +1,9 @@
 // Cartões com o QR da página de cadastro da loja (CRM): uma folha A4 com 8 cartões para recortar.
 // Fora do (sistema) para sair sem o menu na impressão.
 import { redirect } from "next/navigation";
+import { eq } from "drizzle-orm";
+import { obterDb } from "@/db/cliente";
+import { captacoes } from "@/db/schema";
 import { exigirConta } from "@/lib/conta";
 import { temCrm } from "@/lib/crm";
 import { DE, deValido } from "@/lib/crm-captacao";
@@ -24,14 +27,16 @@ const CSS = `
 
 export default async function Cartoes({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { conta } = await exigirConta("/crm/captacao");
-  if (!temCrm(conta) || !conta.captacaoCodigo) redirect("/crm/captacao");
+  if (!temCrm(conta)) redirect("/crm/captacao");
+  const [cap] = await obterDb().select().from(captacoes).where(eq(captacoes.contaId, conta.id));
+  if (!cap) redirect("/crm/captacao");
   const de = deValido((await searchParams).de);
   const base = (process.env.APP_URL || "https://app.plist.com.br").replace(/\/$/, "");
-  const link = `${base}/c/${conta.captacaoCodigo}${de === "pacote" ? "?de=pacote" : ""}`;
+  const link = `${base}/c/${cap.codigo}${de === "pacote" ? "?de=pacote" : ""}`;
   const svg = await qrSvg(link);
-  const comCupom = DE[de].cupom && !!conta.captacaoBeneficio;
+  const comCupom = DE[de].cupom && !!cap.beneficio;
 
-  const titulo = de === "pacote" ? "Obrigado pela compra!" : comCupom ? `Ganhe ${conta.captacaoBeneficio}` : `Novidades da ${conta.nome}`;
+  const titulo = de === "pacote" ? "Obrigado pela compra!" : comCupom ? `Ganhe ${cap.beneficio}` : `Novidades da ${conta.nome}`;
   const texto =
     de === "pacote"
       ? `Aponte a câmera e receba as novidades da ${conta.nome} em primeira mão.`

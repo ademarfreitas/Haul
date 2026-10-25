@@ -42,9 +42,9 @@ Shopee, o primeiro nome na Magalu) e proíbem usar esses dados para marketing. D
   WhatsApp do lojista (o botão abre o wa.me e marca enviado). Retorno: quem comprou em 7 dias e quanto.
 
 - **Captação** (`/crm/captacao`, `lib/crm-captacao.ts`): a página de cadastro da loja em `/c/<codigo>` (código de 7 letras,
-  `contas.captacao_codigo`, nasce na primeira visita à aba e não muda). O comprador deixa nome, WhatsApp, e-mail e
+  tabela `captacoes`, nasce na primeira visita à aba e não muda). O comprador deixa nome, WhatsApp, e-mail e
   aniversário (opcionais) e marca o aceite; sem aceite não guarda nada. Dois links com QR: **loja** (bio do Instagram,
-  balcão, venda direta, Facebook; mostra o cupom `captacao_cupom` / `captacao_beneficio`) e **pacote** (`?de=pacote`,
+  balcão, venda direta, Facebook; mostra o cupom `captacoes.cupom` / `beneficio`) e **pacote** (`?de=pacote`,
   cartão dentro do pacote de qualquer canal: só agradece e convida, **sem cupom**, porque o ML e a Shopee proíbem levar
   a venda para fora; decidido com o usuário em 25/10/2026). Cartões para imprimir em `/imprimir/cartao` (8 por A4).
   No pacote a pessoa pode pôr o número do pedido: o contato entra no cliente de marketplace, com o histórico, e o

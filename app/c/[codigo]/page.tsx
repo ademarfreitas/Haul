@@ -3,7 +3,7 @@
 import { notFound } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
-import { contas } from "@/db/schema";
+import { captacoes, contas } from "@/db/schema";
 import { temCrm } from "@/lib/crm";
 import { codigoValido, DE, deValido } from "@/lib/crm-captacao";
 import { FormCadastroLoja } from "./formulario";
@@ -13,9 +13,10 @@ export const dynamic = "force-dynamic";
 async function daLoja(codigo: string) {
   if (!codigoValido(codigo)) return null;
   const [conta] = await obterDb()
-    .select({ nome: contas.nome, plano: contas.plano, situacaoAssinatura: contas.situacaoAssinatura, testeAte: contas.testeAte, beneficio: contas.captacaoBeneficio })
-    .from(contas)
-    .where(eq(contas.captacaoCodigo, codigo));
+    .select({ nome: contas.nome, plano: contas.plano, situacaoAssinatura: contas.situacaoAssinatura, testeAte: contas.testeAte, beneficio: captacoes.beneficio })
+    .from(captacoes)
+    .innerJoin(contas, eq(contas.id, captacoes.contaId))
+    .where(eq(captacoes.codigo, codigo));
   return conta && temCrm(conta) ? conta : null;
 }
 

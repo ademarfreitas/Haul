@@ -9,7 +9,7 @@ import { DE } from "@/lib/crm-captacao";
 import { qrSvg } from "@/lib/qr";
 import { CabecalhoCrm } from "../partes";
 import { Vitrine } from "../vitrine";
-import { garantirCodigo } from "./acoes";
+import { captacaoDaConta } from "./acoes";
 import { Copiar, FormCupom } from "./formulario";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +19,7 @@ export default async function Captacao() {
   const { conta } = await exigirConta("/crm/captacao");
   if (!temCrm(conta)) return <Vitrine />;
 
-  const codigo = await garantirCodigo(conta.id, conta.captacaoCodigo);
+  const { codigo, cupom, beneficio } = await captacaoDaConta(conta.id);
   const base = (process.env.APP_URL || "https://app.plist.com.br").replace(/\/$/, "");
   const links = { loja: `${base}/c/${codigo}`, pacote: `${base}/c/${codigo}?de=pacote` };
   const [qrLoja, qrPacote] = await Promise.all([qrSvg(links.loja), qrSvg(links.pacote)]);
@@ -125,7 +125,7 @@ export default async function Captacao() {
           Aparece para quem se cadastra pela página da loja, nunca pelo cartão do pacote. Sem cupom, a página convida só para receber novidades.
         </p>
         <div style={{ marginTop: 10 }}>
-          <FormCupom cupom={conta.captacaoCupom} beneficio={conta.captacaoBeneficio} />
+          <FormCupom cupom={cupom} beneficio={beneficio} />
         </div>
       </div>
 

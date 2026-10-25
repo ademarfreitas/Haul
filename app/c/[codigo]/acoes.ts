@@ -2,7 +2,7 @@
 // Cadastro do comprador na página da loja (/c/<codigo>). Público: não tem sessão, a loja vem do código.
 import { and, eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
-import { clientes, contas, pedidos } from "@/db/schema";
+import { captacoes, clientes, contas, pedidos } from "@/db/schema";
 import { ligarPedidosAClientes, temCrm } from "@/lib/crm";
 import { codigoValido, completa, DE, deValido, validaCadastro } from "@/lib/crm-captacao";
 
@@ -15,9 +15,10 @@ export async function cadastrarNaLoja(_: EstadoCadastro, f: FormData): Promise<E
   if (!codigoValido(codigo)) return { erro: "Página não encontrada." };
   const db = obterDb();
   const [conta] = await db
-    .select({ id: contas.id, plano: contas.plano, situacaoAssinatura: contas.situacaoAssinatura, testeAte: contas.testeAte, cupom: contas.captacaoCupom, beneficio: contas.captacaoBeneficio })
-    .from(contas)
-    .where(eq(contas.captacaoCodigo, codigo));
+    .select({ id: contas.id, plano: contas.plano, situacaoAssinatura: contas.situacaoAssinatura, testeAte: contas.testeAte, cupom: captacoes.cupom, beneficio: captacoes.beneficio })
+    .from(captacoes)
+    .innerJoin(contas, eq(contas.id, captacoes.contaId))
+    .where(eq(captacoes.codigo, codigo));
   if (!conta || !temCrm(conta)) return { erro: "Esta página de cadastro não está mais ativa." };
   const feito = { cupom: DE[de].cupom ? conta.cupom : null, beneficio: DE[de].cupom ? conta.beneficio : null };
   // campo escondido que só robô preenche: finge que deu certo e não guarda nada

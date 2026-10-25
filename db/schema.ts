@@ -152,10 +152,6 @@ export const contas = pgTable("contas", {
     .notNull()
     .default(sql`now() + interval '30 days'`),
   pagoAte: timestamp({ withTimezone: true }),
-  // CRM: página de cadastro da loja (/c/<codigo>), onde o comprador deixa o contato e ganha o cupom
-  captacaoCodigo: text().unique(),
-  captacaoCupom: text(),
-  captacaoBeneficio: text(),
   criadoEm: criadoEm(),
   atualizadoEm: atualizadoEm(),
 });
@@ -414,6 +410,18 @@ export const clientes = pgTable(
 );
 
 // interesses marcados à mão (os automáticos vêm das categorias que o cliente compra e não são gravados)
+// CRM: página de cadastro da loja (/c/<codigo>), onde o comprador deixa o contato e ganha o cupom.
+// Tabela à parte (e não colunas em contas) para o resto do sistema não depender desta migração.
+export const captacoes = pgTable("captacoes", {
+  contaId: uuid()
+    .primaryKey()
+    .references(() => contas.id, { onDelete: "cascade" }),
+  codigo: text().notNull().unique(),
+  cupom: text(),
+  beneficio: text(),
+  criadoEm: criadoEm(),
+});
+
 export const clienteEtiquetas = pgTable(
   "cliente_etiquetas",
   {

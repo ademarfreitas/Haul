@@ -1,5 +1,5 @@
 {
-  "id": "b82bb768-010c-4943-a47d-7c603222a7db",
+  "id": "b4e49d47-e203-42a9-b6a7-46c779fdbe09",
   "prevId": "f4348fa5-1300-4c62-b082-94e017fdcd90",
   "version": "7",
   "dialect": "postgresql",
@@ -413,6 +413,72 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.captacoes": {
+      "name": "captacoes",
+      "schema": "",
+      "columns": {
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "codigo": {
+          "name": "codigo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cupom": {
+          "name": "cupom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "beneficio": {
+          "name": "beneficio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "captacoes_conta_id_contas_id_fk": {
+          "name": "captacoes_conta_id_contas_id_fk",
+          "tableFrom": "captacoes",
+          "tableTo": "contas",
+          "columnsFrom": [
+            "conta_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "captacoes_codigo_unique": {
+          "name": "captacoes_codigo_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "codigo"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1014,24 +1080,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "captacao_codigo": {
-          "name": "captacao_codigo",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "captacao_cupom": {
-          "name": "captacao_cupom",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "captacao_beneficio": {
-          "name": "captacao_beneficio",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "criado_em": {
           "name": "criado_em",
           "type": "timestamp with time zone",
@@ -1050,15 +1098,7 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "contas_captacaoCodigo_unique": {
-          "name": "contas_captacaoCodigo_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "captacao_codigo"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
