@@ -111,6 +111,8 @@ export const tipoTarefa = pgEnum("tipo_tarefa", [
   "remover_anuncio_falhou",
   "reconectar_canal",
   "responder_comprador",
+  "conferir_custo", // o fornecedor cobrou mais (nota ou planilha nova): rever o preço
+  "repor_estoque", // chegou no estoque mínimo
   "outra",
 ]);
 
@@ -154,6 +156,8 @@ export const contas = pgTable("contas", {
     .notNull()
     .default(sql`now() + interval '30 days'`),
   pagoAte: timestamp({ withTimezone: true }),
+  // o que chega por e-mail (tela Avisos); nulo = tudo ligado
+  avisosEmail: jsonb().$type<{ custo?: boolean; estoque?: boolean }>(),
   criadoEm: criadoEm(),
   atualizadoEm: atualizadoEm(),
 });
@@ -216,6 +220,22 @@ export const conexoesCanal = pgTable(
 
 // ---------- inventário ----------
 
+// De quem o lojista compra. Vem da nota fiscal (CNPJ do emitente) ou da planilha (nome dado pelo lojista).
+export const fornecedores = pgTable(
+  "fornecedores",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    nome: text().notNull(),
+    documento: text(), // CNPJ ou CPF, só dígitos
+    colunas: jsonb().$type<Record<string, string>>(), // campo do Plist → coluna da planilha, lembrado para a próxima
+    criadoEm: criadoEm(),
+  },
+  (t) => [uniqueIndex().on(t.contaId, t.nome)],
+);
+
 export const pecas = pgTable(
   "pecas",
   {
@@ -239,11 +259,15 @@ export const pecas = pgTable(
     larguraCm: integer(),
     comprimentoCm: integer(),
     atributos: jsonb().$type<Record<string, string>>(), // ficha técnica pedida por cada canal
+    ean: text(), // código de barras (veio da nota ou da planilha do fornecedor)
+    fornecedorId: uuid().references(() => fornecedores.id, { onDelete: "set null" }),
+    codigoFornecedor: text(), // código do produto no fornecedor (cProd da nota)
+    estoqueMinimo: integer(), // nulo = sem aviso de estoque baixo
     situacao: situacaoPeca().notNull().default("rascunho"),
     criadoEm: criadoEm(),
     atualizadoEm: atualizadoEm(),
   },
-  (t) => [uniqueIndex().on(t.contaId, t.sku), index().on(t.contaId, t.situacao)],
+  (t) => [uniqueIndex().on(t.contaId, t.sku), index().on(t.contaId, t.situacao), index().on(t.contaId, t.ean)],
 );
 
 export const fotosPeca = pgTable(
@@ -558,6 +582,24 @@ export const tarefas = pgTable(
     criadoEm: criadoEm(),
   },
   (t) => [index().on(t.contaId, t.situacao, t.prazo)],
+);
+
+// Cada uso da IA (lib/ia.ts): conta no limite do plano e no teto de custo do mês.
+export const usosIa = pgTable(
+  "usos_ia",
+  {
+    id: id(),
+    contaId: uuid()
+      .notNull()
+      .references(() => contas.id, { onDelete: "cascade" }),
+    usuarioId: uuid().references(() => usuarios.id, { onDelete: "set null" }),
+    modelo: text().notNull(),
+    tokensEntrada: integer().notNull(),
+    tokensSaida: integer().notNull(),
+    custoMicroReais: integer().notNull(), // R$ 1 = 1.000.000
+    criadoEm: criadoEm(),
+  },
+  (t) => [index().on(t.contaId, t.criadoEm)],
 );
 
 // ---------- integração ----------

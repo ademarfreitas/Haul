@@ -1,16 +1,44 @@
 import Link from "next/link";
 import { and, eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
-import { conexoesCanal } from "@/db/schema";
+import { anuncios, conexoesCanal, pecas } from "@/db/schema";
 import { exigirConta } from "@/lib/conta";
-import { Formulario } from "./formulario";
+import { Formulario, type PecaMl } from "./formulario";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 export const metadata = { title: "Novo anúncio · Plist" };
 
-export default async function NovoAnuncio() {
+const reais = (c: number | null) => (c == null ? "" : (c / 100).toFixed(2).replace(".", ","));
+
+export default async function NovoAnuncio({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { conta } = await exigirConta("/novo-anuncio");
+  const { peca: pecaId } = await searchParams;
+  // ?peca=<id>: peça do estoque (veio do fornecedor) que ainda não está no ML
+  const [p] = pecaId && /^[0-9a-f-]{36}$/.test(pecaId)
+    ? await obterDb()
+        .select({ peca: pecas, anuncio: anuncios.id })
+        .from(pecas)
+        .leftJoin(anuncios, and(eq(anuncios.pecaId, pecas.id), eq(anuncios.canal, "mercado_livre")))
+        .where(and(eq(pecas.id, pecaId), eq(pecas.contaId, conta.id)))
+    : [];
+  const peca: PecaMl | null =
+    p && !p.anuncio
+      ? {
+          id: p.peca.id,
+          sku: p.peca.sku,
+          titulo: p.peca.titulo,
+          descricao: p.peca.descricao ?? "",
+          marca: p.peca.marca ?? "",
+          cor: p.peca.cor ?? "",
+          tamanho: p.peca.tamanho ?? "",
+          condicao: p.peca.condicao ?? "",
+          ean: p.peca.ean ?? "",
+          preco: p.peca.precoCentavos > 0 ? reais(p.peca.precoCentavos) : "",
+          custo: reais(p.peca.custoCentavos),
+          quantidade: String(p.peca.quantidade || 1),
+        }
+      : null;
   const conexoes = await obterDb()
     .select({ id: conexoesCanal.id, apelido: conexoesCanal.apelido, usuarioExterno: conexoesCanal.usuarioExterno })
     .from(conexoesCanal)
@@ -48,7 +76,7 @@ export default async function NovoAnuncio() {
           </p>
         </div>
       ) : (
-        <Formulario conexoes={conexoes.map((c) => ({ id: c.id, nome: c.apelido ?? c.usuarioExterno }))} />
+        <Formulario conexoes={conexoes.map((c) => ({ id: c.id, nome: c.apelido ?? c.usuarioExterno }))} peca={peca} />
       )}
     </>
   );

@@ -1,5 +1,5 @@
 "use server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { obterDb } from "@/db/cliente";
 import { anuncios, conexoesCanal, fotosPeca, pecas } from "@/db/schema";
@@ -8,6 +8,7 @@ import { proximoSku } from "@/lib/sku";
 import { ErroMl, tokenValido } from "@/lib/mercado-livre";
 import {
   atributosObrigatorios,
+  produtoPorGtin,
   publicarItem,
   sugerirCategorias,
   taxaEstimada,
@@ -52,6 +53,18 @@ export async function ficha(conexaoId: string, categoriaId: string) {
   if (!dono) return { erro: "Conecte o Mercado Livre em Canais." };
   try {
     return { ficha: await atributosObrigatorios(await tokenValido(dono.conexaoId), categoriaId) };
+  } catch (e) {
+    return { erro: mensagemMl(e) };
+  }
+}
+
+export async function buscarCatalogo(conexaoId: string, gtin: string) {
+  const dono = await conexaoDaConta(conexaoId);
+  if (!dono) return { erro: "Conecte o Mercado Livre em Canais." };
+  const codigo = gtin.replace(/\D/g, "");
+  if (!/^\d{8,14}$/.test(codigo)) return { erro: "O código de barras tem de 8 a 14 números." };
+  try {
+    return { produto: await produtoPorGtin(await tokenValido(dono.conexaoId), codigo) };
   } catch (e) {
     return { erro: mensagemMl(e) };
   }
@@ -116,7 +129,16 @@ export async function salvarAnuncio(_: EstadoAnuncio, f: FormData): Promise<Esta
   else if (texto(f, "semGtin", 30)) atributos.push({ id: "EMPTY_GTIN_REASON", value_id: texto(f, "semGtin", 30) });
 
   const db = obterDb();
-  const sku = await proximoSku(contaId);
+  // peça que já estava no estoque (nota ou planilha do fornecedor) e ainda não está no ML: atualiza em vez de criar
+  const pecaId = texto(f, "peca", 40);
+  const [existente] = /^[0-9a-f-]{36}$/.test(pecaId)
+    ? await db
+        .select({ id: pecas.id, sku: pecas.sku, atributos: pecas.atributos })
+        .from(pecas)
+        .leftJoin(anuncios, and(eq(anuncios.pecaId, pecas.id), eq(anuncios.canal, "mercado_livre")))
+        .where(and(eq(pecas.id, pecaId), eq(pecas.contaId, contaId), isNull(anuncios.id)))
+    : [];
+  const sku = existente?.sku ?? (await proximoSku(contaId));
   atributos.push({ id: "SELLER_SKU", value_name: sku });
 
   let publicado: { id: string; permalink: string; status: string } | null = null;
@@ -154,25 +176,33 @@ export async function salvarAnuncio(_: EstadoAnuncio, f: FormData): Promise<Esta
   const caixa = texto(f, "caixa", 30);
   if (caixa) ficha.caixa = caixa;
 
-  const [peca] = await db
-    .insert(pecas)
-    .values({
-      contaId,
-      sku,
-      titulo,
-      descricao: descricao || null,
-      marca: marca || null,
-      categoria: texto(f, "categoriaNome", 120) || null,
-      tamanho: tamanho || null,
-      cor: cor || null,
-      condicao,
-      precoCentavos,
-      custoCentavos,
-      quantidade,
-      atributos: ficha,
-      situacao: publicado ? "disponivel" : "rascunho",
-    })
-    .returning({ id: pecas.id });
+  const dados = {
+    titulo,
+    descricao: descricao || null,
+    marca: marca || null,
+    categoria: texto(f, "categoriaNome", 120) || null,
+    tamanho: tamanho || null,
+    cor: cor || null,
+    condicao,
+    precoCentavos,
+    custoCentavos,
+    quantidade,
+    ean: ean || null,
+  };
+  let peca: { id: string };
+  if (existente) {
+    [peca] = await db
+      .update(pecas)
+      .set({ ...dados, atributos: { ...(existente.atributos ?? {}), ...ficha }, ...(publicado ? { situacao: "disponivel" as const } : {}) })
+      .where(eq(pecas.id, existente.id))
+      .returning({ id: pecas.id });
+    if (fotos.length) await db.delete(fotosPeca).where(eq(fotosPeca.pecaId, existente.id));
+  } else {
+    [peca] = await db
+      .insert(pecas)
+      .values({ contaId, sku, ...dados, atributos: ficha, situacao: publicado ? "disponivel" : "rascunho" })
+      .returning({ id: pecas.id });
+  }
   if (fotos.length) await db.insert(fotosPeca).values(fotos.map((x, ordem) => ({ pecaId: peca.id, url: x.url, ordem })));
   if (publicado && dono) {
     await db.insert(anuncios).values({

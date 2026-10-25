@@ -139,3 +139,18 @@ export async function publicarItem(token: string, n: NovoItem): Promise<ItemCria
   }
   return item;
 }
+
+export type ProdutoCatalogo = { id: string; nome: string; marca: string; cor: string };
+
+type BuscaCatalogo = { results?: { id: string; name: string; attributes?: { id: string; value_name?: string | null }[] }[] };
+
+// Produto do catálogo oficial do ML pelo código de barras (EAN/GTIN). Só título e ficha: as fotos o lojista
+// tira ou recebe do fornecedor. Docs: https://developers.mercadolivre.com.br/pt-br/buscador-de-produtos
+export async function produtoPorGtin(token: string, gtin: string): Promise<ProdutoCatalogo | null> {
+  if (!/^\d{8,14}$/.test(gtin)) return null;
+  const r = await chamarApi<BuscaCatalogo>(`/products/search?status=active&site_id=MLB&product_identifier=${gtin}`, token);
+  const p = r.results?.[0];
+  if (!p) return null;
+  const attr = (id: string) => p.attributes?.find((a) => a.id === id)?.value_name ?? "";
+  return { id: p.id, nome: p.name, marca: attr("BRAND"), cor: attr("COLOR") };
+}

@@ -4,8 +4,10 @@
 import Link from "next/link";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import type { SugestaoIa } from "@/lib/ia-limites";
 import type { AtributoMl, Categoria } from "@/lib/ml-anuncio";
-import { ficha as buscarFicha, salvarAnuncio, sugerir, type EstadoAnuncio } from "./acoes";
+import { PreencherComIA } from "../_partes/preencher-ia";
+import { ficha as buscarFicha, buscarCatalogo, salvarAnuncio, sugerir, type EstadoAnuncio } from "./acoes";
 
 const CONDICOES = [
   ["nova_com_etiqueta", "Novo com etiqueta"],
@@ -57,11 +59,28 @@ function Botoes({ podePublicar }: { podePublicar: boolean }) {
   );
 }
 
-export function Formulario({ conexoes }: { conexoes: { id: string; nome: string }[] }) {
+// peça que já está no estoque (veio da nota ou da planilha do fornecedor): o formulário começa com os dados dela
+export type PecaMl = { id: string; sku: string; titulo: string; descricao: string; marca: string; cor: string; tamanho: string; condicao: string; ean: string; preco: string; custo: string; quantidade: string };
+
+export function Formulario({ conexoes, peca = null }: { conexoes: { id: string; nome: string }[]; peca?: PecaMl | null }) {
   const [estado, acao] = useActionState(salvarAnuncio, {} as EstadoAnuncio);
   const [conexao, setConexao] = useState(conexoes[0].id);
   const [fotos, setFotos] = useState<Foto[]>([]);
-  const [v, setV] = useState({ titulo: "", marca: "", cor: "", tamanho: "", condicao: "", ean: "", semGtin: "", descricao: "", preco: "", custo: "", quantidade: "1", caixa: "", tipo: "gold_special" });
+  const [v, setV] = useState({
+    titulo: peca?.titulo ?? "",
+    marca: peca?.marca ?? "",
+    cor: peca?.cor ?? "",
+    tamanho: peca?.tamanho ?? "",
+    condicao: peca?.condicao ?? "",
+    ean: peca?.ean ?? "",
+    semGtin: "",
+    descricao: peca?.descricao ?? "",
+    preco: peca?.preco ?? "",
+    custo: peca?.custo ?? "",
+    quantidade: peca?.quantidade ?? "1",
+    caixa: "",
+    tipo: "gold_special",
+  });
   const [categorias, setCategorias] = useState<Categoria[] | null>(null);
   const [categoria, setCategoria] = useState<Categoria | null>(null);
   const [ficha, setFicha] = useState<Ficha | null>(null);
@@ -73,8 +92,8 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
 
   const mudar = (k: keyof typeof v) => (e: { target: { value: string } }) => setV((x) => ({ ...x, [k]: e.target.value }));
 
-  async function acharCategoria() {
-    const t = v.titulo.trim();
+  async function acharCategoria(titulo = v.titulo) {
+    const t = titulo.trim();
     if (t.length < 3 || t === ultimoTitulo.current) return;
     ultimoTitulo.current = t;
     setBuscando(true);
@@ -84,6 +103,32 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
     setAviso("");
     setCategorias(r.categorias ?? []);
     if (!categoria && r.categorias?.[0]) escolher(r.categorias[0]);
+  }
+
+  // título e descrição vêm da IA; o resto só onde ainda está vazio
+  function aplicarIa(s: SugestaoIa) {
+    setV((x) => ({
+      ...x,
+      titulo: s.tituloCurto,
+      descricao: s.descricao || x.descricao,
+      marca: x.marca || s.marca,
+      cor: x.cor || s.cor,
+      tamanho: x.tamanho || s.tamanho,
+      condicao: x.condicao || s.condicao,
+    }));
+    acharCategoria(s.tituloCurto);
+  }
+
+  // código de barras → produto do catálogo do ML: título, marca e cor
+  const [catalogo, setCatalogo] = useState("");
+  async function doCatalogo() {
+    setCatalogo("Procurando…");
+    const r = await buscarCatalogo(conexao, v.ean);
+    if (r.erro || !r.produto) return setCatalogo(r.erro ?? "O Mercado Livre não tem este código no catálogo.");
+    const p = r.produto;
+    setCatalogo(`Achado no catálogo: ${p.nome}`);
+    setV((x) => ({ ...x, titulo: x.titulo || p.nome.slice(0, TITULO_ML), marca: x.marca || p.marca, cor: x.cor || p.cor }));
+    if (!v.titulo.trim()) acharCategoria(p.nome.slice(0, TITULO_ML));
   }
 
   async function escolher(c: Categoria) {
@@ -111,6 +156,12 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
       }
     }
   }
+
+  // peça do estoque: a categoria sai do título que já veio dela
+  useEffect(() => {
+    if (peca) acharCategoria();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // depois de salvar, limpa para o próximo
   useEffect(() => {
@@ -173,7 +224,7 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
           <Link className="btn" href="/estoque">
             Ver estoque
           </Link>
-          <button className="btn" type="button" onClick={() => location.reload()}>
+          <button className="btn" type="button" onClick={() => location.assign("/novo-anuncio")}>
             Cadastrar outra peça
           </button>
         </div>
@@ -187,6 +238,7 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
       <input type="hidden" name="fotos" value={JSON.stringify(enviadas.map((f) => ({ id: f.id, url: f.url })))} />
       <input type="hidden" name="categoria" value={categoria?.id ?? ""} />
       <input type="hidden" name="categoriaNome" value={categoria?.nome ?? ""} />
+      <input type="hidden" name="peca" value={peca?.id ?? ""} />
 
       <div>
         <div className="panel">
@@ -233,10 +285,11 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
             </div>
           )}
           {fotos.some((f) => f.erro) && <p className="msg-erro" style={{ marginTop: 6, fontSize: ".8rem" }}>{fotos.find((f) => f.erro)?.erro}</p>}
-          <div className="ai">
-            <h3>Preencher com IA</h3>
-            <p>Em breve o Claude olha as fotos e escreve título, detalhes, descrição e uma faixa de preço. Por enquanto, preencha à mão.</p>
-          </div>
+          <PreencherComIA
+            previas={fotos.filter((f) => !f.erro).map((f) => f.previa)}
+            dados={{ titulo: v.titulo, marca: v.marca, cor: v.cor, tamanho: v.tamanho, condicao: v.condicao, descricao: v.descricao }}
+            aoPreencher={aplicarIa}
+          />
         </div>
       </div>
 
@@ -245,7 +298,7 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
           <div className="form">
             <div className="f s6">
               <label htmlFor="f-titulo">Título</label>
-              <input id="f-titulo" name="titulo" maxLength={200} required value={v.titulo} onChange={mudar("titulo")} onBlur={acharCategoria} placeholder="Ex.: Jaqueta jeans Levi's masculina azul M" />
+              <input id="f-titulo" name="titulo" maxLength={200} required value={v.titulo} onChange={mudar("titulo")} onBlur={() => acharCategoria()} placeholder="Ex.: Jaqueta jeans Levi's masculina azul M" />
               <span className="hint">
                 {v.titulo.length}/{TITULO_ML} no Mercado Livre{buscando ? " · procurando a categoria…" : ""}
               </span>
@@ -292,6 +345,12 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
             <div className="f s2">
               <label htmlFor="f-ean">EAN / código de barras</label>
               <input id="f-ean" name="ean" inputMode="numeric" value={v.ean} onChange={mudar("ean")} placeholder="Opcional" />
+              {/^\d{8,14}$/.test(v.ean.trim()) && (
+                <button type="button" className="btn small" style={{ marginTop: 4 }} onClick={doCatalogo}>
+                  Buscar no catálogo do ML
+                </button>
+              )}
+              {catalogo && <span className="hint">{catalogo}</span>}
             </div>
             {ficha?.pedeGtin && !v.ean && ficha.razoesSemGtin.length > 0 && (
               <div className="f s2">
@@ -419,7 +478,7 @@ export function Formulario({ conexoes }: { conexoes: { id: string; nome: string 
             </div>
           )}
           <div className="publishbar">
-            <span className="muted">{enviadas.length} {enviadas.length === 1 ? "foto" : "fotos"} · SKU gerado ao salvar</span>
+            <span className="muted">{enviadas.length} {enviadas.length === 1 ? "foto" : "fotos"} · {peca ? `peça ${peca.sku} do estoque` : "SKU gerado ao salvar"}</span>
             <Botoes podePublicar={pronto} />
           </div>
         </div>

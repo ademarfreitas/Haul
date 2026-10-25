@@ -36,6 +36,13 @@
       "when": 1792945376651,
       "tag": "0004_ciclo_anual",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792949837767,
+      "tag": "0005_fornecedores_ia",
+      "breakpoints": true
     }
   ]
 }

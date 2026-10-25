@@ -2,7 +2,9 @@
 // Formulário de publicar uma peça na Shopee: fotos da peça à esquerda, dados e o que a Shopee exige à direita.
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
+import type { SugestaoIa } from "@/lib/ia-limites";
 import type { AtributoShopee, CategoriaShopee, FreteShopee } from "@/lib/shopee-anuncio";
+import { PreencherComIA } from "../../_partes/preencher-ia";
 import { ficha as buscarFicha, publicarNaShopee, sugerir, type EstadoShopee } from "./acoes";
 
 const TITULO_SHOPEE = 120;
@@ -89,8 +91,8 @@ export function FormularioShopee({ loja, peca, fretes }: { loja: { id: string; n
 
   const mudar = (k: keyof typeof v) => (e: { target: { value: string } }) => setV((x) => ({ ...x, [k]: e.target.value }));
 
-  async function acharCategoria() {
-    const t = v.titulo.trim();
+  async function acharCategoria(titulo = v.titulo) {
+    const t = titulo.trim();
     if (t.length < 3 || t === ultimoTitulo.current) return;
     ultimoTitulo.current = t;
     setBuscando(true);
@@ -127,6 +129,12 @@ export function FormularioShopee({ loja, peca, fretes }: { loja: { id: string; n
         setFotos((x) => x.map((f) => (f.chave === chave ? { ...f, erro: "Falhou" } : f)));
       }
     }
+  }
+
+  // título e descrição vêm da IA; marca e estado só se ainda estiverem vazios
+  function aplicarIa(s: SugestaoIa) {
+    setV((x) => ({ ...x, titulo: s.titulo, descricao: s.descricao || x.descricao, marca: x.marca || s.marca, condicao: x.condicao || s.condicao }));
+    acharCategoria(s.titulo);
   }
 
   // peça do estoque: a categoria sai do título que já veio dela
@@ -233,6 +241,11 @@ export function FormularioShopee({ loja, peca, fretes }: { loja: { id: string; n
               </>
             )}
           </p>
+          <PreencherComIA
+            previas={peca ? peca.fotos : fotos.filter((f) => !f.erro).map((f) => f.previa)}
+            dados={{ titulo: v.titulo, marca: v.marca, condicao: v.condicao, descricao: v.descricao }}
+            aoPreencher={aplicarIa}
+          />
         </div>
       </div>
 
@@ -241,7 +254,7 @@ export function FormularioShopee({ loja, peca, fretes }: { loja: { id: string; n
           <div className="form">
             <div className="f s6">
               <label htmlFor="s-titulo">Título</label>
-              <input id="s-titulo" name="titulo" maxLength={TITULO_SHOPEE} required value={v.titulo} onChange={mudar("titulo")} onBlur={acharCategoria} />
+              <input id="s-titulo" name="titulo" maxLength={TITULO_SHOPEE} required value={v.titulo} onChange={mudar("titulo")} onBlur={() => acharCategoria()} />
               <span className="hint">
                 {v.titulo.length}/{TITULO_SHOPEE} na Shopee{buscando ? " · procurando a categoria…" : ""}
               </span>
