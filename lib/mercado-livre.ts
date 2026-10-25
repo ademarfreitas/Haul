@@ -165,11 +165,12 @@ function causas(cause: unknown): string[] {
     .filter(Boolean);
 }
 
-function camposToken(t: RespostaToken) {
+// refreshAnterior: o já cifrado no banco, mantido se a resposta vier sem refresh_token novo
+function camposToken(t: RespostaToken, refreshAnterior: string | null = null) {
   return {
     accessTokenCifrado: cifrar(t.access_token),
-    // o ML só manda refresh_token com o escopo offline_access
-    refreshTokenCifrado: t.refresh_token ? cifrar(t.refresh_token) : null,
+    // o ML só manda refresh_token com o escopo offline_access; sem ele a conexão cai quando o access token vence
+    refreshTokenCifrado: t.refresh_token ? cifrar(t.refresh_token) : refreshAnterior,
     tokenExpiraEm: new Date(Date.now() + t.expires_in * 1000),
     situacao: "ativa" as const,
   };
@@ -246,12 +247,14 @@ export async function tokenValido(conexaoId: string): Promise<string> {
   const c = await ler();
   if (vigente(c)) return decifrar(c.accessTokenCifrado!);
   if (c.situacao !== "ativa" || !c.refreshTokenCifrado) {
+    // sem refresh token (app sem offline_access) não há como renovar: mostra "Reconectar" em Canais
+    if (c.situacao === "ativa") await marcarExpirada(c);
     throw new ErroMl(401, "reconectar", "Conexão sem autorização: conecte o Mercado Livre de novo.");
   }
 
   try {
     const t = await renovar(decifrar(c.refreshTokenCifrado));
-    await db.update(conexoesCanal).set(camposToken(t)).where(eq(conexoesCanal.id, conexaoId));
+    await db.update(conexoesCanal).set(camposToken(t, c.refreshTokenCifrado)).where(eq(conexoesCanal.id, conexaoId));
     return t.access_token;
   } catch (e) {
     if (!(e instanceof ErroMl) || e.codigo !== "invalid_grant") throw e;

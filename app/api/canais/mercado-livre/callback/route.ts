@@ -38,7 +38,8 @@ export async function GET(req: Request) {
     const usuario = await chamarApi<UsuarioMl>("/users/me", token.access_token);
     if (usuario.site_id !== "MLB") return sair("ml_erro=conta_fora_do_brasil");
     await salvarConexao(salvo.contaId, token, usuario);
-    return sair("ml=conectado");
+    // conectou, mas sem refresh token a conexão cai em poucas horas: avisa para ligar offline_access no app
+    return sair(token.refresh_token ? "ml=conectado" : "ml=conectado&ml_erro=sem_renovacao");
   } catch (e) {
     const codigo = e instanceof ErroMl ? e.codigo : "falha_interna";
     // só o código do erro: a mensagem e o corpo podem ter dados da conta

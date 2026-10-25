@@ -34,6 +34,7 @@ export const ERROS_ML: Record<string, string> = {
   invalid_client: "Client ID ou Secret do app do Mercado Livre não conferem (ver .env.local).",
   ml_indisponivel: "O Mercado Livre não respondeu. Tente de novo em alguns minutos.",
   invalid_grant: "O Mercado Livre recusou o código. Confira se o Redirect URI do app é igual ao ML_REDIRECT_URI.",
+  sem_renovacao: "Conectado, mas o app do Mercado Livre está sem o acesso offline (offline_access): a conexão vai cair em algumas horas. Ative no DevCenter e conecte de novo.",
 };
 
 // textos para os códigos que o callback da Shopee devolve em ?shopee_erro=
