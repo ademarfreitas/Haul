@@ -4,7 +4,8 @@ import { obterDb } from "@/db/cliente";
 import { contas, indicacoes } from "@/db/schema";
 import { reais } from "@/lib/canais";
 import { diasDeTeste, exigirConta } from "@/lib/conta";
-import { DIAS_DE_TOLERANCIA, economiaAnual, PLANOS, precoNoCiclo, type Ciclo } from "@/lib/planos";
+import { mesesPagosDaIndicada } from "@/lib/indicacao";
+import { descontoIndicacao, DIAS_DE_TOLERANCIA, economiaAnual, MESES_COM_DESCONTO, PLANOS, precoNoCiclo, type Ciclo } from "@/lib/planos";
 import { SENHA_MINIMA } from "@/lib/senha";
 import { escolherPlano } from "./acoes";
 import { Copiar, FormGeral, FormSenha } from "./formularios";
@@ -87,7 +88,10 @@ export default async function MinhaConta({ searchParams }: { searchParams: Promi
 }
 
 // ver = qual preço os cartões mostram (mensal ou anual); começa no ciclo da conta
-function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirConta>>["conta"]; ver: Ciclo }) {
+async function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirConta>>["conta"]; ver: Ciclo }) {
+  // veio por indicação: 5% a menos nos 3 primeiros meses (null = não veio)
+  const mesesPagos = await mesesPagosDaIndicada(conta.id);
+  const desconto = (p: (typeof PLANOS)[number], c: Ciclo) => (mesesPagos === null ? 0 : descontoIndicacao(p, c, mesesPagos));
   const fim = conta.testeAte;
   const dias = diasDeTeste(fim);
   const escolhido = PLANOS.find((p) => p.id === conta.plano);
@@ -122,7 +126,7 @@ function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirConta>>[
           <li className={dias === 0 ? "now" : ""}>
             <b>{data(fim)}</b>
             <span>Fim do teste. {escolhido
-                ? `Primeira cobrança do plano ${escolhido.nome}${conta.ciclo === "anual" ? " anual" : ""}: ${reais(precoNoCiclo(escolhido, conta.ciclo))}${conta.ciclo === "anual" ? ", vale por 12 meses" : ""}.`
+                ? `Primeira cobrança do plano ${escolhido.nome}${conta.ciclo === "anual" ? " anual" : ""}: ${reais(precoNoCiclo(escolhido, conta.ciclo) - desconto(escolhido, conta.ciclo))}${conta.ciclo === "anual" ? ", vale por 12 meses" : ""}${desconto(escolhido, conta.ciclo) ? ", já com o desconto de indicação" : ""}.`
                 : "Primeira cobrança do plano escolhido."}</span>
           </li>
           <li>
@@ -134,6 +138,12 @@ function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirConta>>[
       <div className="panel">
         <h2>Planos</h2>
         <p className="muted" style={{ fontSize: ".84rem" }}>Troque de plano quando quiser. Nada é cobrado durante o teste.</p>
+        {mesesPagos !== null && mesesPagos < MESES_COM_DESCONTO && (
+          <p style={{ fontSize: ".84rem", marginTop: 6 }}>
+            <span className="pill p-good">Indicação</span> Você entrou por indicação: 5% de desconto nos {MESES_COM_DESCONTO} primeiros meses de plano
+            {ver === "anual" ? " (no anual, sobre 3 dos 12 meses da primeira anuidade)" : ""}.
+          </p>
+        )}
         <div className="chips" style={{ marginTop: 10 }}>
           {(
             [
@@ -156,7 +166,12 @@ function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirConta>>[
                 {"selo" in p && <span className="pill p-accent">{p.selo}</span>}
               </div>
               <div className="pr">
-                {reais(precoNoCiclo(p, ver))}
+                {desconto(p, ver) > 0 && (
+                  <s className="muted" style={{ fontSize: ".85rem", fontWeight: 500, marginRight: 6 }}>
+                    {reais(precoNoCiclo(p, ver))}
+                  </s>
+                )}
+                {reais(precoNoCiclo(p, ver) - desconto(p, ver))}
                 <span className="muted" style={{ fontSize: ".8rem", fontWeight: 500 }}>{ver === "anual" ? " /ano" : " /mês"}</span>
               </div>
               {ver === "anual" && (
@@ -209,7 +224,8 @@ async function Indicacao({ contaId }: { contaId: string }) {
       <div className="panel">
         <h2>Indique e ganhe 30 dias</h2>
         <p className="muted" style={{ fontSize: ".86rem", marginTop: 4 }}>
-          Quem entrar pelo seu link ganha o teste de 30 dias normalmente. Quando essa pessoa pagar a primeira mensalidade, você ganha 30 dias de plano.
+          Quem entrar pelo seu link ganha o teste de 30 dias e 5% de desconto nos {MESES_COM_DESCONTO} primeiros meses de plano, no mensal ou no anual. Quando essa
+          pessoa pagar a primeira vez, você ganha 30 dias de plano.
         </p>
         <Copiar texto={link} />
       </div>

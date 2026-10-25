@@ -13,13 +13,14 @@ export default async function Cadastro({ searchParams }: { searchParams: Promise
   const { plano = "", ciclo = "", ind = "" } = await searchParams;
   const nome = NOMES[plano];
   const anual = !!nome && ciclo === "anual";
+  const indicado = /^[0-9a-f-]{36}$/.test(ind);
   return (
     <Moldura
       titulo="Crie sua conta"
       sub="Venda no Mercado Livre, Shopee, Shein, Amazon, Magalu e Facebook com um cadastro só."
-      selo={nome ? `Plano ${nome}${anual ? " anual" : ""} · 30 dias grátis, sem cartão` : "30 dias grátis, sem cartão"}
+      selo={`${nome ? `Plano ${nome}${anual ? " anual" : ""} · ` : ""}30 dias grátis, sem cartão${indicado ? " · indicação: 5% off nos 3 primeiros meses" : ""}`}
     >
-      <FormCadastro plano={nome ? plano : ""} ciclo={anual ? "anual" : "mensal"} ind={/^[0-9a-f-]{36}$/.test(ind) ? ind : ""} />
+      <FormCadastro plano={nome ? plano : ""} ciclo={anual ? "anual" : "mensal"} ind={indicado ? ind : ""} />
       <p className="rodape-form">Já tem conta? <a href="/entrar">Entrar</a></p>
     </Moldura>
   );

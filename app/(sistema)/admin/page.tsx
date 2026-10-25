@@ -5,7 +5,7 @@ import { cobrancas, contas, usuarios } from "@/db/schema";
 import { exigirAdmin } from "@/lib/admin";
 import { custosDoMes, diasAteVencer, receitaRecorrente, SITUACOES, situacaoDe, vencimento, type Situacao } from "@/lib/assinantes";
 import { reais } from "@/lib/canais";
-import { PLANOS } from "@/lib/planos";
+import { descontoIndicacao, MESES_COM_DESCONTO, PLANOS, precoNoCiclo } from "@/lib/planos";
 import { registrarPagamento } from "./acoes";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +29,12 @@ async function lerCobrancas() {
   try {
     const [porConta, doMes] = await Promise.all([
       db
-        .select({ contaId: cobrancas.contaId, total: sql<number>`sum(${cobrancas.valorCentavos})::int`, n: sql<number>`count(*)::int` })
+        .select({
+          contaId: cobrancas.contaId,
+          total: sql<number>`sum(${cobrancas.valorCentavos})::int`,
+          n: sql<number>`count(*)::int`,
+          meses: sql<number>`sum(case when ${cobrancas.ciclo} = 'anual' then 12 else 1 end)::int`,
+        })
         .from(cobrancas)
         .where(eq(cobrancas.situacao, "paga"))
         .groupBy(cobrancas.contaId),
@@ -43,7 +48,7 @@ async function lerCobrancas() {
     // 42P01 = tabela não existe (o drizzle embrulha o erro do banco em `cause`)
     const erro = e as { code?: string; cause?: { code?: string } };
     if (erro.code === "42P01" || erro.cause?.code === "42P01") {
-      return { porConta: new Map<string, { total: number; n: number }>(), doMes: [], falta: true };
+      return { porConta: new Map<string, { total: number; n: number; meses: number }>(), doMes: [], falta: true };
     }
     throw e;
   }
@@ -73,6 +78,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
         testeAte: contas.testeAte,
         pagoAte: contas.pagoAte,
         criadoEm: contas.criadoEm,
+        indicada: sql<boolean>`exists(select 1 from indicacoes i where i.indicada_id = contas.id)`,
       })
       .from(contas)
       .where(ne(contas.id, eu.conta.id)) // a conta do próprio dono fica de fora
@@ -187,7 +193,9 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
             {linhas.map((c) => {
               const s = SITUACOES[c.situacao];
               const pago = cob.porConta.get(c.id);
+              // indicada: quanto sai o próximo pagamento com os 5% dos primeiros meses
               const plano = PLANOS.find((p) => p.id === c.plano);
+              const desconto = c.indicada && plano ? descontoIndicacao(plano, c.ciclo, Number(pago?.meses ?? 0)) : 0;
               return (
                 <tr key={c.id}>
                   <td>
@@ -201,6 +209,13 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
                       c.ciclo === "anual" ? `${plano.nome} anual · ${reais(plano.precoAnualCentavos)}` : `${plano.nome} · ${reais(plano.precoCentavos)}`
                     ) : (
                       <span className="muted">não escolheu</span>
+                    )}
+                    {c.indicada && (
+                      <span className="sub2" style={{ display: "block" }}>
+                        {plano && desconto > 0
+                          ? `indicada · próximo pagamento ${reais(precoNoCiclo(plano, c.ciclo) - desconto)} (5% nos ${MESES_COM_DESCONTO} primeiros meses)`
+                          : "indicada"}
+                      </span>
                     )}
                   </td>
                   <td>
