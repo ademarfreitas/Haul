@@ -38,16 +38,18 @@ type Props = {
   contadores: { tarefas: number; canais: number };
   teste: { texto: string; acabou: boolean; usados: number } | null;
   sair: () => Promise<void>;
+  admin?: boolean; // dono do Plist (ADMIN_EMAILS): ganha o item Assinantes
 };
 
-export function Menu({ contadores, teste, sair }: Props) {
+export function Menu({ contadores, teste, sair, admin }: Props) {
   const aqui = usePathname();
+  const grupos = admin ? [...GRUPOS, { nome: "Plist", itens: [{ href: "/admin", nome: "Assinantes", icone: "grafico" } as Item] }] : GRUPOS;
   return (
     <nav className="rail" aria-label="Principal">
       <Link className="brand" href="/inventario">
         <img src="/plist-logo-branco.svg" alt="Plist" />
       </Link>
-      {GRUPOS.map((g) => (
+      {grupos.map((g) => (
         <div key={g.nome} style={{ display: "contents" }}>
           <span className="grupo">{g.nome}</span>
           {g.itens.map((i) => {
