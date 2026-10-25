@@ -41,3 +41,29 @@ export function economiaAnual(p: (typeof PLANOS)[number]): number {
 
 // sem pagamento depois do teste, a conta fica só leitura depois destes dias
 export const DIAS_DE_TOLERANCIA = 5;
+
+// Indicação (25/10/2026): as duas pontas ganham 5% de desconto em 12 meses de plano. Quem entrou pelo link de outra
+// conta, nos 12 primeiros meses; quem indicou, nos 12 meses seguintes a cada indicada que paga (além dos 30 dias).
+// Os meses se somam (duas indicações = 24 meses com 5%), o percentual não. No anual, vale 5% sobre os meses da
+// anuidade que caem no saldo (12 meses = a anuidade inteira).
+export const DESCONTO_INDICACAO = 0.05;
+export const MESES_COM_DESCONTO = 12;
+
+// meses que um pagamento cobre
+export const mesesDoCiclo = (ciclo: Ciclo): number => (ciclo === "anual" ? 12 : 1);
+
+// desconto, em centavos, do próximo pagamento de uma conta com `saldo` meses de desconto
+export function descontoIndicacao(p: (typeof PLANOS)[number], ciclo: Ciclo, saldo: number): number {
+  const usa = Math.min(Math.max(saldo, 0), mesesDoCiclo(ciclo));
+  return Math.round((precoNoCiclo(p, ciclo) * DESCONTO_INDICACAO * usa) / mesesDoCiclo(ciclo));
+}
+
+// Saldo de meses com desconto, em ordem de data: cada crédito (entrou indicada, ou uma indicada pagou) põe 12 meses e
+// cada pagamento gasta os meses que cobre. Crédito e pagamento na mesma hora: o crédito vem antes.
+export function saldoDeMeses(creditos: Date[], pagamentos: { pagaEm: Date; ciclo: Ciclo }[]): number {
+  const eventos = [
+    ...creditos.map((d) => ({ t: d.getTime(), ordem: 0, meses: MESES_COM_DESCONTO })),
+    ...pagamentos.map((p) => ({ t: p.pagaEm.getTime(), ordem: 1, meses: -mesesDoCiclo(p.ciclo) })),
+  ].sort((a, b) => a.t - b.t || a.ordem - b.ordem);
+  return eventos.reduce((saldo, e) => Math.max(saldo + e.meses, 0), 0);
+}

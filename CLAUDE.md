@@ -68,7 +68,9 @@ o que falta fazer até o dinheiro ser liberado.
 - **Cadastro na primeira entrada** (nome, e-mail, senha) → primeiros passos uma vez (PF ou PJ,
   documento, celular) → sistema. Os primeiros passos não ficam no menu.
 - **30 dias grátis sem cartão**; depois cobra o plano; sem pagamento em 5 dias a conta fica só leitura.
-  Indicação: 30 dias de plano para quem indica, quando o indicado paga a primeira mensalidade.
+  Indicação: 30 dias de plano para quem indica, quando o indicado paga a primeira mensalidade; as duas pontas
+  ganham 5% em 12 meses de plano: o indicado nos 12 primeiros, quem indica nos 12 seguintes a cada indicado que paga (meses se
+  somam; no anual, 5% sobre a anuidade inteira; `saldoDeMeses` e `descontoIndicacao` em `lib/planos.ts`, 25/10/2026).
 - **Planos** (24/10/2026, `lib/planos.ts`): Essencial R$ 19,90 (2 canais, 50 anúncios, 1 usuário, 5 IA/mês);
   Profissional R$ 49,90 (todos os canais, 100 anúncios, 3 usuários, 15 IA/mês);
   Avançado R$ 79,90 (todos os canais, 500 anúncios, 5 usuários, 50 IA/mês, módulo CRM em breve).

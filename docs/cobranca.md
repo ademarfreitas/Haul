@@ -44,6 +44,17 @@ o id no provedor (único por provedor, para o aviso repetido não lançar duas v
 **Rodar no Neon:** em `C:\app\haul-novo`, `git pull` e depois `npm run db:migrar`. Antes disso o /admin abre, avisa
 que falta a tabela e mostra entradas zeradas.
 
+## Desconto de indicação
+
+As duas pontas ganham 5% de desconto em 12 meses de plano. Quem entrou pelo link de outra conta ganha 12 meses no
+cadastro; quem indicou ganha mais 12 meses (além dos 30 dias) toda vez que uma indicada paga a primeira vez. Os meses
+se somam (duas indicações = 24 meses com 5%), o percentual não. Cada pagamento gasta os meses que cobre (mensalidade = 1,
+anuidade = 12); no anual o desconto é 5% sobre a parte da anuidade que cai no saldo (12 meses = a anuidade inteira; quem pagou 1 mês e passou para o anual tem 5% sobre 11/12).
+O saldo sai das datas, sem coluna nova: `saldoDeMeses` (lib/planos.ts) junta os créditos (`indicacoes.criado_em` da
+indicada e `recompensa_concedida_em` de quem indicou) com os pagamentos em ordem de data. O "+ Pagamento" do /admin
+calcula sozinho, grava em `valor_centavos` o valor já com desconto e anota o desconto na observação. A coluna Plano
+mostra quanto sai o próximo pagamento de cada conta com saldo.
+
 ## Custos
 
 Estimativas de `plist/docs/custo-e-planos.md` em `lib/assinantes.ts`: fixo R$ 330/mês (Vercel, Neon, Resend),

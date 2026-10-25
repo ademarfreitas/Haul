@@ -5,8 +5,10 @@ import { obterDb } from "@/db/cliente";
 import { cobrancas, contas, indicacoes } from "@/db/schema";
 import { ehAdmin } from "@/lib/admin";
 import { periodoDoPagamento } from "@/lib/assinantes";
+import { reais } from "@/lib/canais";
 import { contaAtual } from "@/lib/conta";
-import { CICLOS, PLANOS, precoNoCiclo } from "@/lib/planos";
+import { saldoDeIndicacao } from "@/lib/indicacao";
+import { CICLOS, descontoIndicacao, PLANOS, precoNoCiclo } from "@/lib/planos";
 
 const FORMAS = ["pix", "boleto", "cartao", "manual"] as const;
 const DIAS_DE_PREMIO = 30;
@@ -28,11 +30,14 @@ export async function registrarPagamento(f: FormData): Promise<void> {
   const agora = new Date();
   const { inicio, fim } = periodoDoPagamento(conta, agora, ciclo);
   const primeira = !conta.pagoAte;
+  // indicação (indicada ou quem indicou): 5% nos meses que ainda tem de saldo; o valor gravado já sai com o desconto
+  const desconto = descontoIndicacao(plano, ciclo, (await saldoDeIndicacao(conta.id))?.saldo ?? 0);
+  const obs = texto(f, "obs", 300) || `lançado à mão por ${atual.usuario.email}`;
   await db.insert(cobrancas).values({
     contaId: conta.id,
     plano: plano.id,
     ciclo,
-    valorCentavos: precoNoCiclo(plano, ciclo),
+    valorCentavos: precoNoCiclo(plano, ciclo) - desconto,
     periodoInicio: inicio,
     periodoFim: fim,
     vencimento: inicio,
@@ -40,11 +45,12 @@ export async function registrarPagamento(f: FormData): Promise<void> {
     forma,
     pagaEm: agora,
     taxaProvedorCentavos: forma === "manual" ? 0 : null,
-    observacao: texto(f, "obs", 300) || `lançado à mão por ${atual.usuario.email}`,
+    observacao: desconto ? `${obs} · desconto de indicação: ${reais(desconto)}` : obs,
   });
   await db.update(contas).set({ plano: plano.id, ciclo, pagoAte: fim, situacaoAssinatura: "ativa" }).where(eq(contas.id, conta.id));
 
-  // Indicação: quem indicou ganha 30 dias quando a indicada paga a primeira mensalidade (uma vez só).
+  // Indicação: quem indicou ganha 30 dias quando a indicada paga a primeira mensalidade (uma vez só). A data do prêmio
+  // também dá a quem indicou 12 meses com 5% de desconto (lib/indicacao.ts).
   if (primeira) {
     const [ind] = await db
       .select({ id: indicacoes.id, indicadora: contas })
