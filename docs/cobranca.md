@@ -7,8 +7,18 @@
 - Mostra cada conta: nome e e-mail de quem se cadastrou, plano, situação, quando vence (fim do teste ou do
   período pago), quanto já pagou. Filtros: em teste, em dia, inadimplentes, venceram sem renovar, cancelados.
 - Números do mês: o que entrou, custos estimados e resultado, receita recorrente (MRR), testes que vencem em 7 dias.
-- **Registrar pagamento à mão** (Pix direto, por exemplo): grava a mensalidade, empurra o "pago até" um mês e,
+- **Registrar pagamento à mão** (Pix direto, por exemplo): grava a mensalidade (ou anuidade), empurra o "pago até" um mês (ou 12) e,
   na primeira mensalidade, dá os 30 dias de prêmio a quem indicou.
+
+## Plano anual (25/10/2026)
+
+- Preço do ano = 10 mensalidades (uns 17% de desconto, "2 meses grátis"): Essencial R$ 199, Profissional R$ 499,
+  Avançado R$ 799 (`precoAnualCentavos` em `lib/planos.ts`). Cobrado de uma vez, vale 12 meses.
+- O ciclo (mensal ou anual) fica em `contas.ciclo` e em cada linha de `cobrancas.ciclo` (migração `0004_ciclo_anual`).
+- Quem escolhe: no site (botão Mensal/Anual nos planos, leva `?ciclo=anual` ao cadastro), em Minha conta > Plano e
+  cobrança, ou o dono ao lançar o pagamento no /admin ("12 meses (anual)").
+- Na receita recorrente (MRR) o anual entra como 1/12 do valor por mês; em "Entrou este mês" entra inteiro no mês
+  em que foi pago.
 
 ## Situação de cada conta (calculada pelas datas, `lib/assinantes.ts`)
 

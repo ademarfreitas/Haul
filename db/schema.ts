@@ -51,6 +51,7 @@ export const situacaoAssinatura = pgEnum("situacao_assinatura", [
 ]);
 
 export const plano = pgEnum("plano", ["essencial", "profissional", "avancado"]);
+export const ciclo = pgEnum("ciclo", ["mensal", "anual"]); // de quanto em quanto a assinatura é cobrada
 
 export const situacaoConexao = pgEnum("situacao_conexao", [
   "ativa",
@@ -147,6 +148,7 @@ export const contas = pgTable("contas", {
   primeirosPassosEm: timestamp({ withTimezone: true }),
   // assinatura
   plano: plano(),
+  ciclo: ciclo().notNull().default("mensal"),
   situacaoAssinatura: situacaoAssinatura().notNull().default("teste"),
   testeAte: timestamp({ withTimezone: true })
     .notNull()
@@ -615,6 +617,7 @@ export const cobrancas = pgTable(
       .notNull()
       .references(() => contas.id, { onDelete: "cascade" }),
     plano: plano().notNull(),
+    ciclo: ciclo().notNull().default("mensal"),
     valorCentavos: centavos().notNull(),
     periodoInicio: timestamp({ withTimezone: true }).notNull(),
     periodoFim: timestamp({ withTimezone: true }).notNull(),

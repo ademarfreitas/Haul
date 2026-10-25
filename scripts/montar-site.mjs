@@ -33,7 +33,7 @@ const pagina = [
   "  var b = e.target.closest && e.target.closest('[data-start], [data-go=\"login\"]');",
   "  if (!b) return;",
   "  e.preventDefault(); e.stopImmediatePropagation();",
-  "  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) : '/entrar';",
+  "  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) + (b.dataset.cicloPlano === 'anual' ? '&ciclo=anual' : '') : '/entrar';",
   "}, true);",
   // Link direto para uma seção: plist.com.br/#planos (ou #s-planos) rola até ela ao abrir.
   "window.addEventListener('load', function () {",

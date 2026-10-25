@@ -72,7 +72,8 @@ o que falta fazer até o dinheiro ser liberado.
 - **Planos** (24/10/2026, `lib/planos.ts`): Essencial R$ 19,90 (2 canais, 50 anúncios, 1 usuário, 5 IA/mês);
   Profissional R$ 49,90 (todos os canais, 100 anúncios, 3 usuários, 15 IA/mês);
   Avançado R$ 79,90 (todos os canais, 500 anúncios, 5 usuários, 50 IA/mês, módulo CRM em breve).
-  Todos com SMS a cada venda.
+  Todos com SMS a cada venda. **Anual** (25/10/2026) = 10 mensalidades: R$ 199, R$ 499 e R$ 799 por ano
+  (`contas.ciclo`, `docs/cobranca.md`).
 - **Site público** com Planos e Entrar no canto superior direito; fonte **Inter**.
 
 ## Em aberto (decidir com o usuário)

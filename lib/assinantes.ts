@@ -1,6 +1,6 @@
 // Contas pagantes do Plist vistas pelo dono (/admin): em que pé está cada assinatura, quanto entra e quanto custa.
 // Funções puras (sem banco), testadas em testes/assinantes.test.mjs. Desenho em docs/cobranca.md.
-import { DIAS_DE_TOLERANCIA, PLANOS, type IdPlano } from "@/lib/planos";
+import { DIAS_DE_TOLERANCIA, PLANOS, type Ciclo, type IdPlano } from "@/lib/planos";
 
 const DIA = 86_400_000;
 
@@ -45,14 +45,17 @@ export function diasAteVencer(c: ContaAssinatura, agora = new Date()): number {
   return Math.ceil((vencimento(c).getTime() - agora.getTime()) / DIA);
 }
 
-export function precoDoPlano(plano: IdPlano | null | undefined): number {
-  return PLANOS.find((p) => p.id === plano)?.precoCentavos ?? 0;
+// valor por mês: no anual, o preço do ano dividido por 12 (é o que conta na receita recorrente)
+export function precoDoPlano(plano: IdPlano | null | undefined, ciclo: Ciclo = "mensal"): number {
+  const p = PLANOS.find((x) => x.id === plano);
+  if (!p) return 0;
+  return ciclo === "anual" ? Math.round(p.precoAnualCentavos / 12) : p.precoCentavos;
 }
 
-function somarMes(d: Date): Date {
+function somarMeses(d: Date, meses: number): Date {
   const r = new Date(d);
   const dia = r.getUTCDate();
-  r.setUTCMonth(r.getUTCMonth() + 1);
+  r.setUTCMonth(r.getUTCMonth() + meses);
   if (r.getUTCDate() !== dia) r.setUTCDate(0); // 31/01 → 28/02 (ou 29), não 03/03
   return r;
 }
@@ -60,11 +63,12 @@ function somarMes(d: Date): Date {
 // Período que um pagamento cobre. Quem paga em dia, durante o teste ou dentro da tolerância continua de onde
 // parou (fim do teste ou do último período), para não perder dias nem ganhar de graça; quem voltou depois de
 // ficar só leitura começa hoje.
-export function periodoDoPagamento(c: ContaAssinatura, agora = new Date()): { inicio: Date; fim: Date } {
+// O anual cobre 12 meses.
+export function periodoDoPagamento(c: ContaAssinatura, agora = new Date(), ciclo: Ciclo = "mensal"): { inicio: Date; fim: Date } {
   const base = vencimento(c);
   const atraso = (agora.getTime() - base.getTime()) / DIA;
   const inicio = atraso <= DIAS_DE_TOLERANCIA ? base : agora;
-  return { inicio, fim: somarMes(inicio) };
+  return { inicio, fim: somarMeses(inicio, ciclo === "anual" ? 12 : 1) };
 }
 
 // ---------- custos (estimativas de plist/docs/custo-e-planos.md, 24/10/2026; conferir com as faturas) ----------
@@ -80,7 +84,7 @@ export const TAXA_COBRANCA_PADRAO = 199; // Pix/boleto, quando o provedor não i
 export const INFRA_POR_CONTA: Record<IdPlano, number> = { essencial: 60, profissional: 120, avancado: 250 };
 
 type Paga = { valorCentavos: number; taxaProvedorCentavos: number | null };
-type ContaAtiva = { plano: IdPlano | null; situacao: Situacao };
+type ContaAtiva = { plano: IdPlano | null; ciclo?: Ciclo; situacao: Situacao };
 
 export type Custos = { linhas: { nome: string; centavos: number }[]; total: number };
 
@@ -98,7 +102,7 @@ export function custosDoMes(pagas: Paga[], contasDoMes: ContaAtiva[]): Custos {
   return { linhas, total: linhas.reduce((s, l) => s + l.centavos, 0) };
 }
 
-// Receita recorrente do mês (MRR): mensalidade de quem está em dia ou dentro da tolerância.
+// Receita recorrente do mês (MRR): mensalidade de quem está em dia ou dentro da tolerância (o anual entra como 1/12).
 export function receitaRecorrente(contas: ContaAtiva[]): number {
-  return contas.filter((c) => c.situacao === "em_dia" || c.situacao === "inadimplente").reduce((s, c) => s + precoDoPlano(c.plano), 0);
+  return contas.filter((c) => c.situacao === "em_dia" || c.situacao === "inadimplente").reduce((s, c) => s + precoDoPlano(c.plano, c.ciclo), 0);
 }
