@@ -30,8 +30,9 @@ export async function cadastrar(_: Estado, f: FormData): Promise<Estado> {
   const email = texto(f, "email").toLowerCase();
   const senha = String(f.get("senha") ?? "");
   const plano = PLANOS[texto(f, "plano") as keyof typeof PLANOS] ?? null;
+  const ciclo = texto(f, "ciclo") === "anual" ? "anual" : "mensal";
   const ind = texto(f, "ind");
-  const valores = { nome, email, plano: texto(f, "plano"), ind };
+  const valores = { nome, email, plano: texto(f, "plano"), ciclo, ind };
 
   if (nome.split(" ").length < 2 || nome.length > 120) return { erro: "Escreva nome e sobrenome.", valores };
   if (!emailValido(email)) return { erro: "Esse e-mail não parece certo. Confira e tente de novo.", valores };
@@ -48,7 +49,7 @@ export async function cadastrar(_: Estado, f: FormData): Promise<Estado> {
     // conta e usuário num comando só: ou nascem os dois, ou nenhum. O teste de 30 dias é o padrão da tabela.
     const r = await db.execute<{ conta_id: string; usuario_id: string }>(sql`
       with c as (
-        insert into contas (nome, plano) values (${nome}, ${plano}) returning id
+        insert into contas (nome, plano, ciclo) values (${nome}, ${plano}, ${ciclo}) returning id
       )
       insert into usuarios (conta_id, nome, email, senha_hash)
       select c.id, ${nome}, ${email}, ${senhaHash} from c

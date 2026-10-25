@@ -68,6 +68,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
         nome: dono("nome"),
         email: dono("email"),
         plano: contas.plano,
+        ciclo: contas.ciclo,
         situacaoAssinatura: contas.situacaoAssinatura,
         testeAte: contas.testeAte,
         pagoAte: contas.pagoAte,
@@ -195,7 +196,13 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
                       {c.email ?? "sem usuário"} · desde {data(c.criadoEm)}
                     </span>
                   </td>
-                  <td>{plano ? `${plano.nome} · ${reais(plano.precoCentavos)}` : <span className="muted">não escolheu</span>}</td>
+                  <td>
+                    {plano ? (
+                      c.ciclo === "anual" ? `${plano.nome} anual · ${reais(plano.precoAnualCentavos)}` : `${plano.nome} · ${reais(plano.precoCentavos)}`
+                    ) : (
+                      <span className="muted">não escolheu</span>
+                    )}
+                  </td>
                   <td>
                     <span className={`pill p-${s.tom}`}>{s.nome}</span>
                   </td>
@@ -205,7 +212,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
                       {c.situacao === "cancelada"
                         ? ""
                         : c.dias >= 0
-                          ? `${c.pagoAte ? "mensalidade" : "teste"} · ${c.dias === 0 ? "hoje" : `em ${c.dias} ${c.dias === 1 ? "dia" : "dias"}`}`
+                          ? `${c.pagoAte ? (c.ciclo === "anual" ? "anuidade" : "mensalidade") : "teste"} · ${c.dias === 0 ? "hoje" : `em ${c.dias} ${c.dias === 1 ? "dia" : "dias"}`}`
                           : `${-c.dias} ${c.dias === -1 ? "dia" : "dias"} de atraso`}
                     </span>
                   </td>
@@ -213,7 +220,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
                     {reais(Number(pago?.total ?? 0))}
                     {pago && (
                       <span className="sub2" style={{ display: "block" }}>
-                        {pago.n} {pago.n === 1 ? "mensalidade" : "mensalidades"}
+                        {pago.n} {pago.n === 1 ? "pagamento" : "pagamentos"}
                       </span>
                     )}
                   </td>
@@ -226,9 +233,13 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
                           <select name="plano" defaultValue={c.plano ?? "essencial"} aria-label="Plano">
                             {PLANOS.map((p) => (
                               <option key={p.id} value={p.id}>
-                                {p.nome} · {reais(p.precoCentavos)}
+                                {p.nome} · {reais(p.precoCentavos)} ou {reais(p.precoAnualCentavos)}/ano
                               </option>
                             ))}
+                          </select>
+                          <select name="ciclo" defaultValue={c.ciclo} aria-label="Período">
+                            <option value="mensal">1 mês</option>
+                            <option value="anual">12 meses (anual)</option>
                           </select>
                           <select name="forma" defaultValue="pix" aria-label="Forma de pagamento">
                             <option value="pix">Pix</option>
@@ -238,7 +249,7 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
                           </select>
                           <input name="obs" placeholder="Observação (opcional)" maxLength={300} />
                           <button className="btn small primary" type="submit">
-                            Confirmar 1 mês
+                            Confirmar pagamento
                           </button>
                         </form>
                       </details>

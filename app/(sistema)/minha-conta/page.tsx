@@ -4,7 +4,7 @@ import { obterDb } from "@/db/cliente";
 import { contas, indicacoes } from "@/db/schema";
 import { reais } from "@/lib/canais";
 import { diasDeTeste, exigirConta } from "@/lib/conta";
-import { DIAS_DE_TOLERANCIA, PLANOS } from "@/lib/planos";
+import { DIAS_DE_TOLERANCIA, economiaAnual, PLANOS, precoNoCiclo, type Ciclo } from "@/lib/planos";
 import { SENHA_MINIMA } from "@/lib/senha";
 import { escolherPlano } from "./acoes";
 import { Copiar, FormGeral, FormSenha } from "./formularios";
@@ -37,7 +37,8 @@ function documento(tipo: string | null, doc: string | null): string {
 
 export default async function MinhaConta({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const { conta, usuario } = await exigirConta("/minha-conta");
-  const pedida = (await searchParams).aba;
+  const pedido = await searchParams;
+  const pedida = pedido.aba;
   const aba: Aba = ABAS.some(([k]) => k === pedida) ? (pedida as Aba) : "geral";
 
   return (
@@ -77,7 +78,7 @@ export default async function MinhaConta({ searchParams }: { searchParams: Promi
             </p>
           </>
         )}
-        {aba === "plano" && <Plano conta={conta} />}
+        {aba === "plano" && <Plano conta={conta} ver={pedido.ciclo === "anual" || pedido.ciclo === "mensal" ? pedido.ciclo : conta.ciclo} />}
         {aba === "indicacao" && <Indicacao contaId={conta.id} />}
         {aba === "senha" && <FormSenha minimo={SENHA_MINIMA} />}
       </div>
@@ -85,7 +86,8 @@ export default async function MinhaConta({ searchParams }: { searchParams: Promi
   );
 }
 
-function Plano({ conta }: { conta: Awaited<ReturnType<typeof exigirConta>>["conta"] }) {
+// ver = qual preço os cartões mostram (mensal ou anual); começa no ciclo da conta
+function Plano({ conta, ver }: { conta: Awaited<ReturnType<typeof exigirConta>>["conta"]; ver: Ciclo }) {
   const fim = conta.testeAte;
   const dias = diasDeTeste(fim);
   const escolhido = PLANOS.find((p) => p.id === conta.plano);
@@ -97,7 +99,11 @@ function Plano({ conta }: { conta: Awaited<ReturnType<typeof exigirConta>>["cont
           <div>
             <p className="eyebrow">Situação</p>
             <h2 style={{ marginTop: 4 }}>
-              {emTeste ? (dias > 0 ? `Teste grátis · ${dias} ${dias === 1 ? "dia restante" : "dias restantes"}` : "Teste encerrado") : `Plano ${escolhido?.nome ?? ""}`}
+              {emTeste
+                ? dias > 0
+                  ? `Teste grátis · ${dias} ${dias === 1 ? "dia restante" : "dias restantes"}`
+                  : "Teste encerrado"
+                : `Plano ${escolhido?.nome ?? ""}${conta.ciclo === "anual" ? " anual" : ""}`}
             </h2>
           </div>
           <span className={`pill ${conta.situacaoAssinatura === "somente_leitura" ? "p-bad" : emTeste ? "p-accent" : "p-good"}`}>
@@ -115,7 +121,9 @@ function Plano({ conta }: { conta: Awaited<ReturnType<typeof exigirConta>>["cont
           </li>
           <li className={dias === 0 ? "now" : ""}>
             <b>{data(fim)}</b>
-            <span>Fim do teste. {escolhido ? `Primeira cobrança do plano ${escolhido.nome}: ${reais(escolhido.precoCentavos)}.` : "Primeira cobrança do plano escolhido."}</span>
+            <span>Fim do teste. {escolhido
+                ? `Primeira cobrança do plano ${escolhido.nome}${conta.ciclo === "anual" ? " anual" : ""}: ${reais(precoNoCiclo(escolhido, conta.ciclo))}${conta.ciclo === "anual" ? ", vale por 12 meses" : ""}.`
+                : "Primeira cobrança do plano escolhido."}</span>
           </li>
           <li>
             <b>{data(somarDias(fim, DIAS_DE_TOLERANCIA))}</b>
@@ -126,17 +134,36 @@ function Plano({ conta }: { conta: Awaited<ReturnType<typeof exigirConta>>["cont
       <div className="panel">
         <h2>Planos</h2>
         <p className="muted" style={{ fontSize: ".84rem" }}>Troque de plano quando quiser. Nada é cobrado durante o teste.</p>
+        <div className="chips" style={{ marginTop: 10 }}>
+          {(
+            [
+              ["mensal", "Mensal"],
+              ["anual", "Anual · 2 meses grátis"],
+            ] as const
+          ).map(([c, nome]) => (
+            <Link key={c} className="chip" href={`/minha-conta?aba=plano&ciclo=${c}`} aria-pressed={ver === c} style={{ textDecoration: "none", color: "inherit" }}>
+              {nome}
+            </Link>
+          ))}
+        </div>
         <div className="plans">
-          {PLANOS.map((p) => (
-            <div key={p.id} className={`plan${conta.plano === p.id ? " cur" : ""}`}>
+          {PLANOS.map((p) => {
+            const atual = conta.plano === p.id && conta.ciclo === ver;
+            return (
+            <div key={p.id} className={`plan${atual ? " cur" : ""}`}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 6, alignItems: "center" }}>
                 <h3>{p.nome}</h3>
                 {"selo" in p && <span className="pill p-accent">{p.selo}</span>}
               </div>
               <div className="pr">
-                {reais(p.precoCentavos)}
-                <span className="muted" style={{ fontSize: ".8rem", fontWeight: 500 }}> /mês</span>
+                {reais(precoNoCiclo(p, ver))}
+                <span className="muted" style={{ fontSize: ".8rem", fontWeight: 500 }}>{ver === "anual" ? " /ano" : " /mês"}</span>
               </div>
+              {ver === "anual" && (
+                <p className="muted" style={{ fontSize: ".8rem", marginTop: 2 }}>
+                  Sai a {reais(Math.round(p.precoAnualCentavos / 12))} por mês · economia de {reais(economiaAnual(p))}
+                </p>
+              )}
               <ul>
                 {p.itens.map((i) => (
                   <li key={i}>{i}</li>
@@ -144,18 +171,20 @@ function Plano({ conta }: { conta: Awaited<ReturnType<typeof exigirConta>>["cont
               </ul>
               <form action={escolherPlano}>
                 <input type="hidden" name="plano" value={p.id} />
-                <button className={`btn${conta.plano === p.id ? "" : " primary"}`} type="submit" disabled={conta.plano === p.id} style={{ width: "100%", justifyContent: "center" }}>
-                  {conta.plano === p.id ? "Plano escolhido" : conta.plano ? "Trocar para este" : "Escolher"}
+                <input type="hidden" name="ciclo" value={ver} />
+                <button className={`btn${atual ? "" : " primary"}`} type="submit" disabled={atual} style={{ width: "100%", justifyContent: "center" }}>
+                  {atual ? "Plano escolhido" : conta.plano ? "Trocar para este" : "Escolher"}
                 </button>
               </form>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       <div className="panel">
         <h2>Forma de pagamento</h2>
         <p className="muted" style={{ fontSize: ".84rem", marginTop: 4 }}>
-          A cobrança mensal (Pix, boleto ou cartão) entra antes do fim do seu teste. Os dados do cartão serão digitados na página segura do provedor de
+          A cobrança (mensal ou anual, por Pix, boleto ou cartão) entra antes do fim do seu teste. Os dados do cartão serão digitados na página segura do provedor de
           cobrança, nunca no Plist.
         </p>
         <p style={{ marginTop: 10 }}>

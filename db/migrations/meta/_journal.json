@@ -29,6 +29,13 @@
       "when": 1792888324223,
       "tag": "0003_cobrancas",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792945376651,
+      "tag": "0004_ciclo_anual",
+      "breakpoints": true
     }
   ]
 }

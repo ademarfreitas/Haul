@@ -1,5 +1,6 @@
 // Situação das assinaturas, período pago e custos do /admin (puras). Rodar com: npm run testar
 import assert from "node:assert/strict";
+import { PLANOS, economiaAnual } from "../lib/planos.ts";
 import { custosDoMes, diasAteVencer, periodoDoPagamento, receitaRecorrente, situacaoDe } from "../lib/assinantes.ts";
 
 const agora = new Date("2026-10-25T12:00:00Z");
@@ -54,3 +55,19 @@ assert.equal(
   ]),
   4990 + 7990,
 );
+
+// plano anual: 12 meses de período, receita recorrente conta 1/12 do ano
+p = periodoDoPagamento(conta("2026-11-10"), agora, "anual");
+assert.equal(p.fim.toISOString(), d("2027-11-10").toISOString());
+p = periodoDoPagamento(conta("2028-02-29"), agora, "anual");
+assert.equal(p.fim.toISOString(), d("2029-02-28").toISOString());
+assert.equal(
+  receitaRecorrente([
+    { plano: "essencial", ciclo: "anual", situacao: "em_dia" },
+    { plano: "profissional", ciclo: "mensal", situacao: "em_dia" },
+  ]),
+  Math.round(19900 / 12) + 4990,
+);
+// anual = 10 mensalidades (199, 499, 799)
+for (const pl of PLANOS) assert.equal(pl.precoAnualCentavos, pl.precoCentavos * 10);
+assert.equal(economiaAnual(PLANOS[0]), 3980);

@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { obterDb } from "@/db/cliente";
 import { contas, usuarios } from "@/db/schema";
 import { contaAtual } from "@/lib/conta";
-import { PLANOS } from "@/lib/planos";
+import { CICLOS, PLANOS } from "@/lib/planos";
 import { conferirSenha, gerarHash, SENHA_MINIMA } from "@/lib/senha";
 import { celularE164 } from "@/lib/validar";
 
@@ -35,8 +35,9 @@ export async function escolherPlano(f: FormData): Promise<void> {
   const atual = await contaAtual();
   if (!atual) return;
   const plano = PLANOS.find((p) => p.id === texto(f, "plano", 20));
+  const ciclo = CICLOS.find((x) => x === texto(f, "ciclo", 10)) ?? "mensal";
   if (!plano) return;
-  await obterDb().update(contas).set({ plano: plano.id }).where(eq(contas.id, atual.conta.id));
+  await obterDb().update(contas).set({ plano: plano.id, ciclo }).where(eq(contas.id, atual.conta.id));
   revalidatePath("/minha-conta");
 }
 

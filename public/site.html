@@ -534,7 +534,12 @@ body.siteview.firstrun .main{max-width:none;padding:0;margin:0}
 .x-step .n{width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;font-weight:700;color:var(--accent);box-shadow:0 0 0 8px var(--bg)}
 .x-step h3{margin-top:20px;font-size:1.1rem;font-weight:700;letter-spacing:-.02em}
 .x-step p{color:var(--muted);font-size:.95rem;margin-top:8px;line-height:1.55}
-.x-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:56px;align-items:stretch}
+.x-ciclo{display:flex;width:max-content;margin:40px auto 0;padding:4px;border:1px solid var(--line);border-radius:99px;background:var(--surface);gap:2px}
+.x-ciclo button{all:unset;cursor:pointer;padding:9px 18px;border-radius:99px;font-size:.92rem;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px}
+.x-ciclo button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.x-ciclo button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.x-ciclo .tg{font-size:.72rem;font-weight:700;background:var(--good-soft);color:var(--good);border-radius:99px;padding:2px 8px}
+.x-plans{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:32px;align-items:stretch}
 .x-plan{border:1px solid var(--line);border-radius:20px;padding:30px 28px;background:var(--surface);display:flex;flex-direction:column}
 .x-plan.hot{background:var(--ink);color:var(--surface);border-color:var(--ink);box-shadow:0 40px 70px -40px rgba(16,24,40,.6)}
 .x-plan .top{display:flex;justify-content:space-between;align-items:center;gap:8px}
@@ -891,7 +896,8 @@ table.cmp{min-width:720px}
       </div></section>
 
       <section class="x-sec" id="s-planos"><div class="x-w">
-        <div class="x-hd c"><p class="x-eyb">Planos</p><h2>Comece grátis. Escolha o plano depois.</h2><p>30 dias com tudo liberado e sem cartão. No fim do teste você paga por Pix, boleto ou cartão.</p></div>
+        <div class="x-hd c"><p class="x-eyb">Planos</p><h2>Comece grátis. Escolha o plano depois.</h2><p>30 dias com tudo liberado e sem cartão. No fim do teste você paga por mês ou por ano, por Pix, boleto ou cartão.</p></div>
+        <div class="x-ciclo" id="sCiclo" role="group" aria-label="Forma de cobrança"><button type="button" data-ciclo="mensal" aria-pressed="true">Mensal</button><button type="button" data-ciclo="anual" aria-pressed="false">Anual <span class="tg">2 meses grátis</span></button></div>
         <div class="x-plans" id="sPlans"></div>
         <div class="x-cmp" id="sCmp"></div>
         <p class="muted" style="text-align:center;font-size:.88rem;margin-top:18px">Preços de exemplo. Troque de plano quando quiser; a diferença é proporcional aos dias.</p>
@@ -2914,9 +2920,9 @@ const trialEnd = () => new Date(trial.start.getTime() + TRIAL_DAYS * 864e5);
 const daysLeft = () => trial.expired ? 0 : Math.max(0, Math.min(TRIAL_DAYS, Math.ceil((trialEnd() - Date.now()) / 864e5)));
 const fullDate = d => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
 const PLANS = [
-  { id: "essencial", name: "Essencial", price: 19.9, feats: ["Até 2 canais conectados", "Até 50 anúncios", "1 usuário", "IA nos anúncios: 5 por mês", "SMS a cada venda", "Etiquetas em PDF e ZPL"] },
-  { id: "pro", name: "Profissional", price: 49.9, tag: "Mais escolhido", feats: ["Todos os canais", "Até 100 anúncios", "Até 3 usuários", "IA nos anúncios: 15 por mês", "SMS a cada venda", "Impressão direta pelo Plist Agente"] },
-  { id: "avancado", name: "Avançado", price: 79.9, feats: ["Tudo do Profissional", "Até 500 anúncios", "Até 5 usuários", "IA nos anúncios: 50 por mês", "Command Center com comparação de preços", "Módulo CRM: clientes, funil e campanhas"] },
+  { id: "essencial", name: "Essencial", price: 19.9, year: 199, feats: ["Até 2 canais conectados", "Até 50 anúncios", "1 usuário", "IA nos anúncios: 5 por mês", "SMS a cada venda", "Etiquetas em PDF e ZPL"] },
+  { id: "pro", name: "Profissional", price: 49.9, year: 499, tag: "Mais escolhido", feats: ["Todos os canais", "Até 100 anúncios", "Até 3 usuários", "IA nos anúncios: 15 por mês", "SMS a cada venda", "Impressão direta pelo Plist Agente"] },
+  { id: "avancado", name: "Avançado", price: 79.9, year: 799, feats: ["Tudo do Profissional", "Até 500 anúncios", "Até 5 usuários", "IA nos anúncios: 50 por mês", "Command Center com comparação de preços", "Módulo CRM: clientes, funil e campanhas"] },
 ];
 const acct = { name: "Ana Souza", email: "ana@exemplo.com.br", phone: "", kind: "", doc: "", razao: "", tz: "America/Sao_Paulo", home: "sync", beta: true, plan: null, pay: null, twofa: false, signed: false };
 const ACCT_KEYS = ["name", "email", "phone", "kind", "doc", "razao", "tz", "home", "beta", "signed", "session", "onbSeen", "trialStart"];
@@ -3270,7 +3276,7 @@ function renderAccount() {
           <li><b>${fullDate(ro)}</b><span>Sem pagamento em ${GRACE_DAYS} dias, a conta fica só leitura: as vendas continuam chegando, mas não dá para publicar. Pagou, libera na hora.</span></li>
         </ol></div>
       <div class="panel"><h2>Planos</h2><p class="muted" style="font-size:.84rem">Preços de exemplo para o protótipo. Troque de plano quando quiser; a diferença é proporcional aos dias.</p>
-        <div class="plans">${PLANS.map(x => `<div class="plan${acct.plan === x.id ? " cur" : ""}"><div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><h3>${x.name}</h3>${x.tag ? `<span class="pill p-accent">${x.tag}</span>` : ""}</div><div class="pr">${money(x.price)}<span class="muted" style="font-size:.8rem;font-weight:500"> /mês</span></div><ul>${x.feats.map(f => `<li>${f}</li>`).join("")}</ul>
+        <div class="plans">${PLANS.map(x => `<div class="plan${acct.plan === x.id ? " cur" : ""}"><div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><h3>${x.name}</h3>${x.tag ? `<span class="pill p-accent">${x.tag}</span>` : ""}</div><div class="pr">${money(x.price)}<span class="muted" style="font-size:.8rem;font-weight:500"> /mês</span></div><p class="muted" style="font-size:.8rem;margin-top:2px">ou ${money(x.year)} por ano (2 meses grátis)</p><ul>${x.feats.map(f => `<li>${f}</li>`).join("")}</ul>
           <button class="btn ${acct.plan === x.id ? "" : "primary"}" type="button" data-plan="${x.id}" ${acct.plan === x.id ? "disabled" : ""}>${acct.plan === x.id ? "Plano escolhido" : acct.plan ? "Trocar para este" : "Escolher"}</button></div>`).join("")}</div></div>
       <div class="panel"><h2>Forma de pagamento</h2><p class="muted" style="font-size:.84rem">A cobrança é feita pelo Asaas, numa fatura por mês. Os dados do cartão são digitados na página segura do Asaas, nunca aqui.</p>
         <div class="pick" style="margin-top:10px">${[["pix", "Pix", "Recorrente, aprovado na hora"], ["boleto", "Boleto", "Vence no dia da cobrança"], ["card", "Cartão de crédito", "Cobrança automática todo mês"]].map(([v, l, s]) => `<label class="radio"><input type="radio" name="pay" value="${v}" ${acct.pay === v ? "checked" : ""}><span><b>${l}</b><small>${s}</small></span></label>`).join("")}</div>
@@ -3356,17 +3362,29 @@ const CMP_ROWS = [
   ["Command Center e comparação de preços", false, false, true],
   ["Módulo CRM", false, false, "Em breve"],
 ];
+// mensal ou anual: o anual custa 10 mensalidades e vale 12 meses
+let siteCycle = "mensal";
+function renderSitePlans() {
+  const yearly = siteCycle === "anual";
+  $$("#sCiclo [data-ciclo]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.ciclo === siteCycle)));
+  $("#sPlans").innerHTML = PLANS.map(p => {
+    const [int, dec] = money(yearly ? p.year : p.price).replace("R$ ", "").split(",");
+    const sub = yearly ? `Sai a ${money(p.year / 12)} por mês<br>Economia de ${money(p.price * 12 - p.year)}` : "Depois de 30 dias grátis";
+    return `<div class="x-plan${p.id === "pro" ? " hot" : ""}"><div class="top"><h3>${p.name}</h3>${p.tag ? `<span class="tg">${p.tag}</span>` : ""}</div>
+      <div class="pr">R$ ${int}<small>${dec === "00" ? "" : "," + dec}/${yearly ? "ano" : "mês"}</small></div><p class="sub">${sub}</p>
+      <button class="x-btn ${p.id === "pro" ? "pri" : "ghost"}" type="button" data-start="${p.id}" data-ciclo-plano="${siteCycle}">Começar grátis</button>
+      <ul>${p.feats.map(f => `<li>${f}</li>`).join("")}</ul></div>`;
+  }).join("");
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("#sCiclo [data-ciclo]"); if (!b) return;
+  siteCycle = b.dataset.ciclo; renderSitePlans();
+});
 function renderSite() {
   $("#xTrust").innerHTML = ["Sem cartão para testar", "Com CPF ou CNPJ", "Cancele quando quiser"].map(t => `<span>${CHECK}${t}</span>`).join("");
   $("#sWorks").innerHTML = MKT.map(c => `<span style="--c:var(--c-${c})">${CH[c].name}</span>`).join("");
   $("#xChips").innerHTML = MKT.map(c => badge(c, "live")).join("") + `<span class="x-arrow" aria-hidden="true">→</span><span class="x-stock">1 peça no estoque · 5 anúncios</span>`;
-  $("#sPlans").innerHTML = PLANS.map(p => {
-    const [int, dec] = money(p.price).replace("R$ ", "").split(",");
-    return `<div class="x-plan${p.id === "pro" ? " hot" : ""}"><div class="top"><h3>${p.name}</h3>${p.tag ? `<span class="tg">${p.tag}</span>` : ""}</div>
-      <div class="pr">R$ ${int}<small>,${dec}/mês</small></div><p class="sub">Depois de 30 dias grátis</p>
-      <button class="x-btn ${p.id === "pro" ? "pri" : "ghost"}" type="button" data-start="${p.id}">Começar grátis</button>
-      <ul>${p.feats.map(f => `<li>${f}</li>`).join("")}</ul></div>`;
-  }).join("");
+  renderSitePlans();
   const cell = v => v === true ? `<span class="y" aria-label="Incluso">✓</span>` : v === false ? `<span class="n" aria-label="Não incluso">—</span>` : esc(v);
   $("#sCmp").innerHTML = `<table><tr><th>Compare os planos</th>${PLANS.map(p => `<th>${p.name}</th>`).join("")}</tr>${CMP_ROWS.map(r => `<tr><td>${r[0]}</td>${r.slice(1).map(v => `<td>${cell(v)}</td>`).join("")}</tr>`).join("")}</table>`;
   demoReset(); playDemo();
@@ -3416,7 +3434,7 @@ document.addEventListener("click", e => {
   const b = e.target.closest("[data-start]"); if (!b) return;
   planIntent = b.dataset.start;
   const p = PLANS.find(x => x.id === planIntent);
-  $("#suPlan").textContent = `Plano ${p.name} · 30 dias grátis, sem cartão`;
+  $("#suPlan").textContent = `Plano ${p.name}${b.dataset.cicloPlano === "anual" ? " anual" : ""} · 30 dias grátis, sem cartão`;
   go("signup");
 });
 $("#liForm").addEventListener("submit", e => {
@@ -3454,7 +3472,7 @@ document.addEventListener('click', function (e) {
   var b = e.target.closest && e.target.closest('[data-start], [data-go="login"]');
   if (!b) return;
   e.preventDefault(); e.stopImmediatePropagation();
-  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) : '/entrar';
+  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) + (b.dataset.cicloPlano === 'anual' ? '&ciclo=anual' : '') : '/entrar';
 }, true);
 window.addEventListener('load', function () {
   var h = window.secaoDoLink;
