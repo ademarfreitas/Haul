@@ -1,5 +1,5 @@
 // Link de "esqueci a senha": token assinado (lib/sessao.ts) com o usuário e uma impressão do hash
-// atual da senha. Vale 1 hora e só uma vez, porque ao trocar a senha a impressão deixa de bater.
+// atual da senha. Vale 1 hora (o convite do /admin, 7 dias) e só uma vez, porque ao trocar a senha a impressão deixa de bater.
 import { createHash } from "node:crypto";
 import { assinar, conferirAssinado } from "@/lib/sessao";
 
@@ -9,8 +9,8 @@ type Dados = { u: string; h: string };
 
 const impressao = (senhaHash: string | null) => createHash("sha256").update(senhaHash ?? "").digest("base64url").slice(0, 16);
 
-export function gerarTokenSenha(usuarioId: string, senhaHash: string | null): string {
-  return assinar({ u: usuarioId, h: impressao(senhaHash) } satisfies Dados, UMA_HORA);
+export function gerarTokenSenha(usuarioId: string, senhaHash: string | null, validadeSegundos = UMA_HORA): string {
+  return assinar({ u: usuarioId, h: impressao(senhaHash) } satisfies Dados, validadeSegundos);
 }
 
 // usuário do token, se a assinatura e a validade conferem (a senha atual se confere com valeParaSenha)

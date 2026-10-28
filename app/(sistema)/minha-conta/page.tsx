@@ -2,6 +2,7 @@ import Link from "next/link";
 import { desc, eq } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { contas, indicacoes } from "@/db/schema";
+import { cadastroAberto } from "@/lib/cadastro";
 import { reais } from "@/lib/canais";
 import { diasDeTeste, exigirConta } from "@/lib/conta";
 import { saldoDeIndicacao } from "@/lib/indicacao";
@@ -229,6 +230,11 @@ async function Indicacao({ contaId }: { contaId: string }) {
           {MESES_COM_DESCONTO} meses de desconto.
         </p>
         <Copiar texto={link} />
+        {!cadastroAberto() && (
+          <p className="muted" style={{ fontSize: ".84rem", marginTop: 8 }}>
+            O Plist ainda não abriu para todos: por enquanto, quem abrir o link cai na lista de espera.
+          </p>
+        )}
       </div>
       <div className="panel">
         <h2>Suas indicações</h2>

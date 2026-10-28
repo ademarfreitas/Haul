@@ -3,7 +3,7 @@
 // (acoes.ts); aqui só o que ajuda a digitar.
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { cadastrar, definirNovaSenha, entrar, pedirNovaSenha, salvarPrimeirosPassos, type Estado } from "./acoes";
+import { cadastrar, definirNovaSenha, entrar, entrarNaLista, pedirNovaSenha, salvarPrimeirosPassos, type Estado } from "./acoes";
 
 function Enviar({ children }: { children: string }) {
   const { pending } = useFormStatus();
@@ -35,6 +35,24 @@ export function FormCadastro({ plano, ciclo = "mensal", ind = "" }: { plano: str
       </label>
       <Erro estado={estado} />
       <Enviar>Criar conta e começar o teste</Enviar>
+    </form>
+  );
+}
+
+export function FormListaEspera() {
+  const [estado, acao] = useActionState(entrarNaLista, {});
+  const v = estado.valores ?? {};
+  if (estado.ok) return <p className="msg-ok" aria-live="polite">{estado.ok}</p>;
+  return (
+    <form action={acao} className="formulario">
+      <label>Seu nome<input name="nome" autoComplete="name" required defaultValue={v.nome} /></label>
+      <label>E-mail<input name="email" type="email" autoComplete="email" required defaultValue={v.email} /></label>
+      <label>
+        Sua loja ou o que você vende <span className="dica">(opcional)</span>
+        <input name="loja" maxLength={200} defaultValue={v.loja} placeholder="Ex.: brechó no Instagram e no Mercado Livre" />
+      </label>
+      <Erro estado={estado} />
+      <Enviar>Entrar na lista de espera</Enviar>
     </form>
   );
 }

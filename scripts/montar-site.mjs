@@ -1,7 +1,10 @@
 // Monta public/site.html (servido pela Vercel em "/", ver next.config.ts) a partir do protótipo (que é um trecho de página para o visualizador de
 // artefatos) envolvendo-o num documento HTML completo. Rodar: node scripts/montar-site.mjs
+// Antes do lançamento os botões de "Começar grátis" viram "Lista de espera" (o /cadastro do app está fechado, ver lib/cadastro.ts).
+// No lançamento: node scripts/montar-site.mjs --cadastro-aberto (junto com CADASTRO_ABERTO=sim na Vercel).
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 
+const aberto = process.argv.includes("--cadastro-aberto");
 const trecho = readFileSync(new URL("../plist-prototipo.html", import.meta.url), "utf8");
 
 // O <title>, as fontes e os scripts do trecho ficam no <body>; o navegador aceita e o arquivo
@@ -33,8 +36,23 @@ const pagina = [
   "  var b = e.target.closest && e.target.closest('[data-start], [data-go=\"login\"]');",
   "  if (!b) return;",
   "  e.preventDefault(); e.stopImmediatePropagation();",
-  "  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) + (b.dataset.cicloPlano === 'anual' ? '&ciclo=anual' : '') : '/entrar';",
+  aberto
+    ? "  location.href = b.dataset.start ? '/cadastro?plano=' + encodeURIComponent(b.dataset.start) + (b.dataset.cicloPlano === 'anual' ? '&ciclo=anual' : '') : '/entrar';"
+    : "  location.href = b.dataset.start ? '/cadastro' : '/entrar';",
   "}, true);",
+  // Cadastro fechado: troca o texto dos botões de começar (os dos planos são redesenhados ao trocar mensal/anual).
+  ...(aberto
+    ? []
+    : [
+        "function listaDeEspera() {",
+        "  document.querySelectorAll('[data-start]').forEach(function (b) {",
+        "    var t = b.classList.contains('lg') ? 'Entrar na lista de espera' : 'Lista de espera';",
+        "    if (b.textContent !== t) b.textContent = t;",
+        "  });",
+        "}",
+        "listaDeEspera();",
+        "new MutationObserver(listaDeEspera).observe(document.body, { childList: true, subtree: true });",
+      ]),
   // Link direto para uma seção: plist.com.br/#planos (ou #s-planos) rola até ela ao abrir.
   "window.addEventListener('load', function () {",
   "  var h = window.secaoDoLink;",
@@ -49,4 +67,4 @@ const pagina = [
 
 mkdirSync(new URL("../public/", import.meta.url), { recursive: true });
 writeFileSync(new URL("../public/site.html", import.meta.url), pagina);
-console.log("public/site.html gerado (" + pagina.length + " bytes)");
+console.log("public/site.html gerado (" + pagina.length + " bytes, cadastro " + (aberto ? "aberto" : "fechado: lista de espera") + ")");
