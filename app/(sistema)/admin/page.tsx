@@ -3,11 +3,14 @@ import { asc, eq, ne, sql } from "drizzle-orm";
 import { obterDb } from "@/db/cliente";
 import { cobrancas, contas, usuarios } from "@/db/schema";
 import { exigirAdmin } from "@/lib/admin";
+import { cadastroAberto } from "@/lib/cadastro";
 import { custosDoMes, diasAteVencer, receitaRecorrente, SITUACOES, situacaoDe, vencimento, type Situacao } from "@/lib/assinantes";
 import { reais } from "@/lib/canais";
+import { emailConfigurado } from "@/lib/email";
 import { saldosDeIndicacao, type SaldoIndicacao } from "@/lib/indicacao";
 import { descontoIndicacao, PLANOS, precoNoCiclo } from "@/lib/planos";
 import { registrarPagamento } from "./acoes";
+import { FormCriarAcesso } from "./criar-acesso";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Assinantes · Plist", robots: { index: false } };
@@ -105,6 +108,8 @@ export default async function Admin({ searchParams }: { searchParams: Promise<Re
           </p>
         </div>
       </header>
+
+      <FormCriarAcesso planos={PLANOS.map((p) => ({ id: p.id, nome: p.nome }))} emailPronto={emailConfigurado()} aberto={cadastroAberto()} />
 
       {cob.falta && (
         <div className="panel" style={{ borderColor: "var(--warn, #b7791f)", marginBottom: 14 }}>

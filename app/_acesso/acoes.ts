@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { obterDb } from "@/db/cliente";
 import { contas, indicacoes, usuarios } from "@/db/schema";
+import { cadastroAberto, criarContaComUsuario, emailRepetido } from "@/lib/cadastro";
 import { contaAtual, destinoSeguro } from "@/lib/conta";
 import { bloqueado, limparFalhas, registrarFalha } from "@/lib/limite";
 import { manterConexoes } from "@/lib/manter-conexoes";
@@ -22,12 +23,9 @@ const texto = (f: FormData, nome: string) => String(f.get(nome) ?? "").trim();
 // ids dos planos no site → enum do banco
 const PLANOS = { essencial: "essencial", pro: "profissional", profissional: "profissional", avancado: "avancado" } as const;
 
-function emailRepetido(e: unknown): boolean {
-  const codigo = (x: unknown) => (x && typeof x === "object" && "code" in x ? (x as { code: unknown }).code : undefined);
-  return codigo(e) === "23505" || codigo((e as { cause?: unknown })?.cause) === "23505";
-}
-
 export async function cadastrar(_: Estado, f: FormData): Promise<Estado> {
+  // fechado antes do lançamento: a ação também recusa, não só a página (ela pode ser chamada direto)
+  if (!cadastroAberto()) return { erro: "O cadastro ainda não está aberto. Entre na lista de espera." };
   const nome = texto(f, "nome").replace(/\s+/g, " ");
   const email = texto(f, "email").toLowerCase();
   const senha = String(f.get("senha") ?? "");
@@ -48,15 +46,7 @@ export async function cadastrar(_: Estado, f: FormData): Promise<Estado> {
   const senhaHash = await gerarHash(senha);
   let ids: { conta_id: string; usuario_id: string } | undefined;
   try {
-    // conta e usuário num comando só: ou nascem os dois, ou nenhum. O teste de 30 dias é o padrão da tabela.
-    const r = await db.execute<{ conta_id: string; usuario_id: string }>(sql`
-      with c as (
-        insert into contas (nome, plano, ciclo) values (${nome}, ${plano}, ${ciclo}) returning id
-      )
-      insert into usuarios (conta_id, nome, email, senha_hash)
-      select c.id, ${nome}, ${email}, ${senhaHash} from c
-      returning conta_id, id as usuario_id`);
-    ids = r.rows[0];
+    ids = await criarContaComUsuario({ nome, email, senhaHash, plano, ciclo });
   } catch (e) {
     if (emailRepetido(e)) return { erro: "Já existe uma conta com esse e-mail. Entre com ela.", valores };
     throw e;
@@ -71,6 +61,40 @@ export async function cadastrar(_: Estado, f: FormData): Promise<Estado> {
 
   await abrirSessao({ c: ids.conta_id, u: ids.usuario_id }, true);
   redirect("/primeiros-passos");
+}
+
+// Lista de espera (cadastro fechado): manda o contato por e-mail para quem está em ADMIN_EMAILS.
+export async function entrarNaLista(_: Estado, f: FormData): Promise<Estado> {
+  const nome = texto(f, "nome").replace(/\s+/g, " ").slice(0, 120);
+  const email = texto(f, "email").toLowerCase();
+  const loja = texto(f, "loja").replace(/\s+/g, " ").slice(0, 200);
+  const valores = { nome, email, loja };
+  if (nome.length < 2) return { erro: "Escreva seu nome.", valores };
+  if (!emailValido(email)) return { erro: "Esse e-mail não parece certo. Confira e tente de novo.", valores };
+  const chave = "espera:" + email;
+  if (bloqueado(chave)) return { ok: "Pronto, você está na lista. Avisamos por e-mail quando o Plist abrir." };
+  registrarFalha(chave);
+
+  const donos = (process.env.ADMIN_EMAILS ?? "").split(",").map((e) => e.trim()).filter(Boolean);
+  if (!emailConfigurado() || !donos.length) {
+    console.error("lista de espera sem e-mail configurado:", email);
+    return { erro: "A lista de espera ainda não está funcionando. Tente de novo mais tarde.", valores };
+  }
+  const limpo = (t: string) => t.replace(/[<>&"]/g, "");
+  try {
+    for (const dono of donos) {
+      await enviarEmail(
+        dono,
+        `Lista de espera do Plist: ${nome}`,
+        `Nome: ${nome}\nE-mail: ${email}\nLoja / o que vende: ${loja || "(não disse)"}\n\nPara dar acesso, crie o usuário em /admin.`,
+        `<p><b>Nome:</b> ${limpo(nome)}<br><b>E-mail:</b> ${limpo(email)}<br><b>Loja / o que vende:</b> ${limpo(loja) || "(não disse)"}</p><p>Para dar acesso, crie o usuário em /admin.</p>`,
+      );
+    }
+  } catch (e) {
+    console.error("lista de espera:", e);
+    return { erro: "Não deu para entrar na lista agora. Tente de novo em alguns minutos.", valores };
+  }
+  return { ok: "Pronto, você está na lista. Avisamos por e-mail quando o Plist abrir." };
 }
 
 export async function entrar(_: Estado, f: FormData): Promise<Estado> {
